@@ -1,0 +1,96 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Alice Exam Proctor Admin{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1 style="color: #417690; margin-bottom: 30px;">📊 Alice Exam Proctor Dashboard</h1>
+    
+    <!-- Statistics Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; font-size: 14px; opacity: 0.9;">Total Users</h3>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ stats.total_users }}</p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; font-size: 14px; opacity: 0.9;">Students</h3>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ stats.total_students }}</p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; font-size: 14px; opacity: 0.9;">Teachers</h3>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ stats.total_teachers }}</p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 20px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; font-size: 14px; opacity: 0.9;">Quizzes</h3>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ stats.total_quizzes }}</p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 20px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; font-size: 14px; opacity: 0.9;">Submissions</h3>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ stats.total_submissions }}</p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); padding: 20px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; font-size: 14px; opacity: 0.9;">Violations</h3>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ stats.total_violations }}</p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); padding: 20px; border-radius: 10px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; font-size: 14px; opacity: 0.9;">Flags</h3>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ stats.total_flags }}</p>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <!-- Recent Users -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="color: #417690; margin-top: 0;">👥 Recent Users</h2>
+            <ul style="list-style: none; padding: 0;">
+                {% for user in recent_users %}
+                <li style="padding: 10px; border-bottom: 1px solid #eee;">
+                    <strong>{{ user.name }}</strong><br>
+                    <small style="color: #666;">{{ user.email }} - {{ user.role }}</small>
+                </li>
+                {% empty %}
+                <li style="color: #999;">No users yet</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <!-- Recent Quizzes -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="color: #417690; margin-top: 0;">📝 Recent Quizzes</h2>
+            <ul style="list-style: none; padding: 0;">
+                {% for quiz in recent_quizzes %}
+                <li style="padding: 10px; border-bottom: 1px solid #eee;">
+                    <strong>{{ quiz.title }}</strong><br>
+                    <small style="color: #666;">Code: {{ quiz.code }} - Duration: {{ quiz.duration }}min</small>
+                </li>
+                {% empty %}
+                <li style="color: #999;">No quizzes yet</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <!-- Recent Violations -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="color: #417690; margin-top: 0;">⚠️ Recent Violations</h2>
+            <ul style="list-style: none; padding: 0;">
+                {% for violation in recent_violations %}
+                <li style="padding: 10px; border-bottom: 1px solid #eee;">
+                    <strong>{{ violation.violation_type }}</strong><br>
+                    <small style="color: #666;">Severity: {{ violation.severity }} - {{ violation.status }}</small>
+                </li>
+                {% empty %}
+                <li style="color: #999;">No violations yet</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
