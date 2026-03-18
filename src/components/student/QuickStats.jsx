@@ -1,88 +1,68 @@
 import { motion } from 'framer-motion'
 import { FiTrendingUp, FiAward, FiClock, FiTarget } from 'react-icons/fi'
+import { useTheme } from '../../contexts/ThemeContext'
 
 const QuickStats = () => {
+  const { darkMode } = useTheme()
+
   const stats = [
-    {
-      icon: FiAward,
-      label: 'Total Exams',
-      value: '12',
-      change: '+3 this month',
-      color: 'from-blue-500 to-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-      borderColor: 'border-blue-200 dark:border-blue-800'
-    },
-    {
-      icon: FiTrendingUp,
-      label: 'Average Score',
-      value: '87%',
-      change: '+5% improvement',
-      color: 'from-green-500 to-green-600',
-      bgColor: 'bg-green-50 dark:bg-green-900/20',
-      borderColor: 'border-green-200 dark:border-green-800'
-    },
-    {
-      icon: FiTarget,
-      label: 'Success Rate',
-      value: '92%',
-      change: 'Excellent',
-      color: 'from-purple-500 to-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-      borderColor: 'border-purple-200 dark:border-purple-800'
-    },
-    {
-      icon: FiClock,
-      label: 'Study Hours',
-      value: '24h',
-      change: 'This week',
-      color: 'from-orange-500 to-orange-600',
-      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-      borderColor: 'border-orange-200 dark:border-orange-800'
-    }
+    { icon: FiAward, label: 'Total Exams', value: '12', change: '+3 this month', color: '#3b82f6', darkBg: 'rgba(59,130,246,0.08)', darkBorder: 'rgba(59,130,246,0.2)' },
+    { icon: FiTrendingUp, label: 'Average Score', value: '87%', change: '+5% improvement', color: '#2ea043', darkBg: 'rgba(46,160,67,0.08)', darkBorder: 'rgba(46,160,67,0.2)' },
+    { icon: FiTarget, label: 'Success Rate', value: '92%', change: 'Excellent', color: '#a371f7', darkBg: 'rgba(163,113,247,0.08)', darkBorder: 'rgba(163,113,247,0.2)' },
+    { icon: FiClock, label: 'Study Hours', value: '24h', change: 'This week', color: '#f0883e', darkBg: 'rgba(240,136,62,0.08)', darkBorder: 'rgba(240,136,62,0.2)' },
   ]
+
+  const card = (stat, index) => {
+    const Icon = stat.icon
+    return (
+      <motion.div
+        key={stat.label}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.1 }}
+        style={darkMode ? {
+          padding: '16px', borderRadius: '12px',
+          backgroundColor: stat.darkBg,
+          border: `1px solid ${stat.darkBorder}`,
+          transition: 'all 0.2s',
+        } : {}}
+        className={darkMode ? '' : `relative p-4 rounded-2xl border transition-all duration-300 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 hover:shadow-lg hover:scale-[1.02]`}
+      >
+        <div className="flex items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={darkMode
+              ? { backgroundColor: stat.darkBg, border: `1px solid ${stat.darkBorder}` }
+              : { background: `linear-gradient(135deg, ${stat.color}, ${stat.color})` }
+            }
+          >
+            <Icon style={{ width: 22, height: 22, color: darkMode ? stat.color : 'white' }} />
+          </div>
+          <div className="flex-1">
+            <p style={{ fontSize: '13px', color: darkMode ? '#8b949e' : '#4b5563' }}>{stat.label}</p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span style={{ fontSize: '1.4rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>
+                {stat.value}
+              </span>
+              <span style={{ fontSize: '11px', color: darkMode ? '#8b949e' : '#6b7280' }}>
+                {stat.change}
+              </span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <div>
       <div className="mb-6">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Quick Stats</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Your performance overview</p>
+        <h3 className="text-xl font-bold" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>Quick Stats</h3>
+        <p style={{ fontSize: '13px', color: darkMode ? '#8b949e' : '#6b7280', marginTop: '4px' }}>Your performance overview</p>
       </div>
 
       <div className="space-y-4">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            className={`
-              relative p-4 rounded-2xl border transition-all duration-300
-              ${stat.bgColor} ${stat.borderColor}
-              hover:shadow-lg hover:scale-[1.02]
-            `}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`
-                w-12 h-12 rounded-xl flex items-center justify-center
-                bg-gradient-to-br ${stat.color}
-              `}>
-                <stat.icon className="w-6 h-6 text-white" />
-              </div>
-              
-              <div className="flex-1">
-                <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {stat.value}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {stat.change}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+        {stats.map((stat, index) => card(stat, index))}
       </div>
 
       {/* Motivational Message */}
@@ -90,15 +70,26 @@ const QuickStats = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mt-6 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-100 dark:border-blue-800"
+        style={darkMode ? {
+          marginTop: '20px', padding: '16px', borderRadius: '12px',
+          backgroundColor: 'rgba(46,160,67,0.06)',
+          border: '1px solid rgba(46,160,67,0.2)',
+        } : {}}
+        className={darkMode ? '' : 'mt-6 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-100 dark:border-blue-800'}
       >
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-lg">🎯</span>
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+            style={darkMode
+              ? { backgroundColor: 'rgba(46,160,67,0.1)', border: '1px solid rgba(46,160,67,0.3)' }
+              : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }
+            }
+          >
+            <span style={{ fontSize: '18px' }}>🎯</span>
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Keep it up!</h4>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <h4 style={{ fontSize: '13px', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>Keep it up!</h4>
+            <p style={{ fontSize: '12px', color: darkMode ? '#8b949e' : '#4b5563', marginTop: '4px' }}>
               You're performing great this month. Stay consistent to achieve your goals!
             </p>
           </div>

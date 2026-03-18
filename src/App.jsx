@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import PremiumLandingPage from './pages/PremiumLandingPage'
+import PremiumLandingPage from './pages/GithubLandingPage'
 import AuthPage from './pages/AuthPage'
 import StudentDashboard from './pages/StudentDashboard'
 import TeacherDashboardNew from './pages/TeacherDashboardNew'

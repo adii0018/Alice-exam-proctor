@@ -1,385 +1,227 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserGraduate, FaChalkboardTeacher, FaCheck, FaTimes } from 'react-icons/fa'
+
+const S = {
+  label: { display: 'block', color: '#8b949e', fontSize: '0.78rem', fontWeight: 600, marginBottom: 6, letterSpacing: 0.2 },
+  inputWrap: { position: 'relative' },
+  icon: { position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#484f58', pointerEvents: 'none', display: 'flex', alignItems: 'center' },
+  input: (err) => ({
+    width: '100%', background: '#0d1117', border: `1px solid ${err ? '#f85149' : '#30363d'}`,
+    borderRadius: 6, color: '#e6edf3', fontSize: '0.875rem', fontFamily: 'inherit',
+    padding: '9px 12px 9px 38px', outline: 'none', transition: 'border-color 0.15s, box-shadow 0.15s',
+  }),
+  errText: { color: '#f85149', fontSize: '0.75rem', marginTop: 5 },
+}
+
+function InputIcon({ children }) {
+  return <span style={S.icon}>{children}</span>
+}
+
+function pwStrength(pw) {
+  if (!pw) return 0
+  let s = 0
+  if (pw.length >= 8) s++
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++
+  if (/\d/.test(pw)) s++
+  if (/[^a-zA-Z\d]/.test(pw)) s++
+  return s
+}
+
+const PW_COLORS = ['#30363d', '#f85149', '#e3b341', '#2ea043', '#3fb950']
+const PW_LABELS = ['', 'Weak', 'Fair', 'Good', 'Strong']
 
 const RegisterForm = ({ onToggle }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'student'
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'student' })
+  const [showPw, setShowPw] = useState(false)
+  const [showCPw, setShowCPw] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const { register } = useAuth()
   const navigate = useNavigate()
 
-  const passwordStrength = (password) => {
-    if (!password) return { strength: 0, label: '', color: '' }
-    let strength = 0
-    if (password.length >= 8) strength++
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++
-    if (/\d/.test(password)) strength++
-    if (/[^a-zA-Z\d]/.test(password)) strength++
+  const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: '' })) }
 
-    const levels = [
-      { strength: 0, label: '', color: '' },
-      { strength: 1, label: 'Weak', color: 'bg-red-500' },
-      { strength: 2, label: 'Fair', color: 'bg-yellow-500' },
-      { strength: 3, label: 'Good', color: 'bg-blue-500' },
-      { strength: 4, label: 'Strong', color: 'bg-green-500' }
-    ]
-    return levels[strength]
-  }
-
-  const validateForm = () => {
-    const newErrors = {}
-    if (!formData.name.trim()) {
-      newErrors.name = 'Full name is required'
-    }
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
-    }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
-    }
-    if (!acceptTerms) {
-      newErrors.terms = 'You must accept the terms and conditions'
-    }
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
-    setErrors({ ...errors, [name]: '' })
+  const validate = () => {
+    const e = {}
+    if (!form.name.trim()) e.name = 'Full name is required'
+    if (!form.email) e.email = 'Email is required'
+    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email address'
+    if (!form.password) e.password = 'Password is required'
+    else if (form.password.length < 6) e.password = 'Minimum 6 characters'
+    if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match'
+    if (!acceptTerms) e.terms = 'You must accept the terms'
+    setErrors(e)
+    return !Object.keys(e).length
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validateForm()) return
-
+    if (!validate()) return
     setLoading(true)
     try {
-      const { confirmPassword, ...registerData } = formData
-      const user = await register(registerData)
-      toast.success('Registration successful!')
+      const { confirmPassword, ...data } = form
+      const user = await register(data)
+      toast.success('Account created successfully')
       navigate(user.role === 'student' ? '/student' : '/teacher')
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Registration failed')
-      setErrors({ submit: error.response?.data?.message || 'Registration failed' })
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Registration failed'
+      toast.error(msg)
+      setErrors({ submit: msg })
     } finally {
       setLoading(false)
     }
   }
 
-  const strength = passwordStrength(formData.password)
+  const focusStyle = (e) => { e.target.style.borderColor = '#2ea043'; e.target.style.boxShadow = '0 0 0 3px rgba(46,160,67,0.15)' }
+  const blurStyle = (e, err) => { e.target.style.borderColor = err ? '#f85149' : '#30363d'; e.target.style.boxShadow = 'none' }
+
+  const strength = pwStrength(form.password)
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Full Name */}
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+
+      {/* Full name */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Full name
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <FaUser className="text-gray-400" />
-          </div>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={`w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-900 border ${
-              errors.name 
-                ? 'border-red-300 dark:border-red-700 focus:ring-red-500' 
-                : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
-            } rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-400`}
-            placeholder="John Doe"
-          />
+        <label style={S.label}>Full name</label>
+        <div style={S.inputWrap}>
+          <InputIcon><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></InputIcon>
+          <input type="text" value={form.name} placeholder="Your full name" style={S.input(errors.name)}
+            onChange={e => set('name', e.target.value)} onFocus={focusStyle} onBlur={e => blurStyle(e, errors.name)} />
         </div>
-        {errors.name && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1 text-sm text-red-600 dark:text-red-400"
-          >
-            {errors.name}
-          </motion.p>
-        )}
+        {errors.name && <p style={S.errText}>{errors.name}</p>}
       </div>
 
       {/* Email */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Email address
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <FaEnvelope className="text-gray-400" />
-          </div>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={`w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-900 border ${
-              errors.email 
-                ? 'border-red-300 dark:border-red-700 focus:ring-red-500' 
-                : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
-            } rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-400`}
-            placeholder="you@example.com"
-          />
+        <label style={S.label}>Email address</label>
+        <div style={S.inputWrap}>
+          <InputIcon><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></InputIcon>
+          <input type="email" value={form.email} placeholder="you@example.com" style={S.input(errors.email)}
+            onChange={e => set('email', e.target.value)} onFocus={focusStyle} onBlur={e => blurStyle(e, errors.email)} />
         </div>
-        {errors.email && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1 text-sm text-red-600 dark:text-red-400"
-          >
-            {errors.email}
-          </motion.p>
-        )}
+        {errors.email && <p style={S.errText}>{errors.email}</p>}
       </div>
 
       {/* Password */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Password
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <FaLock className="text-gray-400" />
-          </div>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className={`w-full pl-12 pr-12 py-3 bg-white dark:bg-gray-900 border ${
-              errors.password 
-                ? 'border-red-300 dark:border-red-700 focus:ring-red-500' 
-                : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
-            } rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-400`}
-            placeholder="••••••••"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          >
-            {showPassword ? <FaEyeSlash /> : <FaEye />}
+        <label style={S.label}>Password</label>
+        <div style={S.inputWrap}>
+          <InputIcon><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></InputIcon>
+          <input type={showPw ? 'text' : 'password'} value={form.password} placeholder="••••••••"
+            style={{ ...S.input(errors.password), paddingRight: 38 }}
+            onChange={e => set('password', e.target.value)} onFocus={focusStyle} onBlur={e => blurStyle(e, errors.password)} />
+          <button type="button" onClick={() => setShowPw(v => !v)}
+            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#484f58', cursor: 'pointer', display: 'flex', padding: 2 }}>
+            {showPw
+              ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            }
           </button>
         </div>
-        {errors.password && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1 text-sm text-red-600 dark:text-red-400"
-          >
-            {errors.password}
-          </motion.p>
-        )}
-        {/* Password Strength Indicator */}
-        {formData.password && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-2"
-          >
-            <div className="flex gap-1 mb-1">
-              {[1, 2, 3, 4].map((level) => (
-                <div
-                  key={level}
-                  className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                    level <= strength.strength ? strength.color : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                />
+        {errors.password && <p style={S.errText}>{errors.password}</p>}
+        {/* Strength bar */}
+        {form.password && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
+              {[1,2,3,4].map(l => (
+                <div key={l} style={{ flex: 1, height: 3, borderRadius: 2, background: l <= strength ? PW_COLORS[strength] : '#21262d', transition: 'background 0.2s' }} />
               ))}
             </div>
-            {strength.label && (
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Password strength: <span className="font-semibold">{strength.label}</span>
-              </p>
-            )}
-          </motion.div>
+            <span style={{ color: PW_COLORS[strength], fontSize: '0.72rem', fontWeight: 600 }}>{PW_LABELS[strength]}</span>
+          </div>
         )}
       </div>
 
-      {/* Confirm Password */}
+      {/* Confirm password */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Confirm password
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <FaLock className="text-gray-400" />
-          </div>
-          <input
-            type={showConfirmPassword ? 'text' : 'password'}
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className={`w-full pl-12 pr-12 py-3 bg-white dark:bg-gray-900 border ${
-              errors.confirmPassword 
-                ? 'border-red-300 dark:border-red-700 focus:ring-red-500' 
-                : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
-            } rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-400`}
-            placeholder="••••••••"
-          />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          >
-            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+        <label style={S.label}>Confirm password</label>
+        <div style={S.inputWrap}>
+          <InputIcon><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></InputIcon>
+          <input type={showCPw ? 'text' : 'password'} value={form.confirmPassword} placeholder="••••••••"
+            style={{ ...S.input(errors.confirmPassword), paddingRight: 38 }}
+            onChange={e => set('confirmPassword', e.target.value)} onFocus={focusStyle} onBlur={e => blurStyle(e, errors.confirmPassword)} />
+          <button type="button" onClick={() => setShowCPw(v => !v)}
+            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#484f58', cursor: 'pointer', display: 'flex', padding: 2 }}>
+            {showCPw
+              ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            }
           </button>
-          {formData.confirmPassword && (
-            <div className="absolute inset-y-0 right-12 flex items-center pr-2">
-              {formData.password === formData.confirmPassword ? (
-                <FaCheck className="text-green-500" />
-              ) : (
-                <FaTimes className="text-red-500" />
-              )}
-            </div>
+          {/* match indicator */}
+          {form.confirmPassword && (
+            <span style={{ position: 'absolute', right: 36, top: '50%', transform: 'translateY(-50%)' }}>
+              {form.password === form.confirmPassword
+                ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3fb950" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f85149" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              }
+            </span>
           )}
         </div>
-        {errors.confirmPassword && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1 text-sm text-red-600 dark:text-red-400"
-          >
-            {errors.confirmPassword}
-          </motion.p>
-        )}
+        {errors.confirmPassword && <p style={S.errText}>{errors.confirmPassword}</p>}
       </div>
 
-      {/* Role Selector */}
+      {/* Role selector */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-          I am a
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => setFormData({ ...formData, role: 'student' })}
-            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
-              formData.role === 'student'
-                ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:border-blue-300'
-            }`}
-          >
-            <FaUserGraduate className="text-xl" />
-            <span className="font-medium">Student</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setFormData({ ...formData, role: 'teacher' })}
-            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
-              formData.role === 'teacher'
-                ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
-                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:border-purple-300'
-            }`}
-          >
-            <FaChalkboardTeacher className="text-xl" />
-            <span className="font-medium">Teacher</span>
-          </button>
+        <label style={S.label}>I am a</label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {[
+            { val: 'student', label: 'Student', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> },
+            { val: 'teacher', label: 'Teacher', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
+          ].map(r => {
+            const active = form.role === r.val
+            return (
+              <button key={r.val} type="button" onClick={() => set('role', r.val)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '9px', borderRadius: 6, border: `1px solid ${active ? '#2ea043' : '#30363d'}`, background: active ? 'rgba(46,160,67,0.1)' : '#0d1117', color: active ? '#3fb950' : '#8b949e', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+                {r.icon} {r.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* Terms & Conditions */}
+      {/* Terms */}
       <div>
-        <label className="flex items-start gap-3 cursor-pointer group">
-          <input
-            type="checkbox"
-            checked={acceptTerms}
-            onChange={(e) => {
-              setAcceptTerms(e.target.checked)
-              setErrors({ ...errors, terms: '' })
-            }}
-            className="w-5 h-5 mt-0.5 text-blue-600 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 transition-all"
-          />
-          <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+          <input type="checkbox" checked={acceptTerms} onChange={e => { setAcceptTerms(e.target.checked); setErrors(p => ({ ...p, terms: '' })) }}
+            style={{ width: 14, height: 14, marginTop: 2, accentColor: '#2ea043', cursor: 'pointer', flexShrink: 0 }} />
+          <span style={{ color: '#8b949e', fontSize: '0.8rem', lineHeight: 1.5 }}>
             I agree to the{' '}
-            <button type="button" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
-              Terms of Service
-            </button>
+            <button type="button" style={{ background: 'none', border: 'none', color: '#2ea043', fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Terms of Service</button>
             {' '}and{' '}
-            <button type="button" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
-              Privacy Policy
-            </button>
+            <button type="button" style={{ background: 'none', border: 'none', color: '#2ea043', fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Privacy Policy</button>
           </span>
         </label>
-        {errors.terms && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1 text-sm text-red-600 dark:text-red-400"
-          >
-            {errors.terms}
-          </motion.p>
-        )}
+        {errors.terms && <p style={S.errText}>{errors.terms}</p>}
       </div>
 
-      {/* Submit Error */}
+      {/* Submit error */}
       {errors.submit && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
-        >
-          <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
-        </motion.div>
+        <div style={{ padding: '10px 14px', background: 'rgba(248,81,73,0.08)', border: '1px solid rgba(248,81,73,0.3)', borderRadius: 6, color: '#f85149', fontSize: '0.82rem' }}>
+          {errors.submit}
+        </div>
       )}
 
-      {/* Create Account Button */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+      {/* Create account button */}
+      <button type="submit" disabled={loading}
+        style={{ width: '100%', padding: '10px', background: '#2ea043', border: '1px solid rgba(240,246,252,0.1)', borderRadius: 6, color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.8 : 1 }}
+        onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#3fb950' }}
+        onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#2ea043' }}
       >
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-            Creating account...
-          </span>
-        ) : (
-          'Create Account'
-        )}
+        {loading && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 0.8s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>}
+        {loading ? 'Creating account...' : 'Create account'}
       </button>
 
-      {/* Toggle to Login */}
-      <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Already have an account?{' '}
-          <button
-            type="button"
-            onClick={onToggle}
-            className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-          >
-            Sign in
-          </button>
-        </p>
+      {/* Toggle */}
+      <div style={{ textAlign: 'center', paddingTop: 14, borderTop: '1px solid #21262d' }}>
+        <span style={{ color: '#8b949e', fontSize: '0.82rem' }}>Already have an account? </span>
+        <button type="button" onClick={onToggle}
+          style={{ background: 'none', border: 'none', color: '#2ea043', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+          Sign in
+        </button>
       </div>
     </form>
   )

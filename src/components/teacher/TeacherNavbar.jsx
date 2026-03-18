@@ -1,4 +1,4 @@
-import { Search, Bell, Moon, Sun, ChevronDown, X } from 'lucide-react';
+import { Search, Bell, Moon, Sun, ChevronDown, X, LogOut, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,163 +11,220 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
   const { user, logout } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearchResults, setShowSearchResults] = useState(false);
   const menuRef = useRef(null);
   const searchRef = useRef(null);
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowProfileMenu(false);
-      }
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowSearchResults(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(event.target)) setShowProfileMenu(false);
+      if (searchRef.current && !searchRef.current.contains(event.target)) {}
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/auth');
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setShowSearchResults(true);
-      if (onSearch) {
-        onSearch(searchQuery);
-      }
-    }
-  };
+  const handleLogout = () => { logout(); navigate('/auth'); };
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
-    if (value.trim()) {
-      setShowSearchResults(true);
-      if (onSearch) {
-        onSearch(value);
-      }
-    } else {
-      setShowSearchResults(false);
-    }
+    if (onSearch) onSearch(value);
   };
 
   const clearSearch = () => {
     setSearchQuery('');
-    setShowSearchResults(false);
-    if (onSearch) {
-      onSearch('');
-    }
+    if (onSearch) onSearch('');
   };
 
+  const gh = {
+    navBg: darkMode ? 'rgba(13,17,23,0.9)' : 'rgba(255,255,255,0.85)',
+    navBorder: darkMode ? '#21262d' : 'rgba(229,231,235,0.8)',
+    titleColor: darkMode ? '#e6edf3' : '#111827',
+    subColor: darkMode ? '#8b949e' : '#6b7280',
+    iconColor: darkMode ? '#8b949e' : '#4b5563',
+    hoverBg: darkMode ? '#21262d' : '#f3f4f6',
+    inputBg: darkMode ? '#161b22' : '#f9fafb',
+    inputBorder: darkMode ? '#30363d' : '#e5e7eb',
+    inputText: darkMode ? '#e6edf3' : '#111827',
+    inputPlaceholder: darkMode ? '#6e7681' : '#9ca3af',
+    dropdownBg: darkMode ? '#161b22' : '#ffffff',
+    dropdownBorder: darkMode ? '#30363d' : 'rgba(229,231,235,0.8)',
+    itemHover: darkMode ? '#21262d' : '#f9fafb',
+    itemText: darkMode ? '#e6edf3' : '#111827',
+    divider: darkMode ? '#21262d' : '#f3f4f6',
+    avatarBg: darkMode ? '#21262d' : undefined,
+    avatarBorder: darkMode ? '#30363d' : undefined,
+    avatarColor: darkMode ? '#3fb950' : 'white',
+  }
+
   return (
-    <header 
-      className="fixed top-0 right-0 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 z-30 transition-all"
-      style={{ left: sidebarCollapsed ? 80 : 280 }}
+    <header
+      style={{
+        position: 'fixed', top: 0, right: 0,
+        left: sidebarCollapsed ? 80 : 280,
+        height: 64,
+        backgroundColor: gh.navBg,
+        borderBottom: `1px solid ${gh.navBorder}`,
+        backdropFilter: 'blur(16px)',
+        zIndex: 30,
+        transition: 'all 0.3s',
+      }}
     >
-      <div className="h-full px-6 flex items-center justify-between">
+      <div style={{ height: '100%', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* Title */}
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h1>
+        <h1 style={{ fontSize: '18px', fontWeight: 600, color: gh.titleColor }}>{title}</h1>
 
         {/* Actions */}
-        <div className="flex items-center gap-4">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Search */}
-          <div className="relative hidden md:block" ref={searchRef}>
-            <form onSubmit={handleSearch}>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Search exams, students..."
-                className="pl-10 pr-10 py-2 w-64 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                >
-                  <X className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                </button>
-              )}
-            </form>
+          <div className="hidden md:block" ref={searchRef} style={{ position: 'relative' }}>
+            <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: gh.inputPlaceholder, pointerEvents: 'none' }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search exams, students..."
+              style={{
+                paddingLeft: 32, paddingRight: searchQuery ? 32 : 12,
+                paddingTop: 7, paddingBottom: 7,
+                width: 240,
+                backgroundColor: gh.inputBg,
+                border: `1px solid ${gh.inputBorder}`,
+                borderRadius: 8,
+                fontSize: 13,
+                color: gh.inputText,
+                outline: 'none',
+                transition: 'all 0.2s',
+              }}
+              onFocus={e => { e.target.style.borderColor = darkMode ? '#3fb950' : '#3b82f6'; e.target.style.boxShadow = darkMode ? '0 0 0 3px rgba(46,160,67,0.1)' : '0 0 0 3px rgba(59,130,246,0.1)' }}
+              onBlur={e => { e.target.style.borderColor = gh.inputBorder; e.target.style.boxShadow = 'none' }}
+            />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                style={{
+                  position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: gh.inputPlaceholder,
+                  padding: 2, borderRadius: 4,
+                }}
+              >
+                <X style={{ width: 12, height: 12 }} />
+              </button>
+            )}
           </div>
 
           {/* Notifications */}
-          <button 
+          <button
             onClick={() => navigate('/teacher/violations')}
-            className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            title="View notifications"
+            style={{
+              position: 'relative', padding: 8, borderRadius: 8,
+              background: 'none', border: 'none', cursor: 'pointer', color: gh.iconColor,
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            <Bell style={{ width: 18, height: 18 }} />
+            <span style={{
+              position: 'absolute', top: 8, right: 8,
+              width: 7, height: 7, backgroundColor: '#f85149',
+              borderRadius: '50%',
+            }} />
           </button>
 
-          {/* Theme Toggle */}
+          {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            style={{
+              padding: 8, borderRadius: 8,
+              background: 'none', border: 'none', cursor: 'pointer', color: gh.iconColor,
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            {darkMode ? (
-              <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            ) : (
-              <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            )}
+            {darkMode ? <Sun style={{ width: 18, height: 18 }} /> : <Moon style={{ width: 18, height: 18 }} />}
           </button>
 
           {/* Profile */}
-          <div className="relative" ref={menuRef}>
+          <div style={{ position: 'relative' }} ref={menuRef}>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="flex items-center gap-3 pl-3 pr-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '6px 10px', borderRadius: 8,
+                background: 'none', border: 'none', cursor: 'pointer',
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user?.username?.[0]?.toUpperCase() || 'T'}
-                </span>
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 600, fontSize: 13,
+                ...(darkMode
+                  ? { backgroundColor: gh.avatarBg, border: `1px solid ${gh.avatarBorder}`, color: gh.avatarColor }
+                  : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)', color: 'white' }
+                )
+              }}>
+                {user?.username?.[0]?.toUpperCase() || 'T'}
               </div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200 hidden lg:block">
+              <span className="hidden lg:block" style={{ fontSize: 13, fontWeight: 500, color: gh.titleColor }}>
                 {user?.username || 'Teacher'}
               </span>
-              <ChevronDown className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
+              <ChevronDown style={{ width: 14, height: 14, color: gh.iconColor, transform: showProfileMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </button>
 
             <AnimatePresence>
               {showProfileMenu && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
+                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                  style={{
+                    position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                    width: 200,
+                    backgroundColor: gh.dropdownBg,
+                    border: `1px solid ${gh.dropdownBorder}`,
+                    borderRadius: 12,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                    overflow: 'hidden',
+                    zIndex: 50,
+                  }}
                 >
-                  <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.username || 'Teacher'}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'teacher@example.com'}</p>
+                  <div style={{ padding: '12px 16px', borderBottom: `1px solid ${gh.divider}` }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: gh.itemText }}>{user?.username || 'Teacher'}</p>
+                    <p style={{ fontSize: 11, color: gh.subColor, marginTop: 2 }}>{user?.email || 'teacher@example.com'}</p>
                   </div>
-                  <button 
-                    onClick={() => {
-                      navigate('/teacher/settings');
-                      setShowProfileMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Settings
-                  </button>
-                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
-                  <button
-                    onClick={handleLogout}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                  >
-                    Logout
-                  </button>
+                  <div style={{ padding: 6 }}>
+                    <button
+                      onClick={() => { navigate('/teacher/settings'); setShowProfileMenu(false); }}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '9px 12px', borderRadius: 8,
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        fontSize: 13, color: gh.itemText, textAlign: 'left',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.itemHover}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <Settings style={{ width: 14, height: 14, color: gh.iconColor }} />
+                      Settings
+                    </button>
+                    <div style={{ margin: '4px 0', borderTop: `1px solid ${gh.divider}` }} />
+                    <button
+                      onClick={handleLogout}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '9px 12px', borderRadius: 8,
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        fontSize: 13, color: '#f85149', textAlign: 'left',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = darkMode ? 'rgba(248,81,73,0.08)' : '#fef2f2'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <LogOut style={{ width: 14, height: 14 }} />
+                      Logout
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

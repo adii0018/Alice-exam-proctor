@@ -6,6 +6,7 @@ import LiveMonitorCard from '../../components/teacher/LiveMonitorCard';
 import TeacherLayout from '../../components/teacher/TeacherLayout';
 import { ViolationAlertContainer } from '../../components/teacher/ViolationAlert';
 import useWebSocket from '../../hooks/useWebSocket';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function LiveMonitoring() {
   const [quizzes, setQuizzes] = useState([]);
@@ -139,32 +140,25 @@ export default function LiveMonitoring() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+        <div style={{ width: 48, height: 48, border: '3px solid #2ea043', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
       </div>
     );
   }
 
+  const { darkMode } = useTheme();
+
   return (
     <TeacherLayout title="Live Monitoring">
-      {/* Real-time Violation Alerts */}
-      <ViolationAlertContainer 
-        violations={realtimeViolations}
-        onDismiss={handleDismissViolation}
-      />
-      
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="space-y-6"
-      >
+      <ViolationAlertContainer violations={realtimeViolations} onDismiss={handleDismissViolation} />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Live Monitoring</h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>Live Monitoring</h2>
+        <p style={{ color: darkMode ? '#8b949e' : '#6b7280', marginTop: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
           Monitor active exams in real-time
           {isConnected && (
-            <span className="ml-2 inline-flex items-center gap-1 text-green-600">
-              <span className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#3fb950', fontSize: '0.85rem' }}>
+              <span style={{ width: 8, height: 8, background: '#3fb950', borderRadius: '50%', display: 'inline-block', animation: 'pulse 2s infinite' }} />
               Connected
             </span>
           )}
@@ -172,12 +166,10 @@ export default function LiveMonitoring() {
       </div>
 
       {liveExams.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">📊</span>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Active Exams</h3>
-          <p className="text-gray-600 dark:text-gray-400">There are no exams running at the moment</p>
+        <div style={{ background: darkMode ? '#161b22' : '#fff', border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`, borderRadius: 12, padding: '48px 24px', textAlign: 'center' }}>
+          <div style={{ width: 64, height: 64, background: darkMode ? '#21262d' : '#f3f4f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>📊</div>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827', marginBottom: 8 }}>No Active Exams</h3>
+          <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>There are no exams running at the moment</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

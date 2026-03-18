@@ -1,21 +1,44 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiHome, 
-  FiFileText, 
-  FiLogIn, 
-  FiAlertTriangle, 
-  FiUser, 
-  FiSettings,
-  FiChevronLeft,
-  FiChevronRight
+import {
+  FiHome, FiFileText, FiLogIn, FiAlertTriangle, FiUser, FiSettings,
+  FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
-import { FaLeaf } from 'react-icons/fa'
 import { Link, useLocation } from 'react-router-dom'
+import { useTheme } from '../../contexts/ThemeContext'
+
+// Alice logo — same as landing page
+const AliceLogo = ({ size = 36, dark }) => (
+  dark ? (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <rect width="100" height="100" rx="22" fill="#161b22"/>
+      <rect width="100" height="100" rx="22" fill="none" stroke="#30363d" strokeWidth="2"/>
+      <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="#3fb950" opacity="0.95"/>
+      <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="#2ea043" opacity="0.7"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#0d1117" strokeWidth="1.8" strokeLinecap="round" opacity="0.35"/>
+      <path d="M50 82 Q48 89 44 93" fill="none" stroke="#2ea043" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  ) : (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <rect width="100" height="100" rx="22" fill="url(#lgSide)"/>
+      <defs>
+        <linearGradient id="lgSide" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#3b82f6"/>
+          <stop offset="100%" stopColor="#9333ea"/>
+        </linearGradient>
+      </defs>
+      <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.95"/>
+      <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.65"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#6366f1" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
+      <path d="M50 82 Q48 89 44 93" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  )
+)
 
 const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
   const location = useLocation()
-  
+  const { darkMode } = useTheme()
+
   const navItems = [
     { icon: FiHome, label: 'Dashboard', path: '/student', badge: null },
     { icon: FiFileText, label: 'My Exams', path: '/student/exams', badge: null },
@@ -27,15 +50,47 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
 
   const isActive = (path) => location.pathname === path
 
+  // GitHub dark theme colors
+  const gh = {
+    bg: darkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.8)',
+    border: darkMode ? '#21262d' : 'rgba(229,231,235,0.5)',
+    text: darkMode ? '#e6edf3' : '#374151',
+    subText: darkMode ? '#8b949e' : '#6b7280',
+    hoverBg: darkMode ? '#21262d' : '#f9fafb',
+    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(59,130,246,0.05)',
+    activeText: darkMode ? '#3fb950' : '#2563eb',
+    activeBar: darkMode ? '#2ea043' : '#2563eb',
+    iconColor: darkMode ? '#8b949e' : '#6b7280',
+    bottomBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #eff6ff, #f5f3ff)',
+    bottomBorder: darkMode ? '#30363d' : '#dbeafe',
+    avatarBg: darkMode ? '#21262d' : undefined,
+    avatarBorder: darkMode ? '#30363d' : undefined,
+    chevronColor: darkMode ? '#8b949e' : '#6b7280',
+    logoBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #3b82f6, #9333ea)',
+    logoBorder: darkMode ? '#30363d' : 'none',
+  }
+
   return (
     <motion.aside
       initial={false}
       animate={{ width: isCollapsed ? '80px' : '280px' }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 top-0 h-screen bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 z-40 flex flex-col"
+      style={{
+        position: 'fixed', left: 0, top: 0,
+        height: '100vh',
+        backgroundColor: gh.bg,
+        borderRight: `1px solid ${gh.border}`,
+        backdropFilter: 'blur(16px)',
+        zIndex: 40,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       {/* Logo Section */}
-      <div className="h-20 flex items-center justify-between px-6 border-b border-gray-200/50 dark:border-gray-700/50">
+      <div
+        className="h-20 flex items-center justify-between px-6"
+        style={{ borderBottom: `1px solid ${gh.border}` }}
+      >
         <AnimatePresence mode="wait">
           {!isCollapsed && (
             <motion.div
@@ -45,28 +100,42 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
               transition={{ duration: 0.2 }}
               className="flex items-center gap-3"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-                <FaLeaf className="text-white text-xl" />
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+                style={{
+                  background: darkMode ? 'transparent' : 'linear-gradient(135deg, #3b82f6, #9333ea)',
+                  border: darkMode ? 'none' : 'none',
+                }}
+              >
+                <AliceLogo size={40} dark={darkMode} />
               </div>
               <div>
-                <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1
+                  className="text-lg font-bold"
+                  style={darkMode
+                    ? { color: '#e6edf3' }
+                    : { background: 'linear-gradient(to right, #2563eb, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                  }
+                >
                   Alice
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Exam Proctor</p>
+                <p style={{ fontSize: '11px', color: gh.subText }}>Exam Proctor</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="p-2 rounded-lg transition-colors"
+          style={{ color: gh.chevronColor }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
         >
-          {isCollapsed ? (
-            <FiChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          ) : (
-            <FiChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          )}
+          {isCollapsed
+            ? <FiChevronRight className="w-5 h-5" />
+            : <FiChevronLeft className="w-5 h-5" />
+          }
         </button>
       </div>
 
@@ -75,42 +144,39 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
         {navItems.map((item, index) => {
           const Icon = item.icon
           const active = isActive(item.path)
-          
+
           return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className="block"
-            >
+            <Link key={item.path} to={item.path} className="block">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`
-                  relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                  ${active 
-                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 text-blue-600 dark:text-blue-400' 
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }
-                `}
+                className="relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer"
+                style={{
+                  backgroundColor: active ? gh.activeBg : 'transparent',
+                  color: active ? gh.activeText : gh.text,
+                }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.backgroundColor = gh.hoverBg }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.backgroundColor = 'transparent' }}
               >
                 {active && (
                   <motion.div
                     layoutId="activeIndicator"
-                    className="absolute left-0 w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-r-full"
+                    className="absolute left-0 w-1 h-8 rounded-r-full"
+                    style={{ backgroundColor: gh.activeBar }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
-                
-                <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
-                
+
+                <Icon className="w-5 h-5 flex-shrink-0" style={{ color: active ? gh.activeText : gh.iconColor }} />
+
                 <AnimatePresence mode="wait">
                   {!isCollapsed && (
                     <motion.span
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className={`font-medium ${active ? 'text-blue-600 dark:text-blue-400' : ''}`}
+                      className="font-medium"
                     >
                       {item.label}
                     </motion.span>
@@ -118,7 +184,13 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                 </AnimatePresence>
 
                 {item.badge && !isCollapsed && (
-                  <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                  <span
+                    className="ml-auto px-2 py-0.5 text-xs font-medium rounded-full"
+                    style={darkMode
+                      ? { backgroundColor: 'rgba(46,160,67,0.15)', color: '#3fb950', border: '1px solid rgba(46,160,67,0.3)' }
+                      : { backgroundColor: '#dcfce7', color: '#15803d' }
+                    }
+                  >
                     {item.badge}
                   </span>
                 )}
@@ -129,12 +201,21 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
       </nav>
 
       {/* Bottom Section */}
-      <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50">
-        <div className={`
-          p-3 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30
-          ${isCollapsed ? 'flex justify-center' : ''}
-        `}>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+      <div className="p-4" style={{ borderTop: `1px solid ${gh.border}` }}>
+        <div
+          className={`p-3 rounded-xl ${isCollapsed ? 'flex justify-center' : 'flex items-center gap-3'}`}
+          style={darkMode
+            ? { backgroundColor: '#161b22', border: `1px solid ${gh.bottomBorder}` }
+            : { background: 'linear-gradient(135deg, #eff6ff, #f5f3ff)', border: '1px solid #dbeafe' }
+          }
+        >
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center font-semibold flex-shrink-0"
+            style={darkMode
+              ? { backgroundColor: '#21262d', border: `1px solid #30363d`, color: '#3fb950' }
+              : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)', color: 'white' }
+            }
+          >
             S
           </div>
           <AnimatePresence mode="wait">
@@ -143,10 +224,9 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="ml-3"
               >
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Student</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">View Profile</p>
+                <p className="text-sm font-medium" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>Student</p>
+                <p style={{ fontSize: '11px', color: gh.subText }}>View Profile</p>
               </motion.div>
             )}
           </AnimatePresence>

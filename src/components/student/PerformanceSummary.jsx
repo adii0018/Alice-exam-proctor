@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
 import { FiTrendingUp, FiAward, FiTarget, FiClock } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
+import { useTheme } from '../../contexts/ThemeContext'
 
 const PerformanceSummary = () => {
+  const { darkMode } = useTheme()
   const [hoveredCard, setHoveredCard] = useState(null)
   const [animatedValues, setAnimatedValues] = useState({
     exams: 0,
@@ -21,7 +23,10 @@ const PerformanceSummary = () => {
       change: '+3 this month',
       color: 'blue',
       gradient: 'from-blue-500 to-blue-600',
-      shadowColor: 'shadow-blue-500/50'
+      shadowColor: 'shadow-blue-500/50',
+      darkColor: '#388bfd',
+      darkBg: 'rgba(56,139,253,0.08)',
+      darkBorder: 'rgba(56,139,253,0.2)',
     },
     {
       icon: FiAward,
@@ -32,7 +37,10 @@ const PerformanceSummary = () => {
       change: '+5% from last month',
       color: 'purple',
       gradient: 'from-purple-500 to-purple-600',
-      shadowColor: 'shadow-purple-500/50'
+      shadowColor: 'shadow-purple-500/50',
+      darkColor: '#a371f7',
+      darkBg: 'rgba(163,113,247,0.08)',
+      darkBorder: 'rgba(163,113,247,0.2)',
     },
     {
       icon: FiTrendingUp,
@@ -43,7 +51,10 @@ const PerformanceSummary = () => {
       change: '+2% improvement',
       color: 'green',
       gradient: 'from-green-500 to-green-600',
-      shadowColor: 'shadow-green-500/50'
+      shadowColor: 'shadow-green-500/50',
+      darkColor: '#3fb950',
+      darkBg: 'rgba(46,160,67,0.08)',
+      darkBorder: 'rgba(46,160,67,0.2)',
     },
     {
       icon: FiClock,
@@ -54,7 +65,10 @@ const PerformanceSummary = () => {
       change: 'Last 30 days',
       color: 'orange',
       gradient: 'from-orange-500 to-orange-600',
-      shadowColor: 'shadow-orange-500/50'
+      shadowColor: 'shadow-orange-500/50',
+      darkColor: '#f0883e',
+      darkBg: 'rgba(240,136,62,0.08)',
+      darkBorder: 'rgba(240,136,62,0.2)',
     }
   ]
 
@@ -90,340 +104,214 @@ const PerformanceSummary = () => {
         className="flex items-center justify-between mb-6"
       >
         <div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>
             Performance Summary
-            <motion.span
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className="inline-block"
-            >
-              ✨
-            </motion.span>
+            <motion.span animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="inline-block">✨</motion.span>
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Your academic progress</p>
+          <p className="text-sm mt-1" style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>Your academic progress</p>
         </div>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon
-          const displayValue = stat.animatedKey === 'exams' 
+          const displayValue = stat.animatedKey === 'exams'
             ? animatedValues[stat.animatedKey]
             : stat.animatedKey === 'time'
             ? `${animatedValues[stat.animatedKey]}h`
             : `${animatedValues[stat.animatedKey]}%`
-          
+
           return (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, scale: 0.8, rotateY: -180 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ 
-                delay: index * 0.15,
-                type: "spring",
-                stiffness: 100,
-                damping: 15
-              }}
-              whileHover={{ 
-                scale: 1.05,
-                rotateY: 5,
-                rotateX: 5,
-                z: 50,
-                transition: { duration: 0.3 }
-              }}
+              transition={{ delay: index * 0.15, type: "spring", stiffness: 100, damping: 15 }}
+              whileHover={{ scale: 1.05, rotateY: 5, rotateX: 5, z: 50, transition: { duration: 0.3 } }}
               onHoverStart={() => setHoveredCard(index)}
               onHoverEnd={() => setHoveredCard(null)}
               className="relative group cursor-pointer"
-              style={{
-                transformStyle: 'preserve-3d',
-                perspective: '1000px'
-              }}
+              style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
             >
-              {/* 3D Card Container */}
-              <div className={`
-                relative p-6 rounded-2xl overflow-hidden
-                bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900
-                border border-gray-200 dark:border-gray-700
-                transition-all duration-500
-                ${hoveredCard === index ? `shadow-2xl ${stat.shadowColor}` : 'shadow-lg'}
-              `}
-              style={{
-                transform: hoveredCard === index ? 'translateZ(20px)' : 'translateZ(0px)',
-                transformStyle: 'preserve-3d'
-              }}
+              <div
+                style={darkMode ? {
+                  position: 'relative', padding: '24px', borderRadius: '12px', overflow: 'hidden',
+                  backgroundColor: hoveredCard === index ? '#1c2128' : '#161b22',
+                  border: `1px solid ${hoveredCard === index ? stat.darkBorder : '#30363d'}`,
+                  transition: 'all 0.3s',
+                  transform: hoveredCard === index ? 'translateZ(20px)' : 'translateZ(0px)',
+                  transformStyle: 'preserve-3d',
+                  boxShadow: hoveredCard === index ? `0 8px 32px ${stat.darkBg}` : 'none',
+                } : {}}
+                className={darkMode ? '' : `relative p-6 rounded-2xl overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 transition-all duration-500 ${hoveredCard === index ? `shadow-2xl ${stat.shadowColor}` : 'shadow-lg'}`}
               >
-                {/* Animated Background Gradient */}
-                <motion.div
-                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0`}
-                  animate={{
-                    opacity: hoveredCard === index ? 0.1 : 0,
-                  }}
-                  transition={{ duration: 0.3 }}
-                />
-
-                {/* Floating Particles */}
-                {hoveredCard === index && (
-                  <>
-                    {[...Array(5)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className={`absolute w-1 h-1 rounded-full bg-gradient-to-r ${stat.gradient}`}
-                        initial={{ 
-                          x: Math.random() * 100 + '%',
-                          y: '100%',
-                          opacity: 0 
-                        }}
-                        animate={{ 
-                          y: '-100%',
-                          opacity: [0, 1, 0],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          delay: i * 0.2,
-                          ease: "easeOut"
-                        }}
-                      />
-                    ))}
-                  </>
+                {/* Background tint on hover */}
+                {darkMode && hoveredCard === index && (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    backgroundColor: stat.darkBg,
+                    pointerEvents: 'none',
+                  }} />
                 )}
-
-                {/* Icon with 3D effect */}
-                <motion.div 
-                  className={`
-                    w-14 h-14 rounded-xl bg-gradient-to-br ${stat.gradient} 
-                    flex items-center justify-center mb-4 relative
-                  `}
-                  animate={{
-                    rotateY: hoveredCard === index ? [0, 360] : 0,
-                    scale: hoveredCard === index ? 1.1 : 1,
-                  }}
-                  transition={{ 
-                    rotateY: { duration: 0.6 },
-                    scale: { duration: 0.3 }
-                  }}
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    boxShadow: hoveredCard === index 
-                      ? '0 10px 30px rgba(0,0,0,0.3)' 
-                      : '0 4px 10px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  <Icon className="w-7 h-7 text-white relative z-10" />
-                  
-                  {/* Icon glow effect */}
+                {!darkMode && (
                   <motion.div
-                    className={`absolute inset-0 rounded-xl bg-gradient-to-br ${stat.gradient} blur-md`}
-                    animate={{
-                      opacity: hoveredCard === index ? 0.6 : 0,
-                      scale: hoveredCard === index ? 1.2 : 1,
-                    }}
+                    className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0`}
+                    animate={{ opacity: hoveredCard === index ? 0.1 : 0 }}
                     transition={{ duration: 0.3 }}
                   />
+                )}
+
+                {/* Icon */}
+                <motion.div
+                  style={darkMode ? {
+                    width: 48, height: 48, borderRadius: '10px', marginBottom: '16px',
+                    backgroundColor: stat.darkBg, border: `1px solid ${stat.darkBorder}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    position: 'relative',
+                  } : {}}
+                  className={darkMode ? '' : `w-14 h-14 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center mb-4 relative`}
+                  animate={{ scale: hoveredCard === index ? 1.1 : 1 }}
+                  transition={{ scale: { duration: 0.3 } }}
+                >
+                  <Icon style={{ width: 22, height: 22, color: darkMode ? stat.darkColor : 'white' }} className={darkMode ? '' : 'w-7 h-7 text-white relative z-10'} />
                 </motion.div>
 
-                {/* Animated Value */}
+                {/* Value */}
                 <div className="mb-2 relative">
-                  <motion.p 
-                    className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent"
-                    animate={{
-                      scale: hoveredCard === index ? 1.1 : 1,
-                    }}
+                  <motion.p
+                    style={darkMode ? { fontSize: '2rem', fontWeight: 700, color: '#e6edf3' } : {}}
+                    className={darkMode ? '' : 'text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent'}
+                    animate={{ scale: hoveredCard === index ? 1.1 : 1 }}
                     transition={{ duration: 0.3 }}
                   >
                     {displayValue}
                   </motion.p>
-                  
-                  {/* Shimmer effect on hover */}
-                  {hoveredCard === index && (
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30"
-                      initial={{ x: '-100%' }}
-                      animate={{ x: '200%' }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                    />
-                  )}
                 </div>
 
                 {/* Label */}
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <p style={{ fontSize: '13px', fontWeight: 600, color: darkMode ? '#8b949e' : '#374151', marginBottom: '8px' }}>
                   {stat.label}
                 </p>
 
-                {/* Change with animated badge */}
-                <motion.div
-                  className={`
-                    inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium
-                    ${stat.change.includes('+') 
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}
-                  `}
-                  animate={{
-                    y: hoveredCard === index ? [-2, 0, -2] : 0,
-                  }}
-                  transition={{ 
-                    duration: 1,
-                    repeat: hoveredCard === index ? Infinity : 0,
-                  }}
+                {/* Change badge */}
+                <div style={darkMode ? {
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  padding: '2px 8px', borderRadius: '9999px', fontSize: '11px', fontWeight: 500,
+                  backgroundColor: stat.change.includes('+') ? 'rgba(46,160,67,0.1)' : 'rgba(110,118,129,0.1)',
+                  color: stat.change.includes('+') ? '#3fb950' : '#8b949e',
+                  border: `1px solid ${stat.change.includes('+') ? 'rgba(46,160,67,0.3)' : 'rgba(110,118,129,0.3)'}`,
+                } : {}}
+                  className={darkMode ? '' : `inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${stat.change.includes('+') ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}
                 >
-                  {stat.change.includes('+') && (
-                    <motion.span
-                      animate={{ rotate: [0, 360] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      📈
-                    </motion.span>
-                  )}
+                  {stat.change.includes('+') && <span>📈</span>}
                   {stat.change}
-                </motion.div>
-
-                {/* 3D Border Effect */}
-                <div 
-                  className={`
-                    absolute inset-0 rounded-2xl border-2 border-transparent
-                    ${hoveredCard === index ? `bg-gradient-to-br ${stat.gradient}` : ''}
-                  `}
-                  style={{
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                    maskComposite: 'exclude',
-                    padding: '2px',
-                    opacity: hoveredCard === index ? 0.5 : 0,
-                    transition: 'opacity 0.3s'
-                  }}
-                />
+                </div>
               </div>
-
-              {/* 3D Shadow Layer */}
-              <div 
-                className={`
-                  absolute inset-0 rounded-2xl bg-gradient-to-br ${stat.gradient}
-                  blur-xl opacity-0 -z-10
-                  ${hoveredCard === index ? 'opacity-30' : ''}
-                  transition-opacity duration-500
-                `}
-                style={{
-                  transform: 'translateZ(-20px) scale(0.95)',
-                }}
-              />
             </motion.div>
           )
         })}
       </div>
 
-      {/* 3D Progress Chart */}
+      {/* Activity Chart */}
       <motion.div
         initial={{ opacity: 0, y: 20, rotateX: -15 }}
         animate={{ opacity: 1, y: 0, rotateX: 0 }}
         transition={{ delay: 0.6, type: "spring" }}
-        className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl relative overflow-hidden"
-        style={{
-          transformStyle: 'preserve-3d',
-        }}
+        style={darkMode ? {
+          marginTop: '32px', padding: '24px', borderRadius: '12px',
+          backgroundColor: '#161b22', border: '1px solid #30363d',
+          position: 'relative', overflow: 'hidden',
+        } : {}}
+        className={darkMode ? '' : 'mt-8 p-6 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl relative overflow-hidden'}
       >
-        {/* Animated background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse" />
-        </div>
+        {!darkMode && (
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse" />
+          </div>
+        )}
 
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
-            <h4 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <h4 className="text-lg font-bold flex items-center gap-2" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>
               Recent Activity
-              <motion.span
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                📊
-              </motion.span>
+              <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>📊</motion.span>
             </h4>
-            <span className="text-xs text-gray-500 dark:text-gray-400 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700">
+            <span
+              style={darkMode ? {
+                fontSize: '11px', color: '#8b949e', padding: '4px 12px',
+                borderRadius: '9999px', backgroundColor: '#21262d', border: '1px solid #30363d',
+              } : {}}
+              className={darkMode ? '' : 'text-xs text-gray-500 px-3 py-1 rounded-full bg-gray-100'}
+            >
               Last 7 days
             </span>
           </div>
-          
+
           <div className="flex items-end justify-between h-40 gap-3 relative">
-            {[65, 78, 82, 75, 88, 92, 87].map((height, index) => (
+            {[65, 78, 82, 75, 88, 92, 87].map((height, i) => (
               <motion.div
-                key={index}
+                key={i}
                 className="flex-1 relative group cursor-pointer"
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: `${height}%`, opacity: 1 }}
-                transition={{ 
-                  delay: 0.8 + index * 0.1, 
-                  duration: 0.6,
-                  type: "spring",
-                  stiffness: 100
-                }}
-                whileHover={{ 
-                  scale: 1.05,
-                  y: -5,
-                  transition: { duration: 0.2 }
-                }}
+                transition={{ delay: 0.8 + i * 0.1, duration: 0.6, type: "spring", stiffness: 100 }}
+                whileHover={{ scale: 1.05, y: -5, transition: { duration: 0.2 } }}
               >
-                {/* 3D Bar */}
-                <div 
-                  className="h-full rounded-t-xl bg-gradient-to-t from-blue-500 via-purple-500 to-pink-500 relative overflow-hidden shadow-lg"
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    transform: 'translateZ(10px)',
+                <div
+                  className="h-full rounded-t-xl relative overflow-hidden"
+                  style={darkMode ? {
+                    background: `linear-gradient(to top, #2ea043, #3fb950)`,
+                    opacity: 0.8,
+                  } : {
+                    background: 'linear-gradient(to top, #3b82f6, #a855f7, #ec4899)',
                   }}
                 >
-                  {/* Shine effect */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30"
-                    animate={{
-                      x: ['-100%', '200%'],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      repeatDelay: 1,
-                    }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
                   />
-                  
-                  {/* Tooltip on hover */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     whileHover={{ opacity: 1, y: -10 }}
-                    className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-xl"
+                    style={{
+                      position: 'absolute', top: -44, left: '50%', transform: 'translateX(-50%)',
+                      backgroundColor: darkMode ? '#21262d' : '#111827',
+                      color: 'white', fontSize: '11px', padding: '4px 10px',
+                      borderRadius: '6px', whiteSpace: 'nowrap',
+                      border: darkMode ? '1px solid #30363d' : 'none',
+                    }}
                   >
                     Score: {height}%
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900 dark:bg-gray-700" />
                   </motion.div>
                 </div>
-
-                {/* 3D Base shadow */}
-                <div 
-                  className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 blur-sm"
-                  style={{
-                    transform: 'translateZ(-5px)',
-                  }}
-                />
               </motion.div>
             ))}
 
-            {/* Animated grid lines */}
-            {[25, 50, 75].map((position) => (
+            {[25, 50, 75].map((pos) => (
               <motion.div
-                key={position}
-                className="absolute left-0 right-0 border-t border-dashed border-gray-300 dark:border-gray-600 opacity-30"
-                style={{ bottom: `${position}%` }}
+                key={pos}
+                className="absolute left-0 right-0"
+                style={{
+                  bottom: `${pos}%`,
+                  borderTop: `1px dashed ${darkMode ? '#30363d' : 'rgba(156,163,175,0.4)'}`,
+                }}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 0.5, duration: 0.5 }}
               />
             ))}
           </div>
-          
-          <div className="flex justify-between mt-4 text-xs font-medium text-gray-600 dark:text-gray-400">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+
+          <div className="flex justify-between mt-4">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
               <motion.span
                 key={day}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 + index * 0.05 }}
+                transition={{ delay: 1 + i * 0.05 }}
                 className="flex-1 text-center"
+                style={{ fontSize: '11px', fontWeight: 500, color: darkMode ? '#8b949e' : '#6b7280' }}
               >
                 {day}
               </motion.span>
@@ -431,9 +319,12 @@ const PerformanceSummary = () => {
           </div>
         </div>
 
-        {/* Decorative corner elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-500/10 to-transparent rounded-tr-full" />
+        {!darkMode && (
+          <>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-500/10 to-transparent rounded-tr-full" />
+          </>
+        )}
       </motion.div>
     </div>
   )

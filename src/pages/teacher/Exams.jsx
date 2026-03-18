@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import ExamTable from '../../components/teacher/ExamTable';
 import QuizCreator from '../../components/teacher/QuizCreator';
 import TeacherLayout from '../../components/teacher/TeacherLayout';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function Exams() {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -98,33 +99,31 @@ export default function Exams() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+        <div style={{ width: 48, height: 48, border: '3px solid #2ea043', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
       </div>
     );
   }
 
+  const { darkMode } = useTheme();
+
   return (
     <TeacherLayout title="Exams">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="space-y-6"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       {showCreateModal ? (
         <QuizCreator onClose={handleCloseCreator} editQuizId={editingQuizId} />
       ) : (
         <>
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Exam Management</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">Create and manage your exams</p>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>Exam Management</h2>
+              <p style={{ color: darkMode ? '#8b949e' : '#6b7280', marginTop: 4 }}>Create and manage your exams</p>
             </div>
             <button
               onClick={handleCreateExam}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: darkMode ? '#2ea043' : 'linear-gradient(135deg,#3b82f6,#7c3aed)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
             >
-              <Plus className="w-5 h-5" />
+              <Plus size={18} />
               Create Exam
             </button>
           </div>

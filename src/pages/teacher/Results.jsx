@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import PerformanceChart from '../../components/teacher/PerformanceChart';
 import { TrendingUp, Award, Users, Target } from 'lucide-react';
 import TeacherLayout from '../../components/teacher/TeacherLayout';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function Results() {
   const [quizzes, setQuizzes] = useState([]);
@@ -39,64 +40,59 @@ export default function Results() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+        <div style={{ width: 48, height: 48, border: '3px solid #2ea043', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
       </div>
     );
   }
 
+  const { darkMode } = useTheme();
+  const cardColors = { blue: '#58a6ff', green: '#3fb950', purple: '#bc8cff', orange: '#f0883e' };
+
   return (
     <TeacherLayout title="Results">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="space-y-6"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Results & Analytics</h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Track student performance and exam statistics</p>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>Results & Analytics</h2>
+        <p style={{ color: darkMode ? '#8b949e' : '#6b7280', marginTop: 4 }}>Track student performance and exam statistics</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
+          const c = cardColors[stat.color];
           return (
-            <div key={index} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-lg bg-${stat.color}-100 dark:bg-${stat.color}-900/30 flex items-center justify-center`}>
-                  <Icon className={`w-6 h-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
-                </div>
+            <div key={index} style={{ background: darkMode ? '#161b22' : '#fff', border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`, borderRadius: 12, padding: 24 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 8, background: darkMode ? `${c}22` : `${c}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <Icon size={22} color={c} />
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{stat.label}</p>
+              <p style={{ fontSize: '1.5rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>{stat.value}</p>
+              <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#6b7280', marginTop: 4 }}>{stat.label}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Performance Chart */}
       <PerformanceChart />
 
-      {/* Recent Results */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Recent Exam Results</h3>
+      <div style={{ background: darkMode ? '#161b22' : '#fff', border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`, borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 24px', borderBottom: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}` }}>
+          <h3 style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>Recent Exam Results</h3>
         </div>
-        <div className="p-6">
+        <div style={{ padding: 24 }}>
           {quizzes.length === 0 ? (
-            <p className="text-center text-gray-600 dark:text-gray-400 py-8">No results available yet</p>
+            <p style={{ textAlign: 'center', color: darkMode ? '#8b949e' : '#6b7280', padding: '32px 0' }}>No results available yet</p>
           ) : (
             <div className="space-y-4">
-              {quizzes.slice(0, 5).map((quiz) => (
-                <div key={quiz._id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              {quizzes.slice(0, 5).map(quiz => (
+                <div key={quiz._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, background: darkMode ? '#1c2128' : '#f9fafb', borderRadius: 8 }}>
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">{quiz.title}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{quiz.submissions?.length || 0} submissions</p>
+                    <h4 style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>{quiz.title}</h4>
+                    <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#6b7280' }}>{quiz.submissions?.length || 0} submissions</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">--</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Avg Score</p>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '1.1rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>--</p>
+                    <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#6b7280' }}>Avg Score</p>
                   </div>
                 </div>
               ))}

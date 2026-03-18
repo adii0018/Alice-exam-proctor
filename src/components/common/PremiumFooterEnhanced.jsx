@@ -1,59 +1,41 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Github, Linkedin, Instagram, Mail, Shield, Eye, Brain, Clock, Award, Users, BookOpen, FileText, HelpCircle, Send } from 'lucide-react';
-import FloatingShape from './FloatingShape';
+import { useEffect, useRef, useState } from 'react';
+import { Github, Linkedin, Instagram, Mail, Shield, Eye, BookOpen, FileText, HelpCircle, Users, Send, ArrowUpRight, Zap, Lock, Globe } from 'lucide-react';
 
-const PremiumFooterEnhanced = ({ darkMode = false }) => {
+const PremiumFooterEnhanced = () => {
   const footerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [hoveredSocial, setHoveredSocial] = useState(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 }
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+      { threshold: 0.05 }
     );
-
-    if (footerRef.current) {
-      observer.observe(footerRef.current);
-    }
-
-    return () => {
-      if (footerRef.current) {
-        observer.unobserve(footerRef.current);
-      }
-    };
+    if (footerRef.current) observer.observe(footerRef.current);
+    return () => observer.disconnect();
   }, []);
-
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
 
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (email) {
       setSubscribed(true);
-      setTimeout(() => {
-        setEmail('');
-        setSubscribed(false);
-      }, 3000);
+      setTimeout(() => { setEmail(''); setSubscribed(false); }, 3000);
     }
   };
 
-  const features = [
-    { icon: Shield, label: 'Secure Proctoring', description: 'End-to-end encrypted monitoring' },
-    { icon: Eye, label: 'Real-time Detection', description: 'AI-powered violation tracking' },
-    { icon: Brain, label: 'Smart AI', description: 'Advanced behavior analysis' },
-    { icon: Clock, label: '24/7 Support', description: 'Always here to help' },
-    { icon: Award, label: 'Certified', description: 'Industry-standard compliance' },
-    { icon: Users, label: 'Multi-user', description: 'Unlimited concurrent exams' },
+  const stats = [
+    { value: '99.9%', label: 'Uptime', icon: Zap },
+    { value: '256-bit', label: 'Encryption', icon: Lock },
+    { value: '50K+', label: 'Exams Proctored', icon: Shield },
+    { value: 'Global', label: 'Coverage', icon: Globe },
   ];
 
-  const quickLinks = [
-    { label: 'About Us', href: '#about' },
+  const navLinks = [
+    { label: 'About', href: '#about' },
     { label: 'Features', href: '#features' },
-    { label: 'Pricing', href: '#pricing' },
+    { label: 'Terminal', href: '#terminal' },
     { label: 'Contact', href: '#contact' },
   ];
 
@@ -72,118 +54,308 @@ const PremiumFooterEnhanced = ({ darkMode = false }) => {
   ];
 
   const socialLinks = [
-    { 
-      icon: Github, 
-      label: 'GitHub', 
-      href: 'https://github.com/adii0018',
-      color: 'hover:text-purple-400',
-      glowColor: 'hover:shadow-purple-500/30'
-    },
-    { 
-      icon: Linkedin, 
-      label: 'LinkedIn', 
-      href: 'https://www.linkedin.com/in/aditya-singh-rajput-720aa8326',
-      color: 'hover:text-blue-400',
-      glowColor: 'hover:shadow-blue-500/30'
-    },
-    { 
-      icon: Instagram, 
-      label: 'Instagram', 
-      href: 'https://www.instagram.com/http._.adiix?igsh=MXVscHpwMWtxZGZpNg==',
-      color: 'hover:text-pink-400',
-      glowColor: 'hover:shadow-pink-500/30'
-    },
-    { 
-      icon: Mail, 
-      label: 'Email', 
-      href: 'mailto:singhrajputaditya982@gmail.com',
-      color: 'hover:text-indigo-400',
-      glowColor: 'hover:shadow-indigo-500/30'
-    },
+    { icon: Github, label: 'GitHub', href: 'https://github.com/adii0018', accent: '#00ff9f' },
+    { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/in/aditya-singh-rajput-720aa8326', accent: '#00b4ff' },
+    { icon: Instagram, label: 'Instagram', href: 'https://www.instagram.com/http._.adiix?igsh=MXVscHpwMWtxZGZpNg==', accent: '#ff6eb4' },
+    { icon: Mail, label: 'Email', href: 'mailto:singhrajputaditya982@gmail.com', accent: '#00ff9f' },
   ];
 
   return (
-    <footer 
-      ref={footerRef}
-      className={`relative overflow-hidden transition-all duration-300 border-t ${
-        isVisible ? 'opacity-100' : 'opacity-0'
-      } ${
-        darkMode 
-          ? 'bg-gradient-to-b from-slate-950 via-slate-900 to-black border-white/5' 
-          : 'bg-gradient-to-b from-gray-50 via-white to-gray-100 border-gray-200'
-      }`}
-    >
-      {/* Floating 3D Shapes */}
-      <FloatingShape size="lg" position="left" delay={0} duration={25} />
-      <FloatingShape size="md" position="right" delay={2} duration={20} />
-      <FloatingShape size="sm" position="center" delay={4} duration={18} />
+    <footer ref={footerRef} style={{
+      background: 'linear-gradient(180deg, #050505 0%, #000 100%)',
+      borderTop: '1px solid rgba(0,255,159,0.1)',
+      position: 'relative',
+      overflow: 'hidden',
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+      opacity: isVisible ? 1 : 0,
+      transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
+      transition: 'opacity 1s ease, transform 1s ease',
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap');
 
-      {/* Gradient Mesh Overlay */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[120px]" />
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; box-shadow: 0 0 6px #00ff9f; }
+          50% { opacity: 0.4; box-shadow: 0 0 14px #00ff9f; }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        @keyframes float-up {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+
+        .f-stat-card {
+          background: rgba(255,255,255,0.02);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(0,255,159,0.08);
+          border-radius: 16px;
+          padding: 24px 20px;
+          text-align: center;
+          transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+          position: relative;
+          overflow: hidden;
+        }
+        .f-stat-card::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: radial-gradient(circle at 50% 0%, rgba(0,255,159,0.1) 0%, transparent 70%);
+          opacity: 0;
+          transition: opacity 0.4s;
+        }
+        .f-stat-card:hover {
+          border-color: rgba(0,255,159,0.35);
+          transform: translateY(-6px);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(0,255,159,0.08);
+          background: rgba(0,255,159,0.03);
+        }
+        .f-stat-card:hover::before { opacity: 1; }
+        .f-stat-card:hover .f-stat-icon { color: #00ff9f !important; filter: drop-shadow(0 0 8px #00ff9f); }
+
+        .f-link {
+          color: rgba(255,255,255,0.35);
+          text-decoration: none;
+          font-size: 0.8rem;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 0;
+          transition: all 0.25s ease;
+          border-bottom: 1px solid transparent;
+        }
+        .f-link .f-arrow { opacity: 0; transform: translate(-4px, 4px); transition: all 0.25s ease; }
+        .f-link:hover { color: #00ff9f; padding-left: 6px; }
+        .f-link:hover .f-arrow { opacity: 1; transform: translate(0, 0); }
+
+        .f-social {
+          width: 44px; height: 44px;
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.03);
+          backdrop-filter: blur(10px);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+          text-decoration: none;
+          position: relative;
+          overflow: hidden;
+        }
+        .f-social:hover { transform: translateY(-5px) scale(1.08); }
+
+        .f-input {
+          background: rgba(255,255,255,0.03) !important;
+          border: 1px solid rgba(0,255,159,0.12) !important;
+          color: #fff !important;
+          font-family: 'JetBrains Mono', monospace !important;
+          font-size: 0.8rem !important;
+          border-radius: 10px !important;
+          padding: 12px 16px !important;
+          width: 100% !important;
+          outline: none !important;
+          transition: all 0.3s !important;
+          box-sizing: border-box !important;
+        }
+        .f-input:focus {
+          border-color: rgba(0,255,159,0.45) !important;
+          box-shadow: 0 0 0 3px rgba(0,255,159,0.07), 0 0 20px rgba(0,255,159,0.05) !important;
+          background: rgba(0,255,159,0.03) !important;
+        }
+        .f-input::placeholder { color: rgba(255,255,255,0.18) !important; }
+
+        .f-btn {
+          width: 100%;
+          padding: 12px;
+          border-radius: 10px;
+          border: 1px solid rgba(0,255,159,0.3);
+          background: linear-gradient(135deg, rgba(0,255,159,0.08) 0%, rgba(0,180,255,0.05) 100%);
+          color: #00ff9f;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.8rem;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          transition: all 0.3s ease;
+          letter-spacing: 0.5px;
+          position: relative;
+          overflow: hidden;
+        }
+        .f-btn::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: linear-gradient(135deg, rgba(0,255,159,0.15) 0%, rgba(0,180,255,0.1) 100%);
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+        .f-btn:hover::before { opacity: 1; }
+        .f-btn:hover {
+          border-color: rgba(0,255,159,0.6);
+          box-shadow: 0 0 30px rgba(0,255,159,0.15), 0 4px 20px rgba(0,0,0,0.3);
+          transform: translateY(-2px);
+        }
+
+        .f-section-label {
+          font-size: 0.65rem;
+          letter-spacing: 3px;
+          color: rgba(0,255,159,0.6);
+          text-transform: uppercase;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .f-section-label::after {
+          content: '';
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(90deg, rgba(0,255,159,0.2), transparent);
+        }
+
+        .f-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 4px 12px;
+          border-radius: 20px;
+          border: 1px solid rgba(0,255,159,0.15);
+          background: rgba(0,255,159,0.04);
+          color: rgba(0,255,159,0.65);
+          font-size: 0.65rem;
+          letter-spacing: 1px;
+          transition: all 0.2s;
+        }
+        .f-tag:hover {
+          border-color: rgba(0,255,159,0.35);
+          background: rgba(0,255,159,0.08);
+          color: #00ff9f;
+        }
+
+        .f-glass-box {
+          background: rgba(255,255,255,0.02);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 12px;
+          padding: 16px;
+        }
+
+        .f-shimmer-text {
+          background: linear-gradient(90deg, #00ff9f 0%, #00b4ff 50%, #00ff9f 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmer 3s linear infinite;
+        }
+      `}</style>
+
+      {/* Ambient glows */}
+      <div style={{ position: 'absolute', top: '-100px', left: '5%', width: 600, height: 500, background: 'radial-gradient(ellipse, rgba(0,255,159,0.04) 0%, transparent 65%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-60px', right: '10%', width: 400, height: 400, background: 'radial-gradient(ellipse, rgba(0,180,255,0.04) 0%, transparent 65%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: '30%', width: 500, height: 300, background: 'radial-gradient(ellipse, rgba(0,255,159,0.03) 0%, transparent 65%)', pointerEvents: 'none' }} />
+
+      {/* ── STATS BAR ── */}
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '40px 5%' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
+            {stats.map((s, i) => (
+              <div key={s.label} className="f-stat-card" style={{
+                animation: isVisible ? `float-up 0.6s ease ${i * 0.1}s both` : 'none',
+              }}>
+                <s.icon className="f-stat-icon" style={{ width: 20, height: 20, color: 'rgba(0,255,159,0.35)', margin: '0 auto 12px', display: 'block', transition: 'all 0.3s' }} />
+                <div style={{ color: '#00ff9f', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-1px', textShadow: '0 0 30px rgba(0,255,159,0.4)' }}>{s.value}</div>
+                <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.68rem', marginTop: 6, letterSpacing: '2px', textTransform: 'uppercase' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+      {/* ── MAIN CONTENT ── */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '72px 5% 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.4fr', gap: 56, marginBottom: 0 }}>
 
-      <div className={`relative max-w-7xl mx-auto px-6 py-16 lg:py-20 transition-all duration-1000 delay-200
-        ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-        
-        {/* Features Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-16">
-          {features.map((feature, index) => (
-            <div
-              key={feature.label}
-              className={`group relative p-4 rounded-xl backdrop-blur-sm border transition-all duration-500 
-                hover:scale-105 hover:-translate-y-2 hover:shadow-2xl ${
-                  darkMode 
-                    ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20' 
-                    : 'bg-gray-50 border-gray-200 hover:bg-white hover:border-gray-300'
-                }`}
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <feature.icon className={`w-8 h-8 mx-auto mb-3 transition-all duration-300 group-hover:scale-110 ${
-                darkMode ? 'text-purple-400' : 'text-purple-600'
-              }`} />
-              <h4 className={`text-sm font-semibold mb-1 ${
-                darkMode ? 'text-slate-200' : 'text-gray-800'
-              }`}>
-                {feature.label}
-              </h4>
-              <p className={`text-xs ${
-                darkMode ? 'text-slate-400' : 'text-gray-600'
-              }`}>
-                {feature.description}
-              </p>
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 via-purple-500/0 to-indigo-500/0 
-                group-hover:from-blue-500/20 group-hover:via-purple-500/20 group-hover:to-indigo-500/20 
-                transition-all duration-500 blur-xl -z-10" />
+          {/* Brand column */}
+          <div>
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+              <div style={{
+                width: 42, height: 42, borderRadius: 12,
+                border: '1px solid rgba(0,255,159,0.25)',
+                background: 'linear-gradient(135deg, rgba(0,255,159,0.1) 0%, rgba(0,180,255,0.05) 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(0,255,159,0.1)',
+              }}>
+                <Eye style={{ width: 20, height: 20, color: '#00ff9f', filter: 'drop-shadow(0 0 8px #00ff9f)' }} />
+              </div>
+              <div>
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', letterSpacing: '1px' }}>
+                  Alice<span style={{ color: '#00ff9f' }}>_</span>
+                  <span style={{ animation: 'blink 1.2s step-end infinite', color: '#00ff9f' }}>|</span>
+                </div>
+                <div style={{ color: 'rgba(0,255,159,0.45)', fontSize: '0.58rem', letterSpacing: '3px', marginTop: 2 }}>EXAM PROCTOR</div>
+              </div>
             </div>
-          ))}
-        </div>
 
-        {/* Links Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h4 className={`text-lg font-semibold mb-4 ${
-              darkMode ? 'text-slate-200' : 'text-gray-800'
-            }`}>
-              Quick Links
-            </h4>
-            <ul className="space-y-2">
-              {quickLinks.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className={`text-sm transition-all duration-300 hover:translate-x-2 inline-block ${
-                      darkMode 
-                        ? 'text-slate-400 hover:text-purple-400' 
-                        : 'text-gray-600 hover:text-purple-600'
-                    }`}
-                  >
-                    {link.label}
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem', lineHeight: 1.9, marginBottom: 28, maxWidth: 290 }}>
+              Next-gen AI proctoring platform. Real-time behavioral analysis, zero-compromise integrity, built for the modern classroom.
+            </p>
+
+            {/* Tags */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
+              <span className="f-tag"><Shield style={{ width: 10, height: 10 }} /> AI-Powered</span>
+              <span className="f-tag"><Lock style={{ width: 10, height: 10 }} /> Secure</span>
+              <span className="f-tag"><Zap style={{ width: 10, height: 10 }} /> Real-time</span>
+            </div>
+
+            {/* Socials */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              {socialLinks.map((s, i) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="f-social"
+                  onMouseEnter={() => setHoveredSocial(i)}
+                  onMouseLeave={() => setHoveredSocial(null)}
+                  style={{
+                    borderColor: hoveredSocial === i ? `${s.accent}60` : 'rgba(255,255,255,0.08)',
+                    boxShadow: hoveredSocial === i ? `0 0 24px ${s.accent}30, 0 8px 20px rgba(0,0,0,0.4)` : 'none',
+                    background: hoveredSocial === i ? `${s.accent}10` : 'rgba(255,255,255,0.03)',
+                  }}
+                >
+                  <s.icon style={{ width: 17, height: 17, color: hoveredSocial === i ? s.accent : 'rgba(255,255,255,0.4)', transition: 'color 0.3s', position: 'relative', zIndex: 1 }} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Navigate */}
+          <div>
+            <div className="f-section-label">Navigate</div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {navLinks.map((l) => (
+                <li key={l.label}>
+                  <a href={l.href} className="f-link">
+                    {l.label}
+                    <ArrowUpRight className="f-arrow" style={{ width: 13, height: 13, marginLeft: 'auto' }} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            <div className="f-section-label" style={{ marginTop: 32 }}>Legal</div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {legal.map((l) => (
+                <li key={l.label}>
+                  <a href={l.href} className="f-link">
+                    {l.label}
+                    <ArrowUpRight className="f-arrow" style={{ width: 13, height: 13, marginLeft: 'auto' }} />
                   </a>
                 </li>
               ))}
@@ -191,232 +363,97 @@ const PremiumFooterEnhanced = ({ darkMode = false }) => {
           </div>
 
           {/* Resources */}
-          <div className="space-y-4">
-            <h4 className={`text-lg font-semibold mb-4 ${
-              darkMode ? 'text-slate-200' : 'text-gray-800'
-            }`}>
-              Resources
-            </h4>
-            <ul className="space-y-2">
-              {resources.map((resource) => (
-                <li key={resource.label}>
-                  <a
-                    href={resource.href}
-                    className={`text-sm transition-all duration-300 hover:translate-x-2 inline-flex items-center gap-2 ${
-                      darkMode 
-                        ? 'text-slate-400 hover:text-purple-400' 
-                        : 'text-gray-600 hover:text-purple-600'
-                    }`}
-                  >
-                    <resource.icon className="w-4 h-4" />
-                    {resource.label}
+          <div>
+            <div className="f-section-label">Resources</div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {resources.map((r) => (
+                <li key={r.label}>
+                  <a href={r.href} className="f-link">
+                    <r.icon style={{ width: 13, height: 13, flexShrink: 0 }} />
+                    {r.label}
+                    <ArrowUpRight className="f-arrow" style={{ width: 13, height: 13, marginLeft: 'auto' }} />
                   </a>
                 </li>
               ))}
             </ul>
-          </div>
 
-          {/* Legal */}
-          <div className="space-y-4">
-            <h4 className={`text-lg font-semibold mb-4 ${
-              darkMode ? 'text-slate-200' : 'text-gray-800'
-            }`}>
-              Legal
-            </h4>
-            <ul className="space-y-2">
-              {legal.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className={`text-sm transition-all duration-300 hover:translate-x-2 inline-block ${
-                      darkMode 
-                        ? 'text-slate-400 hover:text-purple-400' 
-                        : 'text-gray-600 hover:text-purple-600'
-                    }`}
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div className="space-y-4">
-            <h4 className={`text-lg font-semibold mb-4 ${
-              darkMode ? 'text-slate-200' : 'text-gray-800'
-            }`}>
-              Stay Updated
-            </h4>
-            <p className={`text-sm mb-4 ${
-              darkMode ? 'text-slate-400' : 'text-gray-600'
-            }`}>
-              Get the latest updates and news
-            </p>
-            <form onSubmit={handleSubscribe} className="space-y-2">
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className={`w-full px-4 py-2 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
-                    darkMode 
-                      ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-500' 
-                      : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'
-                  }`}
-                  disabled={subscribed}
-                />
+            {/* Status indicator */}
+            <div style={{ marginTop: 32 }} className="f-glass-box">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00ff9f', display: 'inline-block', animation: 'pulse-dot 2s infinite', flexShrink: 0 }} />
+                <span style={{ color: '#00ff9f', fontSize: '0.68rem', letterSpacing: '1.5px' }}>ALL SYSTEMS OPERATIONAL</span>
               </div>
-              <button
-                type="submit"
-                disabled={subscribed}
-                className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-300 
-                  flex items-center justify-center gap-2 ${
-                    subscribed
-                      ? 'bg-green-500 text-white cursor-not-allowed'
-                      : darkMode
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500'
-                        : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700'
-                  }`}
-              >
-                {subscribed ? (
-                  <>✓ Subscribed!</>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Subscribe
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex flex-col items-center text-center space-y-8 border-t pt-12" style={{
-          borderColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.1)'
-        }}>
-          
-          {/* Product Branding with 3D Effect */}
-          <div className="space-y-3 perspective-1000">
-            <h3 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 
-              bg-clip-text text-transparent transform-3d hover:scale-105 transition-transform duration-500
-              relative group">
-              Alice Exam Proctor
-              <span className="absolute -inset-4 bg-gradient-to-r from-blue-500/0 via-purple-500/20 to-indigo-500/0 
-                blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
-            </h3>
-            <p className={`text-sm lg:text-base font-light tracking-wide transition-colors duration-300 ${
-              darkMode ? 'text-slate-400' : 'text-gray-600'
-            }`}>
-              AI-Powered Fair Online Examinations
-            </p>
-          </div>
-
-          {/* Decorative Line with Glow */}
-          <div className="relative w-32 h-px">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent blur-sm" />
-          </div>
-
-          {/* Social Media Icons with 3D Lift */}
-          <div className="flex items-center gap-4 lg:gap-6 perspective-1000">
-            {socialLinks.map((social, index) => (
-              <a
-                key={social.label}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`group relative p-3 rounded-xl backdrop-blur-sm border transition-all duration-300 
-                  hover:scale-110 hover:-translate-y-2 hover:shadow-2xl ${social.glowColor} ${social.color}
-                  focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 
-                  transform-gpu preserve-3d ${
-                    darkMode 
-                      ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 focus:ring-offset-slate-900' 
-                      : 'bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300 focus:ring-offset-white'
-                  }`}
-                style={{
-                  animationDelay: `${index * 100}ms`,
-                  transitionDelay: `${index * 50}ms`
-                }}
-                aria-label={social.label}
-              >
-                <social.icon className={`w-5 h-5 lg:w-6 lg:h-6 transition-colors duration-300 
-                  group-hover:scale-110 transform-gpu ${
-                    darkMode ? 'text-slate-300' : 'text-gray-600'
-                  }`} />
-                
-                {/* Tooltip with 3D Effect */}
-                <span className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-slate-800/90 backdrop-blur-sm
-                  text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300
-                  pointer-events-none whitespace-nowrap border border-white/10 shadow-xl
-                  group-hover:-translate-y-1 transform-gpu">
-                  {social.label}
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45 
-                    border-r border-b border-white/10" />
-                </span>
-
-                {/* Animated Glow Ring */}
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 via-purple-500/0 to-indigo-500/0 
-                  group-hover:from-blue-500/30 group-hover:via-purple-500/30 group-hover:to-indigo-500/30 
-                  transition-all duration-500 blur-xl -z-10 group-hover:scale-150" />
-              </a>
-            ))}
-          </div>
-
-          {/* Decorative Line with Glow */}
-          <div className="relative w-32 h-px">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent blur-sm" />
-          </div>
-
-          {/* Personal Branding with Subtle Glow */}
-          <div className="space-y-2">
-            <p className={`text-sm font-light transition-colors duration-300 ${
-              darkMode ? 'text-slate-500' : 'text-gray-500'
-            }`}>
-              Designed & Developed by
-            </p>
-            <div className="relative inline-block group">
-              <p className={`text-lg lg:text-xl font-semibold relative z-10 transition-all duration-300 group-hover:scale-105 ${
-                darkMode 
-                  ? 'bg-gradient-to-r from-slate-200 via-purple-200 to-slate-200 bg-clip-text text-transparent'
-                  : 'bg-gradient-to-r from-gray-700 via-purple-600 to-gray-700 bg-clip-text text-transparent'
-              }`}>
-                Aditya Singh Rajput
-              </p>
-              {/* Animated Glow Effect */}
-              <div className="absolute inset-0 -inset-x-8 blur-2xl bg-gradient-to-r from-purple-500/0 via-purple-500/40 to-purple-500/0 
-                opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
-              {/* Subtle Underline */}
-              <div className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent 
-                scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+              <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.65rem', paddingLeft: 16 }}>Last checked: just now</div>
             </div>
           </div>
 
-          {/* Copyright with Fade */}
-          <div className={`pt-8 border-t w-full transition-colors duration-300 ${
-            darkMode ? 'border-white/5' : 'border-gray-200'
-          }`}>
-            <p className={`text-xs lg:text-sm font-light transition-colors duration-300 ${
-              darkMode ? 'text-slate-600' : 'text-gray-500'
-            }`}>
-              © {new Date().getFullYear()} Alice Exam Proctor. All rights reserved.
+          {/* Newsletter */}
+          <div>
+            <div className="f-section-label">Stay Updated</div>
+            <p style={{ color: 'rgba(255,255,255,0.28)', fontSize: '0.8rem', lineHeight: 1.8, marginBottom: 20 }}>
+              Get notified about new features, security updates, and platform releases.
             </p>
+            <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="f-input"
+                disabled={subscribed}
+              />
+              <button type="submit" disabled={subscribed} className="f-btn">
+                {subscribed
+                  ? <><span style={{ color: '#00ff9f', position: 'relative', zIndex: 1 }}>✓</span> <span style={{ position: 'relative', zIndex: 1 }}>Subscribed!</span></>
+                  : <><Send style={{ width: 13, height: 13, position: 'relative', zIndex: 1 }} /> <span style={{ position: 'relative', zIndex: 1 }}>Subscribe</span></>}
+              </button>
+            </form>
+
+            {/* Built with */}
+            <div style={{ marginTop: 24 }} className="f-glass-box">
+              <div style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.65rem', marginBottom: 10, letterSpacing: '2px' }}>BUILT WITH</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {['React', 'Django', 'WebSocket', 'TensorFlow'].map(t => (
+                  <span key={t} style={{
+                    padding: '3px 10px', borderRadius: 6,
+                    background: 'rgba(0,255,159,0.04)',
+                    border: '1px solid rgba(0,255,159,0.1)',
+                    color: 'rgba(0,255,159,0.5)',
+                    fontSize: '0.65rem',
+                    transition: 'all 0.2s',
+                  }}>{t}</span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Accent Line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent blur-sm" />
+      {/* ── BOTTOM BAR ── */}
+      <div style={{ maxWidth: 1200, margin: '56px auto 0', padding: '0 5%' }}>
+        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,159,0.15) 30%, rgba(0,180,255,0.1) 70%, transparent 100%)' }} />
+        <div style={{ padding: '24px 0 32px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.72rem', letterSpacing: '0.5px' }}>
+              © {new Date().getFullYear()} Alice Exam Proctor
+            </span>
+            <span style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.08)' }} />
+            <span style={{ color: 'rgba(255,255,255,0.12)', fontSize: '0.72rem' }}>All rights reserved</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '0.7rem' }}>Crafted by</span>
+            <span className="f-shimmer-text" style={{ fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.5px' }}>
+              Aditya Singh Rajput
+            </span>
+            <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>with</span>
+            <span style={{ color: 'rgba(255,80,80,0.7)', fontSize: '0.85rem' }}>♥</span>
+          </div>
+        </div>
       </div>
 
-      {/* Corner Accents */}
-      <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent blur-2xl" />
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-500/10 to-transparent blur-2xl" />
+      {/* Bottom glow line */}
+      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,159,0.3) 40%, rgba(0,180,255,0.2) 60%, transparent 100%)' }} />
     </footer>
   );
 };

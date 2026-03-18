@@ -20,7 +20,6 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
     { id: 3, type: 'success', message: 'Exam completed successfully', time: '2h ago' },
   ]
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
@@ -30,24 +29,30 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
         setShowProfileMenu(false)
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+  const handleLogout = () => { logout(); navigate('/') }
+  const handleProfileClick = () => { setShowProfileMenu(false); navigate('/student/profile') }
+  const handleSettingsClick = () => { setShowProfileMenu(false); navigate('/student/settings') }
 
-  const handleProfileClick = () => {
-    setShowProfileMenu(false)
-    navigate('/student/profile')
-  }
-
-  const handleSettingsClick = () => {
-    setShowProfileMenu(false)
-    navigate('/student/settings')
+  // GitHub dark theme colors
+  const gh = {
+    navBg: darkMode ? 'rgba(13,17,23,0.9)' : 'rgba(255,255,255,0.8)',
+    navBorder: darkMode ? '#21262d' : 'rgba(229,231,235,0.5)',
+    titleColor: darkMode ? '#e6edf3' : '#111827',
+    subColor: darkMode ? '#8b949e' : '#6b7280',
+    iconColor: darkMode ? '#8b949e' : '#4b5563',
+    hoverBg: darkMode ? '#21262d' : '#f3f4f6',
+    dropdownBg: darkMode ? '#161b22' : '#ffffff',
+    dropdownBorder: darkMode ? '#30363d' : 'rgba(229,231,235,0.5)',
+    itemHover: darkMode ? '#21262d' : '#f9fafb',
+    itemText: darkMode ? '#e6edf3' : '#111827',
+    divider: darkMode ? '#21262d' : '#f3f4f6',
+    avatarBg: darkMode ? '#21262d' : undefined,
+    avatarBorder: darkMode ? '#30363d' : undefined,
+    avatarColor: darkMode ? '#3fb950' : 'white',
   }
 
   return (
@@ -55,20 +60,23 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      style={{ marginLeft: sidebarCollapsed ? '80px' : '280px' }}
-      className="fixed top-0 right-0 h-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 z-30 transition-all duration-300"
+      style={{
+        marginLeft: sidebarCollapsed ? '80px' : '280px',
+        backgroundColor: gh.navBg,
+        borderBottom: `1px solid ${gh.navBorder}`,
+        position: 'fixed', top: 0, right: 0,
+        height: '80px',
+        zIndex: 30,
+        backdropFilter: 'blur(16px)',
+        transition: 'all 0.3s',
+      }}
     >
       <div className="h-full px-8 flex items-center justify-between">
         {/* Page Title */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
+          <h2 className="text-2xl font-bold" style={{ color: gh.titleColor }}>{title}</h2>
+          <p className="text-sm" style={{ color: gh.subColor }}>
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
 
@@ -78,9 +86,12 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
           <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="relative p-2 rounded-xl transition-colors"
+              style={{ color: gh.iconColor }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <FiBell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <FiBell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
             </button>
 
@@ -90,27 +101,29 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  className="absolute right-0 mt-2 w-80 rounded-2xl shadow-2xl overflow-hidden"
+                  style={{ backgroundColor: gh.dropdownBg, border: `1px solid ${gh.dropdownBorder}` }}
                 >
-                  <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                  <div className="p-4" style={{ borderBottom: `1px solid ${gh.divider}` }}>
+                    <h3 className="font-semibold" style={{ color: gh.itemText }}>Notifications</h3>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.map((notif) => (
                       <div
                         key={notif.id}
-                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0"
+                        className="p-4 transition-colors cursor-pointer"
+                        style={{ borderBottom: `1px solid ${gh.divider}` }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.itemHover}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <div className="flex items-start gap-3">
-                          <div className={`
-                            w-2 h-2 rounded-full mt-2 flex-shrink-0
-                            ${notif.type === 'warning' ? 'bg-yellow-500' : ''}
-                            ${notif.type === 'info' ? 'bg-blue-500' : ''}
-                            ${notif.type === 'success' ? 'bg-green-500' : ''}
-                          `} />
+                          <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                            notif.type === 'warning' ? 'bg-yellow-500' :
+                            notif.type === 'info' ? 'bg-blue-500' : 'bg-green-500'
+                          }`} />
                           <div className="flex-1">
-                            <p className="text-sm text-gray-900 dark:text-gray-100">{notif.message}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{notif.time}</p>
+                            <p className="text-sm" style={{ color: gh.itemText }}>{notif.message}</p>
+                            <p className="text-xs mt-1" style={{ color: gh.subColor }}>{notif.time}</p>
                           </div>
                         </div>
                       </div>
@@ -124,29 +137,36 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-xl transition-colors"
+            style={{ color: gh.iconColor }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            {darkMode ? (
-              <FiSun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            ) : (
-              <FiMoon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            )}
+            {darkMode ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
           </button>
 
           {/* Profile Dropdown */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl transition-colors"
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center font-semibold"
+                style={darkMode
+                  ? { backgroundColor: gh.avatarBg, border: `1px solid ${gh.avatarBorder}`, color: gh.avatarColor }
+                  : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)', color: 'white' }
+                }
+              >
                 {user?.name?.charAt(0) || 'S'}
               </div>
               <div className="text-left hidden md:block">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Student'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Student</p>
+                <p className="text-sm font-medium" style={{ color: gh.titleColor }}>{user?.name || 'Student'}</p>
+                <p className="text-xs" style={{ color: gh.subColor }}>Student</p>
               </div>
-              <FiChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <FiChevronDown className="w-4 h-4" style={{ color: gh.iconColor }} />
             </button>
 
             <AnimatePresence>
@@ -155,30 +175,35 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl overflow-hidden"
+                  style={{ backgroundColor: gh.dropdownBg, border: `1px solid ${gh.dropdownBorder}` }}
                 >
                   <div className="p-2">
-                    <button 
-                      onClick={handleProfileClick}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
-                    >
-                      <FiUser className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                      <span className="text-sm text-gray-900 dark:text-gray-100">View Profile</span>
-                    </button>
-                    <button 
-                      onClick={handleSettingsClick}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
-                    >
-                      <FiSettings className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                      <span className="text-sm text-gray-900 dark:text-gray-100">Settings</span>
-                    </button>
-                    <div className="my-2 border-t border-gray-100 dark:border-gray-700" />
+                    {[
+                      { icon: FiUser, label: 'View Profile', action: handleProfileClick },
+                      { icon: FiSettings, label: 'Settings', action: handleSettingsClick },
+                    ].map(({ icon: Icon, label, action }) => (
+                      <button
+                        key={label}
+                        onClick={action}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left"
+                        style={{ color: gh.itemText }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.itemHover}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Icon className="w-4 h-4" style={{ color: gh.iconColor }} />
+                        <span className="text-sm">{label}</span>
+                      </button>
+                    ))}
+                    <div style={{ margin: '8px 0', borderTop: `1px solid ${gh.divider}` }} />
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left"
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = darkMode ? 'rgba(248,81,73,0.1)' : '#fef2f2'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
-                      <FiLogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
-                      <span className="text-sm text-red-600 dark:text-red-400">Logout</span>
+                      <FiLogOut className="w-4 h-4 text-red-500" />
+                      <span className="text-sm text-red-500">Logout</span>
                     </button>
                   </div>
                 </motion.div>

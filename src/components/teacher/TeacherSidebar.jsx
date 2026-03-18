@@ -1,19 +1,39 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Users, 
-  MonitorPlay, 
-  BarChart3, 
-  AlertTriangle, 
-  Settings,
-  UserCircle,
-  ChevronLeft,
-  ChevronRight
+import {
+  LayoutDashboard, FileText, Users, MonitorPlay,
+  BarChart3, AlertTriangle, Settings, UserCircle,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { FaLeaf } from 'react-icons/fa';
+import { useTheme } from '../../contexts/ThemeContext';
+
+// Alice logo — same as landing page
+const AliceLogo = ({ size = 36, dark }) => (
+  dark ? (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <rect width="100" height="100" rx="22" fill="#161b22"/>
+      <rect width="100" height="100" rx="22" fill="none" stroke="#30363d" strokeWidth="2"/>
+      <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="#3fb950" opacity="0.95"/>
+      <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="#2ea043" opacity="0.7"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#0d1117" strokeWidth="1.8" strokeLinecap="round" opacity="0.35"/>
+      <path d="M50 82 Q48 89 44 93" fill="none" stroke="#2ea043" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  ) : (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <rect width="100" height="100" rx="22" fill="url(#lgTeacher)"/>
+      <defs>
+        <linearGradient id="lgTeacher" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#3b82f6"/>
+          <stop offset="100%" stopColor="#9333ea"/>
+        </linearGradient>
+      </defs>
+      <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.95"/>
+      <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.65"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#6366f1" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
+      <path d="M50 82 Q48 89 44 93" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  )
+)
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher' },
@@ -29,105 +49,175 @@ const navItems = [
 export default function TeacherSidebar({ collapsed, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { darkMode } = useTheme();
+
+  const gh = {
+    bg: darkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.95)',
+    border: darkMode ? '#21262d' : 'rgba(229,231,235,0.8)',
+    text: darkMode ? '#e6edf3' : '#374151',
+    subText: darkMode ? '#8b949e' : '#6b7280',
+    hoverBg: darkMode ? '#21262d' : '#f9fafb',
+    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(59,130,246,0.06)',
+    activeText: darkMode ? '#3fb950' : '#2563eb',
+    activeBar: darkMode ? '#2ea043' : '#2563eb',
+    iconColor: darkMode ? '#8b949e' : '#6b7280',
+    chevronColor: darkMode ? '#8b949e' : '#6b7280',
+    footerText: darkMode ? '#6e7681' : '#9ca3af',
+    bottomBg: darkMode ? '#161b22' : '#f9fafb',
+    bottomBorder: darkMode ? '#30363d' : '#e5e7eb',
+  }
+
   return (
     <motion.aside
       initial={false}
       animate={{ width: collapsed ? 80 : 280 }}
-      className="fixed left-0 top-0 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 flex flex-col transition-colors"
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      style={{
+        position: 'fixed', left: 0, top: 0,
+        height: '100vh',
+        backgroundColor: gh.bg,
+        borderRight: `1px solid ${gh.border}`,
+        backdropFilter: 'blur(16px)',
+        zIndex: 40,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
+      <div
+        style={{
+          height: 64, display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', padding: '0 20px',
+          borderBottom: `1px solid ${gh.border}`,
+        }}
+      >
         <AnimatePresence mode="wait">
-          {!collapsed && (
+          {!collapsed ? (
             <motion.div
+              key="expanded"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-3"
+              style={{ display: 'flex', alignItems: 'center', gap: 10 }}
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <FaLeaf className="text-white text-xl" />
-              </div>
-              <span className="font-semibold text-gray-900 dark:text-gray-100">Alice Proctor</span>
+              <AliceLogo size={38} dark={darkMode} />
+              <span style={{ fontWeight: 600, fontSize: '15px', color: gh.text }}>Alice Proctor</span>
             </motion.div>
-          )}
-          {collapsed && (
+          ) : (
             <motion.div
+              key="collapsed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg mx-auto"
+              style={{ margin: '0 auto' }}
             >
-              <FaLeaf className="text-white text-xl" />
+              <AliceLogo size={38} dark={darkMode} />
             </motion.div>
           )}
         </AnimatePresence>
-        
-        <button
-          onClick={onToggle}
-          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        >
-          {collapsed ? (
-            <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          ) : (
-            <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          )}
-        </button>
+
+        {!collapsed && (
+          <button
+            onClick={onToggle}
+            style={{
+              padding: '6px', borderRadius: '8px', border: 'none',
+              backgroundColor: 'transparent', cursor: 'pointer', color: gh.chevronColor,
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <ChevronLeft style={{ width: 18, height: 18 }} />
+          </button>
+        )}
+        {collapsed && (
+          <button
+            onClick={onToggle}
+            style={{
+              position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+              padding: '4px', borderRadius: '6px', border: 'none',
+              backgroundColor: 'transparent', cursor: 'pointer', color: gh.chevronColor,
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <ChevronRight style={{ width: 16, height: 16 }} />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-6 space-y-1">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          
-          return (
-            <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className={`
-                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                ${isActive 
-                  ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 text-blue-600 dark:text-blue-400' 
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }
-                ${collapsed ? 'justify-center' : ''}
-              `}
-            >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} />
-              <AnimatePresence mode="wait">
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="font-medium text-sm"
-                  >
-                    {item.label}
-                  </motion.span>
+      <nav style={{ flex: 1, padding: '20px 12px', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {navItems.map((item, index) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+
+            return (
+              <motion.button
+                key={item.label}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.04 }}
+                onClick={() => navigate(item.path)}
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: isActive ? gh.activeBg : 'transparent',
+                  color: isActive ? gh.activeText : gh.text,
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  transition: 'all 0.15s',
+                  width: '100%',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = gh.hoverBg }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent' }}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="teacherActiveBar"
+                    style={{
+                      position: 'absolute', left: 0,
+                      width: 3, height: 28,
+                      backgroundColor: gh.activeBar,
+                      borderRadius: '0 4px 4px 0',
+                    }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
                 )}
-              </AnimatePresence>
-              
-              {isActive && !collapsed && (
-                <motion.div
-                  layoutId="activeIndicator"
-                  className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600"
-                />
-              )}
-            </button>
-          );
-        })}
+                <Icon style={{ width: 18, height: 18, flexShrink: 0, color: isActive ? gh.activeText : gh.iconColor }} />
+                <AnimatePresence mode="wait">
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      style={{ fontSize: '14px', fontWeight: 500 }}
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div style={{ padding: 16, borderTop: `1px solid ${gh.border}` }}>
         <AnimatePresence mode="wait">
           {!collapsed && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-xs text-gray-500 dark:text-gray-400 text-center"
+              style={{ fontSize: '11px', color: gh.footerText, textAlign: 'center' }}
             >
               v2.0.1 • 2026
             </motion.div>

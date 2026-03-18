@@ -1,2273 +1,630 @@
-import { motion } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { FaLeaf, FaShieldAlt, FaBell, FaChartLine, FaLock, FaBrain, FaArrowRight, FaCheck, FaPlay, FaVideo, FaUsers, FaMoon, FaSun, FaClipboardList, FaEye, FaTrophy } from 'react-icons/fa'
-import { MdSecurity } from 'react-icons/md'
-import { Mail, BookOpen, FileText, HelpCircle } from 'lucide-react'
 import PremiumFooterEnhanced from '../components/common/PremiumFooterEnhanced'
 
-const PremiumLandingPage = () => {
-  const [darkMode, setDarkMode] = useState(() => {
-    // Check localStorage first, then system preference
-    const saved = localStorage.getItem('theme')
-    if (saved) return saved === 'dark'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
+// Matrix rain canvas
+function MatrixRain() {
+  const canvasRef = useRef(null)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    const cols = Math.floor(canvas.width / 20)
+    const drops = Array(cols).fill(1)
+    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    let animId
+    function draw() {
+      ctx.fillStyle = 'rgba(0,0,0,0.05)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.fillStyle = '#00ff9f'
+      ctx.font = '14px monospace'
+      drops.forEach((y, i) => {
+        const char = chars[Math.floor(Math.random() * chars.length)]
+        ctx.fillText(char, i * 20, y * 20)
+        if (y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0
+        drops[i]++
+      })
+      animId = requestAnimationFrame(draw)
+    }
+    draw()
+    const handleResize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    window.addEventListener('resize', handleResize)
+    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', handleResize) }
+  }, [])
+  return <canvas ref={canvasRef} style={{ position: 'fixed', top: 0, left: 0, zIndex: 0, opacity: 0.18, pointerEvents: 'none' }} />
+}
 
-  // Contact form state
-  const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  })
+// Typing animation hook
+function useTyping(texts, speed = 80, pause = 1800) {
+  const [display, setDisplay] = useState('')
+  const [textIdx, setTextIdx] = useState(0)
+  const [charIdx, setCharIdx] = useState(0)
+  const [deleting, setDeleting] = useState(false)
+  useEffect(() => {
+    const current = texts[textIdx]
+    let timeout
+    if (!deleting && charIdx < current.length) {
+      timeout = setTimeout(() => setCharIdx(c => c + 1), speed)
+    } else if (!deleting && charIdx === current.length) {
+      timeout = setTimeout(() => setDeleting(true), pause)
+    } else if (deleting && charIdx > 0) {
+      timeout = setTimeout(() => setCharIdx(c => c - 1), speed / 2)
+    } else if (deleting && charIdx === 0) {
+      setDeleting(false)
+      setTextIdx(i => (i + 1) % texts.length)
+    }
+    setDisplay(current.slice(0, charIdx))
+    return () => clearTimeout(timeout)
+  }, [charIdx, deleting, textIdx, texts, speed, pause])
+  return display
+}
+
+// Scroll reveal hook
+function useScrollReveal() {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.15 })
+    if (ref.current) obs.observe(ref.current)
+    return () => obs.disconnect()
+  }, [])
+  return [ref, visible]
+}
+
+const features = [
+  { icon: '🛡️', title: 'AI Face Detection', desc: 'Real-time multi-face detection with 99.9% accuracy. Flags anomalies instantly.' },
+  { icon: '👁️', title: 'Gaze Tracking', desc: 'Monitors eye movement patterns to detect off-screen activity during exams.' },
+  { icon: '🔒', title: 'Secure Sessions', desc: 'End-to-end encrypted exam sessions. Zero data leakage guaranteed.' },
+  { icon: '⚡', title: 'Live Monitoring', desc: 'Teachers get real-time violation alerts and live student feeds.' },
+  { icon: '🧠', title: 'Smart AI Proctor', desc: 'Alice AI analyzes behavior patterns and auto-flags suspicious activity.' },
+  { icon: '📊', title: 'Detailed Reports', desc: 'Post-exam violation timelines, scores, and integrity reports.' },
+]
+
+const terminalLines = [
+  '> Initializing Alice Proctor v2.0...',
+  '> Loading AI models... [OK]',
+  '> Face detection module... [ACTIVE]',
+  '> Gaze tracking engine... [ACTIVE]',
+  '> WebSocket server... [CONNECTED]',
+  '> Encryption layer... [ENABLED]',
+  '> System ready. All modules operational.',
+]
+
+function FeatureCard({ feature, idx }) {
+  const [ref, visible] = useScrollReveal()
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(40px)',
+        transition: `opacity 0.6s ease ${idx * 0.1}s, transform 0.6s ease ${idx * 0.1}s`,
+        background: 'rgba(0,255,159,0.03)',
+        border: '1px solid rgba(0,255,159,0.25)',
+        borderRadius: '12px',
+        padding: '28px 24px',
+        cursor: 'default',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+      className="hacker-card"
+    >
+      <div style={{ fontSize: '2rem', marginBottom: '12px' }}>{feature.icon}</div>
+      <h3 style={{ color: '#00ff9f', fontFamily: 'monospace', fontSize: '1rem', marginBottom: '10px', textShadow: '0 0 8px #00ff9f88' }}>
+        {feature.title}
+      </h3>
+      <p style={{ color: '#ffffffaa', fontFamily: 'monospace', fontSize: '0.85rem', lineHeight: 1.6 }}>{feature.desc}</p>
+    </div>
+  )
+}
+
+function TerminalBox() {
+  const [lines, setLines] = useState([])
+  useEffect(() => {
+    let i = 0
+    const interval = setInterval(() => {
+      if (i < terminalLines.length) {
+        setLines(prev => [...prev, terminalLines[i]])
+        i++
+      } else {
+        clearInterval(interval)
+      }
+    }, 500)
+    return () => clearInterval(interval)
+  }, [])
+  return (
+    <div style={{
+      background: '#0a0a0a',
+      border: '1px solid #00ff9f44',
+      borderRadius: '10px',
+      padding: '20px 24px',
+      fontFamily: 'monospace',
+      fontSize: '0.85rem',
+      boxShadow: '0 0 30px #00ff9f22',
+      maxWidth: '600px',
+      margin: '0 auto',
+    }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
+        <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
+        <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
+        <span style={{ marginLeft: 8, color: '#ffffff55', fontSize: '0.75rem' }}>alice-proctor — bash</span>
+      </div>
+      {lines.map((line, i) => (
+        <div key={i} style={{ color: i === lines.length - 1 ? '#00ff9f' : '#00ff9faa', marginBottom: '4px', textShadow: '0 0 6px #00ff9f66' }}>
+          {line}
+        </div>
+      ))}
+      {lines.length < terminalLines.length && (
+        <span style={{ color: '#00ff9f', animation: 'blink 1s step-end infinite' }}>█</span>
+      )}
+    </div>
+  )
+}
+
+const PremiumLandingPage = () => {
+  const typedText = useTyping([
+    'Initializing System...',
+    'AI Proctor Online.',
+    'Zero Cheating. Zero Compromise.',
+    'Welcome to Alice.',
+  ])
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' })
+  const [menuOpen, setMenuOpen] = useState(false)
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [darkMode])
+  const [heroRef, heroVisible] = useScrollReveal()
+  const [aboutRef, aboutVisible] = useScrollReveal()
+  const [featRef, featVisible] = useScrollReveal()
+  const [contactRef, contactVisible] = useScrollReveal()
 
-  const handleContactChange = (e) => {
-    setContactForm({
-      ...contactForm,
-      [e.target.name]: e.target.value
-    })
-  }
+  const handleContactChange = (e) => setContactForm({ ...contactForm, [e.target.name]: e.target.value })
 
   const handleContactSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
     setSubmitStatus({ type: '', message: '' })
-
     try {
-      const response = await fetch('http://localhost:8000/api/contact/', {
+      const res = await fetch('http://localhost:8000/api/contact/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(contactForm)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactForm),
       })
-
-      const data = await response.json()
-
+      const data = await res.json()
       if (data.success) {
-        setSubmitStatus({
-          type: 'success',
-          message: data.message
-        })
+        setSubmitStatus({ type: 'success', message: data.message })
         setContactForm({ name: '', email: '', subject: '', message: '' })
       } else {
-        setSubmitStatus({
-          type: 'error',
-          message: data.error || 'Failed to send message'
-        })
+        setSubmitStatus({ type: 'error', message: data.error || 'Failed to send message' })
       }
-    } catch (error) {
-      setSubmitStatus({
-        type: 'error',
-        message: 'Network error. Please try again later.'
-      })
+    } catch {
+      setSubmitStatus({ type: 'error', message: 'Network error. Please try again later.' })
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      darkMode 
-        ? 'bg-gradient-to-b from-slate-950 via-slate-900 to-black' 
-        : 'bg-[#F8FAFC]'
-    }`}>
-      {/* Animated Background */}
-      <div className="fixed inset-0 -z-10">
-        <div className={`absolute inset-0 transition-colors duration-300 ${
-          darkMode 
-            ? 'bg-gradient-to-br from-slate-950 via-blue-900 to-purple-900' 
-            : 'bg-gradient-to-135 from-[#EEF2FF] via-[#F5F3FF] to-[#ECFEFF]'
-        }`} />
-        <motion.div
-          className={`absolute top-0 -left-40 w-80 h-80 rounded-full filter blur-3xl ${
-            darkMode ? 'bg-blue-500/20' : 'bg-indigo-400/10'
-          }`}
-          style={{ mixBlendMode: darkMode ? 'screen' : 'normal', opacity: darkMode ? 1 : 0.4 }}
-          animate={{ x: [0, 100, 0], y: [0, -100, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className={`absolute top-0 -right-40 w-80 h-80 rounded-full filter blur-3xl ${
-            darkMode ? 'bg-purple-500/20' : 'bg-violet-400/10'
-          }`}
-          style={{ mixBlendMode: darkMode ? 'screen' : 'normal', opacity: darkMode ? 1 : 0.4 }}
-          animate={{ x: [0, -100, 0], y: [0, 100, 0] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className={`absolute -bottom-40 left-20 w-80 h-80 rounded-full filter blur-3xl ${
-            darkMode ? 'bg-pink-500/20' : 'bg-cyan-400/10'
-          }`}
-          style={{ mixBlendMode: darkMode ? 'screen' : 'normal', opacity: darkMode ? 1 : 0.4 }}
-          animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
-          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
+    <div style={{ background: '#000000', minHeight: '100vh', color: '#ffffff', fontFamily: 'monospace', overflowX: 'hidden' }}>
+      <MatrixRain />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { background: #000; overflow-x: hidden; }
 
-      {/* Enhanced Navigation Header */}
-      <motion.nav 
-        className={`sticky top-0 z-50 backdrop-blur-2xl border-b transition-all duration-300 ${
-          darkMode 
-            ? 'bg-slate-900/90 border-slate-700/50 shadow-lg shadow-blue-500/5' 
-            : 'bg-white/80 border-gray-200/50 shadow-lg shadow-indigo-500/5'
-        }`}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        {/* Main Navigation */}
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex justify-between items-center">
-            {/* Enhanced Logo Section */}
-            <motion.div 
-              className="flex items-center gap-3"
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-300 group cursor-pointer ${
-                darkMode 
-                  ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600' 
-                  : 'bg-gradient-to-br from-[#6366F1] via-[#8B5CF6] to-[#A855F7]'
-              }`}>
-                <FaLeaf className="text-white text-2xl group-hover:rotate-12 transition-transform duration-300" />
-                <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-                  darkMode ? 'bg-white/10' : 'bg-white/20'
-                }`} />
-                {/* Pulse Ring */}
-                <motion.div
-                  className={`absolute inset-0 rounded-2xl border-2 ${
-                    darkMode ? 'border-blue-400/50' : 'border-indigo-500/50'
-                  }`}
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-2xl font-extrabold bg-gradient-to-r bg-clip-text text-transparent transition-all duration-300 ${
-                    darkMode 
-                      ? 'from-blue-400 via-purple-400 to-pink-400' 
-                      : 'from-[#6366F1] via-[#8B5CF6] to-[#A855F7]'
-                  }`}>
-                    Alice
-                  </span>
-                  {/* Verified Badge */}
-                  <motion.div
-                    whileHover={{ scale: 1.2, rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                      darkMode 
-                        ? 'bg-blue-500/20 border border-blue-400' 
-                        : 'bg-blue-100 border border-blue-500'
-                    }`}
-                  >
-                    <FaCheck className={`text-xs ${
-                      darkMode ? 'text-blue-400' : 'text-blue-600'
-                    }`} />
-                  </motion.div>
-                </div>
-                <div className={`text-xs font-semibold tracking-wider ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  EXAM PROCTOR
-                </div>
-              </div>
-            </motion.div>
+        /* Smooth section transitions */
+        section { will-change: transform; }
 
-            {/* Enhanced Navigation Links */}
-            <div className="hidden lg:flex items-center gap-2">
-              {[
-                { href: '#features', label: 'Features', icon: <FaShieldAlt />, badge: 'New' },
-                { href: '#how-it-works', label: 'How it Works', icon: <FaBrain />, badge: null },
-                { href: '#pricing', label: 'Pricing', icon: <FaTrophy />, badge: 'Hot' },
-                { href: '#privacy', label: 'Privacy', icon: <FaLock />, badge: null }
-              ].map((link, i) => (
-                <motion.a
-                  key={i}
-                  href={link.href}
-                  className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                    darkMode 
-                      ? 'text-gray-300 hover:text-white hover:bg-slate-800/80' 
-                      : 'text-gray-700 hover:text-[#6366F1] hover:bg-gray-100/80'
-                  }`}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className={`text-base ${
-                    darkMode ? 'text-blue-400' : 'text-[#6366F1]'
-                  }`}>{link.icon}</span>
-                  {link.label}
-                  {link.badge && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className={`absolute -top-1 -right-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                        link.badge === 'New' 
-                          ? darkMode 
-                            ? 'bg-green-500/20 text-green-400 border border-green-400/50' 
-                            : 'bg-green-100 text-green-600 border border-green-300'
-                          : darkMode 
-                            ? 'bg-orange-500/20 text-orange-400 border border-orange-400/50' 
-                            : 'bg-orange-100 text-orange-600 border border-orange-300'
-                      }`}
-                    >
-                      {link.badge}
-                    </motion.span>
-                  )}
-                </motion.a>
-              ))}
-            </div>
+        /* Hacker card */
+        .hacker-card {
+          transition: border-color 0.35s cubic-bezier(0.4,0,0.2,1),
+                      box-shadow 0.35s cubic-bezier(0.4,0,0.2,1),
+                      transform 0.35s cubic-bezier(0.4,0,0.2,1) !important;
+        }
+        .hacker-card:hover {
+          border-color: rgba(0,255,159,0.7) !important;
+          box-shadow: 0 0 28px rgba(0,255,159,0.2), inset 0 0 24px rgba(0,255,159,0.04) !important;
+          transform: translateY(-6px) !important;
+        }
 
-            {/* Enhanced Action Buttons */}
-            <div className="flex items-center gap-3">
-              {/* Dark Mode Toggle */}
-              <motion.button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`relative p-3 rounded-xl transition-all duration-300 overflow-hidden ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-slate-800 to-slate-700 text-yellow-400 hover:from-slate-700 hover:to-slate-600 shadow-lg' 
-                    : 'bg-gradient-to-br from-white to-gray-50 text-gray-700 hover:from-gray-50 hover:to-white border border-gray-200 shadow-md'
-                }`}
-                whileHover={{ scale: 1.1, rotate: 15 }}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Toggle theme"
-              >
-                <motion.div
-                  initial={false}
-                  animate={{ rotate: darkMode ? 0 : 180, scale: darkMode ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <FaSun className="text-xl" />
-                </motion.div>
-                <motion.div
-                  initial={false}
-                  animate={{ rotate: darkMode ? 180 : 0, scale: darkMode ? 0 : 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center justify-center"
-                >
-                  <FaMoon className="text-xl" />
-                </motion.div>
-              </motion.button>
+        /* Buttons */
+        .neon-btn {
+          background: transparent;
+          border: 1.5px solid #00ff9f;
+          color: #00ff9f;
+          padding: 12px 32px;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.9rem;
+          border-radius: 6px;
+          cursor: pointer;
+          text-shadow: 0 0 8px rgba(0,255,159,0.6);
+          box-shadow: 0 0 12px rgba(0,255,159,0.2);
+          transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.25s cubic-bezier(0.4,0,0.2,1);
+          text-decoration: none;
+          display: inline-block;
+          letter-spacing: 0.5px;
+        }
+        .neon-btn:hover {
+          background: rgba(0,255,159,0.08);
+          box-shadow: 0 0 32px rgba(0,255,159,0.5), 0 0 64px rgba(0,255,159,0.15);
+          transform: translateY(-2px) scale(1.03);
+        }
+        .neon-btn:active { transform: scale(0.97); }
 
-              {/* Login Button */}
-              <Link to="/auth">
-                <motion.button
-                  className={`hidden sm:block px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                    darkMode 
-                      ? 'bg-slate-800 text-white hover:bg-slate-700 border border-slate-700' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Login
-                </motion.button>
-              </Link>
+        .neon-btn-solid {
+          background: #00ff9f;
+          border: 1.5px solid #00ff9f;
+          color: #000;
+          padding: 12px 32px;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.9rem;
+          font-weight: 700;
+          border-radius: 6px;
+          cursor: pointer;
+          box-shadow: 0 0 24px rgba(0,255,159,0.4);
+          transition: box-shadow 0.3s ease, transform 0.25s cubic-bezier(0.4,0,0.2,1), background 0.2s;
+          text-decoration: none;
+          display: inline-block;
+          letter-spacing: 0.5px;
+        }
+        .neon-btn-solid:hover {
+          background: #00ffb3;
+          box-shadow: 0 0 48px rgba(0,255,159,0.7), 0 0 96px rgba(0,255,159,0.2);
+          transform: translateY(-2px) scale(1.03);
+        }
+        .neon-btn-solid:active { transform: scale(0.97); }
 
-              {/* Get Started Button */}
-              <Link to="/auth">
-                <motion.button
-                  className={`relative px-6 py-3 rounded-xl font-bold text-sm overflow-hidden group ${
-                    darkMode
-                      ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-xl shadow-blue-500/30'
-                      : 'bg-gradient-to-r from-[#6366F1] via-[#8B5CF6] to-[#A855F7] text-white shadow-lg shadow-indigo-500/30'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    Get Started
-                    <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-200" />
-                  </span>
-                  <motion.div
-                    className={`absolute inset-0 ${
-                      darkMode ? 'bg-white/20' : 'bg-white/30'
-                    }`}
-                    initial={{ x: '-100%' }}
-                    whileHover={{ x: '100%' }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </motion.button>
-              </Link>
-            </div>
+        /* Animations */
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes glitch {
+          0%,85%,100% { text-shadow: 0 0 20px #00ff9f, 0 0 40px rgba(0,255,159,0.5); clip-path: none; }
+          86% { text-shadow: -3px 0 #ff0040, 3px 0 #00ff9f; clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); }
+          88% { text-shadow: 3px 0 #ff0040, -3px 0 #00ff9f; clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); }
+          90% { text-shadow: 0 0 20px #00ff9f, 0 0 40px rgba(0,255,159,0.5); clip-path: none; }
+        }
+        .glitch-text { animation: glitch 4s ease-in-out infinite; }
+
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+        @keyframes float-up { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+        /* Nav links */
+        .nav-link {
+          color: rgba(255,255,255,0.55);
+          text-decoration: none;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.85rem;
+          padding: 7px 14px;
+          border-radius: 5px;
+          transition: color 0.2s ease, text-shadow 0.2s ease, background 0.2s ease;
+          position: relative;
+        }
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: 2px; left: 14px; right: 14px;
+          height: 1px;
+          background: #00ff9f;
+          transform: scaleX(0);
+          transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+          box-shadow: 0 0 6px #00ff9f;
+        }
+        .nav-link:hover { color: #00ff9f; text-shadow: 0 0 10px rgba(0,255,159,0.5); }
+        .nav-link:hover::after { transform: scaleX(1); }
+
+        /* Inputs */
+        input:not(.footer-subscribe-input), textarea {
+          background: rgba(0,255,159,0.03) !important;
+          border: 1px solid rgba(0,255,159,0.2) !important;
+          color: #fff !important;
+          font-family: 'JetBrains Mono', monospace !important;
+          border-radius: 6px !important;
+          padding: 12px 16px !important;
+          width: 100% !important;
+          outline: none !important;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+          font-size: 0.88rem !important;
+        }
+        input:not(.footer-subscribe-input):focus, textarea:focus {
+          border-color: rgba(0,255,159,0.6) !important;
+          box-shadow: 0 0 16px rgba(0,255,159,0.12) !important;
+        }
+        input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.25) !important; }
+        textarea { resize: vertical; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,255,159,0.3); border-radius: 3px; transition: background 0.3s; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,159,0.6); }
+
+        /* Section label */
+        .section-label {
+          color: rgba(0,255,159,0.5);
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.72rem;
+          letter-spacing: 4px;
+          margin-bottom: 14px;
+          text-transform: uppercase;
+        }
+
+        /* Stat card hover */
+        .stat-card {
+          transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .stat-card:hover {
+          border-color: rgba(0,255,159,0.5) !important;
+          box-shadow: 0 0 20px rgba(0,255,159,0.12) !important;
+          transform: translateY(-3px);
+        }
+
+        /* Step card */
+        .step-card {
+          transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .step-card:hover {
+          border-color: rgba(0,255,159,0.4) !important;
+          box-shadow: 0 0 24px rgba(0,255,159,0.1) !important;
+          transform: translateY(-4px);
+        }
+
+        /* Mobile nav */
+        @media (max-width: 768px) {
+          .nav-links { display: none !important; }
+          .mobile-cta { display: flex !important; }
+        }
+      `}</style>
+
+      {/* NAV */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(0,0,0,0.88)',
+        borderBottom: '1px solid rgba(0,255,159,0.12)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        padding: '0 5%',
+        transition: 'background 0.3s ease',
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 66 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ color: '#00ff9f', fontSize: '1.4rem', fontWeight: 700, textShadow: '0 0 14px rgba(0,255,159,0.7)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
+              {'>'} Alice
+            </span>
+            <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.7rem', fontFamily: 'monospace', letterSpacing: 2 }}>EXAM_PROCTOR</span>
           </div>
-        </div>
-
-        {/* Bottom Glow Effect */}
-        <div className={`absolute bottom-0 left-0 right-0 h-px ${
-          darkMode 
-            ? 'bg-gradient-to-r from-transparent via-blue-500/50 to-transparent' 
-            : 'bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent'
-        }`} />
-      </motion.nav>
-
-
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-32 px-6">
-        <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 transition-colors duration-300 ${
-                darkMode 
-                  ? 'bg-blue-900/50 border border-blue-700' 
-                  : 'bg-white/80 border border-[rgba(15,23,42,0.06)] backdrop-blur-sm'
-              }`}
-            >
-              <span className="w-2 h-2 bg-[#6366F1] rounded-full animate-pulse" />
-              <span className={`text-sm font-semibold transition-colors duration-300 ${
-                darkMode ? 'text-blue-400' : 'text-[#6366F1]'
-              }`}>Powered by Advanced AI</span>
-            </motion.div>
-
-            {/* Main Headline */}
-            <div className="relative mb-8">
-              {/* Glow effect behind text */}
-              <div className="absolute inset-0 blur-3xl opacity-30">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-32 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600"></div>
-              </div>
-              
-              <h1 className="relative text-5xl md:text-7xl lg:text-8xl font-bold leading-tight">
-                <motion.span 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  className={`block mb-3 transition-colors duration-300 ${
-                    darkMode ? 'text-white drop-shadow-lg' : 'text-[#020617]'
-                  }`}
-                >
-                  AI-Powered
-                </motion.span>
-                
-                <motion.span 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5, duration: 0.6 }}
-                  className={`block mb-3 font-extrabold ${
-                    darkMode 
-                      ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent'
-                      : 'bg-gradient-to-r from-[#6366F1] via-[#8B5CF6] to-[#7C3AED] bg-clip-text text-transparent'
-                  }`}
-                  style={{
-                    backgroundSize: '200% auto',
-                  }}
-                >
-                  Online Exam
-                </motion.span>
-                
-                <motion.span 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7, duration: 0.6 }}
-                  className={`block transition-colors duration-300 ${
-                    darkMode ? 'text-white drop-shadow-lg' : 'text-[#020617]'
-                  }`}
-                >
-                  Proctoring
-                </motion.span>
-              </h1>
-            </div>
-
-            {/* Subheadline */}
-            <p className={`text-xl md:text-2xl mb-12 max-w-3xl mx-auto leading-relaxed transition-colors duration-300 ${
-              darkMode ? 'text-gray-300' : 'text-[#334155]'
-            }`}>
-              Fair exams. Smart monitoring. Real-time AI supervision.
-              <br className="hidden md:block" />
-              The future of online examination is here.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
-              <Link
-                to="/auth"
-                className={`group px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-3 ${
-                  darkMode
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-2xl hover:shadow-blue-500/50'
-                    : 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white hover:shadow-2xl hover:shadow-indigo-500/30'
-                }`}
-              >
-                Get Started Free
-                <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              
-              <button className={`px-8 py-4 rounded-2xl font-semibold text-lg border-2 transition-all duration-200 flex items-center gap-3 ${
-                darkMode
-                  ? 'bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                  : 'bg-white/80 text-[#334155] border-[rgba(15,23,42,0.06)] hover:border-[#6366F1] hover:bg-white backdrop-blur-sm'
-              }`}>
-                <FaPlay className={darkMode ? 'text-blue-600' : 'text-[#6366F1]'} />
-                Watch Demo
-              </button>
-            </div>
-
-            {/* Hero Image Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.4 }}
-              className="relative mt-16"
-            >
-              {/* Glow Effect */}
-              <div className={`absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-3xl blur-3xl`} />
-              
-              {/* Main Image Container */}
-              <div className={`relative backdrop-blur-xl border rounded-3xl overflow-hidden shadow-2xl transition-colors duration-300 ${
-                darkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white/90 border-gray-200'
-              }`}>
-                {/* Image with Overlay */}
-                <div className="relative aspect-video overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=675&fit=crop&q=80"
-                    alt="Students taking online exam with AI proctoring"
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  {/* Gradient Overlay */}
-                  <div className={`absolute inset-0 ${
-                    darkMode 
-                      ? 'bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent' 
-                      : 'bg-gradient-to-t from-white via-white/50 to-transparent'
-                  }`} />
-                  
-                  {/* Floating Stats Cards on Image */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8, duration: 0.6 }}
-                    className={`absolute top-6 left-6 backdrop-blur-xl rounded-2xl p-4 border shadow-xl ${
-                      darkMode 
-                        ? 'bg-slate-900/90 border-slate-700' 
-                        : 'bg-white/90 border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                        <FaShieldAlt className="text-white text-xl" />
-                      </div>
-                      <div>
-                        <div className={`text-2xl font-bold ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>99.9%</div>
-                        <div className={`text-xs font-medium ${
-                          darkMode ? 'text-gray-400' : 'text-gray-600'
-                        }`}>Detection Rate</div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1, duration: 0.6 }}
-                    className={`absolute top-6 right-6 backdrop-blur-xl rounded-2xl p-4 border shadow-xl ${
-                      darkMode 
-                        ? 'bg-slate-900/90 border-slate-700' 
-                        : 'bg-white/90 border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                      <span className={`text-xs font-semibold ${
-                        darkMode ? 'text-green-400' : 'text-green-600'
-                      }`}>Live Monitoring</span>
-                    </div>
-                    <div className={`text-lg font-bold ${
-                      darkMode ? 'text-white' : 'text-gray-900'
-                    }`}>342 Students</div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.2, duration: 0.6 }}
-                    className={`absolute bottom-6 left-6 right-6 backdrop-blur-xl rounded-2xl p-4 border shadow-xl ${
-                      darkMode 
-                        ? 'bg-slate-900/90 border-slate-700' 
-                        : 'bg-white/90 border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                          <FaBrain className="text-white text-lg" />
-                        </div>
-                        <div>
-                          <div className={`font-semibold ${
-                            darkMode ? 'text-white' : 'text-gray-900'
-                          }`}>AI Proctoring Active</div>
-                          <div className={`text-xs ${
-                            darkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>Face detection • Audio monitoring • Screen tracking</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          darkMode ? 'bg-green-500/20' : 'bg-green-100'
-                        }`}>
-                          <FaCheck className={darkMode ? 'text-green-400' : 'text-green-600'} />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* Bottom Dashboard Preview */}
-                <div className={`rounded-2xl p-8 overflow-hidden ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900' 
-                    : 'bg-gradient-to-br from-gray-100 via-blue-50 to-purple-50'
-                }`}>
-                  {/* Mini Dashboard Header */}
-                  <div className={`flex items-center justify-between mb-6 pb-4 border-b ${
-                    darkMode ? 'border-white/10' : 'border-gray-300/30'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                        <FaLeaf className="text-white text-xl" />
-                      </div>
-                      <div>
-                        <h4 className={`font-semibold text-lg ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>Alice Dashboard</h4>
-                        <p className={`text-sm ${
-                          darkMode ? 'text-blue-200' : 'text-blue-600'
-                        }`}>Live Monitoring</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 bg-green-500/20 px-3 py-1.5 rounded-full">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                      <span className="text-green-400 text-sm font-medium">Live</span>
-                    </div>
-                  </div>
-
-                  {/* Stats Cards */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                      className={`backdrop-blur-sm rounded-xl p-5 border hover:scale-105 transition-all ${
-                        darkMode 
-                          ? 'bg-white/10 border-white/10 hover:bg-white/15' 
-                          : 'bg-white/60 border-gray-200 hover:bg-white/80'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          darkMode ? 'bg-blue-500/20' : 'bg-blue-100'
-                        }`}>
-                          <FaVideo className={`text-xl ${
-                            darkMode ? 'text-blue-400' : 'text-blue-600'
-                          }`} />
-                        </div>
-                        <div>
-                          <div className={`text-2xl font-bold ${
-                            darkMode ? 'text-white' : 'text-gray-900'
-                          }`}>24</div>
-                          <div className={`text-xs ${
-                            darkMode ? 'text-blue-200' : 'text-blue-600'
-                          }`}>Active Exams</div>
-                        </div>
-                      </div>
-                      <div className={`h-1 rounded-full overflow-hidden ${
-                        darkMode ? 'bg-white/10' : 'bg-gray-200'
-                      }`}>
-                        <motion.div 
-                          className="h-full bg-gradient-to-r from-blue-500 to-blue-400"
-                          initial={{ width: 0 }}
-                          animate={{ width: '75%' }}
-                          transition={{ delay: 0.8, duration: 1 }}
-                        />
-                      </div>
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 }}
-                      className={`backdrop-blur-sm rounded-xl p-5 border hover:scale-105 transition-all ${
-                        darkMode 
-                          ? 'bg-white/10 border-white/10 hover:bg-white/15' 
-                          : 'bg-white/60 border-gray-200 hover:bg-white/80'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          darkMode ? 'bg-purple-500/20' : 'bg-purple-100'
-                        }`}>
-                          <FaUsers className={`text-xl ${
-                            darkMode ? 'text-purple-400' : 'text-purple-600'
-                          }`} />
-                        </div>
-                        <div>
-                          <div className={`text-2xl font-bold ${
-                            darkMode ? 'text-white' : 'text-gray-900'
-                          }`}>342</div>
-                          <div className={`text-xs ${
-                            darkMode ? 'text-purple-200' : 'text-purple-600'
-                          }`}>Students Online</div>
-                        </div>
-                      </div>
-                      <div className={`h-1 rounded-full overflow-hidden ${
-                        darkMode ? 'bg-white/10' : 'bg-gray-200'
-                      }`}>
-                        <motion.div 
-                          className="h-full bg-gradient-to-r from-purple-500 to-purple-400"
-                          initial={{ width: 0 }}
-                          animate={{ width: '90%' }}
-                          transition={{ delay: 0.9, duration: 1 }}
-                        />
-                      </div>
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.7 }}
-                      className={`backdrop-blur-sm rounded-xl p-5 border hover:scale-105 transition-all ${
-                        darkMode 
-                          ? 'bg-white/10 border-white/10 hover:bg-white/15' 
-                          : 'bg-white/60 border-gray-200 hover:bg-white/80'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          darkMode ? 'bg-pink-500/20' : 'bg-pink-100'
-                        }`}>
-                          <FaChartLine className={`text-xl ${
-                            darkMode ? 'text-pink-400' : 'text-pink-600'
-                          }`} />
-                        </div>
-                        <div>
-                          <div className={`text-2xl font-bold ${
-                            darkMode ? 'text-white' : 'text-gray-900'
-                          }`}>98%</div>
-                          <div className={`text-xs ${
-                            darkMode ? 'text-pink-200' : 'text-pink-600'
-                          }`}>Success Rate</div>
-                        </div>
-                      </div>
-                      <div className={`h-1 rounded-full overflow-hidden ${
-                        darkMode ? 'bg-white/10' : 'bg-gray-200'
-                      }`}>
-                        <motion.div 
-                          className="h-full bg-gradient-to-r from-pink-500 to-pink-400"
-                          initial={{ width: 0 }}
-                          animate={{ width: '98%' }}
-                          transition={{ delay: 1, duration: 1 }}
-                        />
-                      </div>
-                    </motion.div>
-                  </div>
-
-                  {/* Activity Grid */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className={`backdrop-blur-sm rounded-xl p-4 border ${
-                      darkMode 
-                        ? 'bg-white/5 border-white/10' 
-                        : 'bg-white/40 border-gray-200'
-                    }`}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <FaBell className={darkMode ? 'text-yellow-400' : 'text-yellow-600'} />
-                        <h5 className={`font-semibold text-sm ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>Recent Activity</h5>
-                      </div>
-                      <div className="space-y-2">
-                        {[
-                          { text: 'Exam started: Mathematics 101', color: 'bg-green-400' },
-                          { text: 'Alert: Tab switch detected', color: 'bg-yellow-400' },
-                          { text: 'Student completed exam', color: 'bg-blue-400' }
-                        ].map((activity, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 1.1 + i * 0.1 }}
-                            className="flex items-start gap-2"
-                          >
-                            <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${activity.color}`} />
-                            <p className={`text-xs leading-relaxed ${
-                              darkMode ? 'text-blue-100/80' : 'text-gray-700'
-                            }`}>{activity.text}</p>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className={`backdrop-blur-sm rounded-xl p-4 border ${
-                      darkMode 
-                        ? 'bg-white/5 border-white/10' 
-                        : 'bg-white/40 border-gray-200'
-                    }`}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <FaShieldAlt className={darkMode ? 'text-green-400' : 'text-green-600'} />
-                        <h5 className={`font-semibold text-sm ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>AI Protection</h5>
-                      </div>
-                      <div className="space-y-3">
-                        {[
-                          { label: 'Face Detection', value: 100 },
-                          { label: 'Audio Monitor', value: 100 },
-                          { label: 'Screen Track', value: 95 }
-                        ].map((item, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1.2 + i * 0.1 }}
-                          >
-                            <div className="flex justify-between items-center mb-1">
-                              <span className={`text-xs ${
-                                darkMode ? 'text-blue-100/70' : 'text-gray-600'
-                              }`}>{item.label}</span>
-                              <span className={`text-xs font-semibold ${
-                                darkMode ? 'text-green-400' : 'text-green-600'
-                              }`}>{item.value}%</span>
-                            </div>
-                            <div className={`h-1 rounded-full overflow-hidden ${
-                              darkMode ? 'bg-white/10' : 'bg-gray-200'
-                            }`}>
-                              <motion.div
-                                className="h-full bg-gradient-to-r from-green-500 to-green-400"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${item.value}%` }}
-                                transition={{ delay: 1.3 + i * 0.1, duration: 0.8 }}
-                              />
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-
-      {/* Stats & Impact Section */}
-      <section className={`py-16 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-800/50' : 'bg-white/40'
-      }`}>
-        <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <p className={`text-sm font-semibold uppercase tracking-wider mb-4 transition-colors duration-300 ${
-              darkMode ? 'text-gray-400' : 'text-[#64748B]'
-            }`}>
-              Empowering Education with AI
-            </p>
-            <h3 className={`text-2xl md:text-3xl font-bold mb-12 transition-colors duration-300 ${
-              darkMode ? 'text-white' : 'text-[#020617]'
-            }`}>
-              Making Online Exams Fair & Secure
-            </h3>
-            
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-              {[
-                { number: '10K+', label: 'Exams Conducted', icon: <FaClipboardList /> },
-                { number: '50K+', label: 'Students Protected', icon: <FaUsers /> },
-                { number: '99.9%', label: 'Uptime Guarantee', icon: <FaShieldAlt /> },
-                { number: '24/7', label: 'AI Monitoring', icon: <FaEye /> }
-              ].map((stat, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className={`p-6 rounded-2xl transition-all duration-300 hover:scale-105 ${
-                    darkMode ? 'bg-slate-700/50 hover:bg-slate-700' : 'bg-white/65 hover:bg-white/80 backdrop-blur-sm border border-[rgba(15,23,42,0.06)]'
-                  }`}
-                >
-                  <div className={`text-4xl mb-3 transition-colors duration-300 ${
-                    darkMode ? 'text-blue-400' : 'text-[#6366F1]'
-                  }`}>{stat.icon}</div>
-                  <div className={`text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r bg-clip-text text-transparent ${
-                    darkMode ? 'from-blue-600 to-purple-600' : 'from-[#6366F1] to-[#8B5CF6]'
-                  }`}>
-                    {stat.number}
-                  </div>
-                  <p className={`text-sm font-medium transition-colors duration-300 ${
-                    darkMode ? 'text-gray-400' : 'text-[#64748B]'
-                  }`}>{stat.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className={`py-32 px-6 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-900/30' : 'bg-transparent'
-      }`}>
-        <div className="container mx-auto max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-20"
-          >
-            <h2 className={`text-4xl md:text-6xl font-bold mb-6 transition-colors duration-300 ${
-              darkMode ? 'text-white' : 'text-[#020617]'
-            }`}>
-              Powerful Features
-            </h2>
-            <p className={`text-xl max-w-2xl mx-auto transition-colors duration-300 ${
-              darkMode ? 'text-gray-300' : 'text-[#334155]'
-            }`}>
-              Everything you need for secure, fair, and efficient online examinations
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <FeatureCard key={index} feature={feature} index={index} darkMode={darkMode} />
+          <div className="nav-links" style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            {[['#about','about'],['#features','features'],['#terminal','terminal'],['#contact','contact']].map(([href, label], i) => (
+              <a key={i} href={href} className="nav-link">{label}</a>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section id="how-it-works" className={`relative py-32 px-6 overflow-hidden transition-colors duration-300 ${
-        darkMode 
-          ? 'bg-gradient-to-br from-slate-950 via-blue-900 to-purple-900' 
-          : 'bg-white/40'
-      }`}>
-        {/* Animated Background Blobs */}
-        <motion.div
-          className={`absolute top-20 left-10 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${
-            darkMode ? 'bg-blue-500' : 'bg-blue-400'
-          }`}
-          animate={{ 
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className={`absolute bottom-20 right-10 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${
-            darkMode ? 'bg-purple-500' : 'bg-purple-400'
-          }`}
-          animate={{ 
-            x: [0, -50, 0],
-            y: [0, -30, 0],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        />
-
-        <div className="container mx-auto max-w-6xl relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-20"
-          >
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 transition-colors duration-300 ${
-                darkMode 
-                  ? 'bg-blue-500/20 border border-blue-400/30' 
-                  : 'bg-white/80 border border-[rgba(15,23,42,0.06)] backdrop-blur-sm'
-              }`}
-            >
-              <span className="w-2 h-2 bg-[#6366F1] rounded-full animate-pulse" />
-              <span className={`text-sm font-semibold transition-colors duration-300 ${
-                darkMode ? 'text-blue-300' : 'text-[#6366F1]'
-              }`}>Simple & Effective</span>
-            </motion.div>
-
-            <h2 className={`text-4xl md:text-6xl font-bold mb-6 transition-colors duration-300 ${
-              darkMode ? 'text-white' : 'text-[#020617]'
-            }`}>
-              How It Works
-            </h2>
-            <p className={`text-xl max-w-2xl mx-auto transition-colors duration-300 ${
-              darkMode ? 'text-blue-200' : 'text-[#334155]'
-            }`}>
-              Three simple steps to conduct fair online exams with AI-powered monitoring
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-            {steps.map((step, index) => (
-              <StepCard key={index} step={step} index={index} darkMode={darkMode} />
-            ))}
-          </div>
-
-          {/* Bottom CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.8 }}
-            className="text-center mt-16"
-          >
-            <Link
-              to="/auth"
-              className={`inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
-                darkMode
-                  ? 'bg-white text-blue-600 hover:bg-blue-50'
-                  : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-blue-500/50'
-              }`}
-            >
-              Start Your First Exam
-              <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+            <Link to="/auth" className="neon-btn" style={{ padding: '8px 22px', marginLeft: 16, fontSize: '0.82rem' }}>
+              Login
             </Link>
-          </motion.div>
-        </div>
-      </section>
-
-
-      {/* AI Assistant Highlight */}
-      <section className={`py-32 px-6 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-900/30' : 'bg-transparent'
-      }`}>
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="inline-block mb-6 px-4 py-2 bg-purple-100 rounded-full">
-                <span className={`text-sm font-semibold ${
-                  darkMode ? 'text-purple-300' : 'text-purple-600'
-                }`}>
-                  AI Assistant
-                </span>
-              </div>
-              <h2 className={`text-4xl md:text-5xl font-bold mb-6 transition-colors duration-300 ${
-                darkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                Meet Alice
-              </h2>
-              <p className={`text-xl mb-8 leading-relaxed transition-colors duration-300 ${
-                darkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                Your intelligent AI exam assistant. Get instant help, real-time support, and smart insights during examinations.
-              </p>
-              <ul className="space-y-4 mb-8">
-                {['Natural language conversations', 'Instant exam support', 'Smart violation detection', 'Real-time analytics'].map((item, i) => (
-                  <li key={i} className={`flex items-center gap-3 transition-colors duration-300 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <FaCheck className="text-white text-xs" />
-                    </div>
-                    <span className="text-lg">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/auth">
-                  <motion.button
-                    className={`px-8 py-4 rounded-xl font-semibold text-lg shadow-xl transition-all duration-200 flex items-center gap-3 ${
-                      darkMode
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-2xl hover:shadow-blue-500/50'
-                        : 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white hover:shadow-2xl hover:shadow-indigo-500/30'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FaBrain className="text-xl" />
-                    Try Alice Now
-                  </motion.button>
-                </Link>
-                
-                <motion.button
-                  className={`px-8 py-4 rounded-xl font-semibold text-lg border-2 transition-all duration-200 flex items-center gap-3 ${
-                    darkMode
-                      ? 'bg-slate-800/50 text-white border-slate-600 hover:bg-slate-700 hover:border-blue-500'
-                      : 'bg-white/80 text-gray-700 border-gray-300 hover:border-[#6366F1] hover:bg-white'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaPlay className={darkMode ? 'text-blue-400' : 'text-[#6366F1]'} />
-                  Watch Demo
-                </motion.button>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-3xl blur-2xl" />
-              <div className={`relative border rounded-3xl p-8 shadow-2xl transition-colors duration-300 ${
-                darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
-              }`}>
-                <div className="space-y-4">
-                  <ChatBubble message="How can I help you with your exam today?" isAI darkMode={darkMode} />
-                  <ChatBubble message="Can you explain the quiz rules?" darkMode={darkMode} />
-                  <ChatBubble message="Of course! Let me walk you through the examination guidelines..." isAI darkMode={darkMode} />
-                </div>
-              </div>
-            </motion.div>
+            <Link to="/auth" className="neon-btn-solid" style={{ padding: '8px 22px', fontSize: '0.82rem' }}>
+              Get Started
+            </Link>
+          </div>
+          {/* Mobile CTA */}
+          <div className="mobile-cta" style={{ display: 'none', gap: 8 }}>
+            <Link to="/auth" className="neon-btn-solid" style={{ padding: '8px 18px', fontSize: '0.8rem' }}>Enter</Link>
           </div>
         </div>
-      </section>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(0,255,159,0.2), transparent)' }} />
+      </nav>
 
-      {/* Dashboard Preview */}
-      <section className={`py-32 px-6 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-800/50' : 'bg-white/40'
-      }`}>
-        <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-20"
-          >
-            <h2 className={`text-4xl md:text-6xl font-bold mb-6 transition-colors duration-300 ${
-              darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Powerful Dashboard
-            </h2>
-            <p className={`text-xl max-w-2xl mx-auto transition-colors duration-300 ${
-              darkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Monitor everything in real-time with our intuitive interface
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-3xl blur-3xl" />
-              <div className={`relative border rounded-3xl p-4 shadow-2xl transition-colors duration-300 ${
-                darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
-              }`}>
-                <div className={`rounded-2xl p-6 ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900' 
-                    : 'bg-gradient-to-br from-gray-100 via-blue-50 to-purple-50'
-                }`}>
-                  {/* Dashboard Header */}
-                  <div className={`flex items-center justify-between mb-6 pb-4 border-b ${
-                    darkMode ? 'border-white/10' : 'border-gray-300/30'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                        <FaChartLine className="text-white text-xl" />
-                      </div>
-                      <div>
-                        <h3 className={`font-semibold ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>Teacher Dashboard</h3>
-                        <p className={`text-sm ${
-                          darkMode ? 'text-blue-200' : 'text-blue-600'
-                        }`}>Live Exam Monitoring</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                      <span className="text-green-400 text-sm font-medium">Live</span>
-                    </div>
-                  </div>
-
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-4 gap-4 mb-6">
-                    {dashboardStats.map((stat, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.1 }}
-                        className={`backdrop-blur-sm rounded-xl p-4 ${
-                          darkMode ? 'bg-white/10' : 'bg-white/60'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className={`text-2xl ${stat.color}`}>{stat.icon}</div>
-                        </div>
-                        <div className={`text-2xl font-bold mb-1 ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>{stat.value}</div>
-                        <div className={`text-xs ${
-                          darkMode ? 'text-blue-200' : 'text-blue-600'
-                        }`}>{stat.label}</div>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Activity Feed */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className={`backdrop-blur-sm rounded-xl p-4 ${
-                      darkMode ? 'bg-white/10' : 'bg-white/60'
-                    }`}>
-                      <h4 className={`font-semibold mb-3 flex items-center gap-2 ${
-                        darkMode ? 'text-white' : 'text-gray-900'
-                      }`}>
-                        <FaBell className={darkMode ? 'text-yellow-400' : 'text-yellow-600'} />
-                        Recent Alerts
-                      </h4>
-                      <div className="space-y-2">
-                        {recentAlerts.map((alert, i) => (
-                          <div key={i} className="flex items-start gap-2 text-sm">
-                            <div className={`w-2 h-2 rounded-full mt-1.5 ${alert.color}`} />
-                            <div className="flex-1">
-                              <p className={darkMode ? 'text-white/90' : 'text-gray-800'}>{alert.text}</p>
-                              <p className={`text-xs ${
-                                darkMode ? 'text-blue-200/60' : 'text-gray-500'
-                              }`}>{alert.time}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className={`backdrop-blur-sm rounded-xl p-4 ${
-                      darkMode ? 'bg-white/10' : 'bg-white/60'
-                    }`}>
-                      <h4 className={`font-semibold mb-3 flex items-center gap-2 ${
-                        darkMode ? 'text-white' : 'text-gray-900'
-                      }`}>
-                        <FaUsers className={darkMode ? 'text-blue-400' : 'text-blue-600'} />
-                        Active Students
-                      </h4>
-                      <div className="space-y-2">
-                        {activeStudents.map((student, i) => (
-                          <div key={i} className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                {student.initials}
-                              </div>
-                              <span className={darkMode ? 'text-white/90' : 'text-gray-800'}>{student.name}</span>
-                            </div>
-                            <div className={`w-2 h-2 rounded-full ${student.status === 'active' ? 'bg-green-400' : 'bg-yellow-400'}`} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+      {/* HERO */}
+      <section id="hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 5% 80px', position: 'relative', zIndex: 1 }}>
+        {/* subtle radial glow behind hero */}
+        <div style={{ position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse, rgba(0,255,159,0.06) 0%, transparent 65%)', pointerEvents: 'none' }} />
+        <div ref={heroRef} style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(50px)', transition: 'opacity 1s cubic-bezier(0.4,0,0.2,1), transform 1s cubic-bezier(0.4,0,0.2,1)', maxWidth: 800, width: '100%' }}>
+          <div style={{ color: 'rgba(0,255,159,0.5)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', marginBottom: 24, letterSpacing: 5, textTransform: 'uppercase' }}>
+            // system online — ai proctoring active
+          </div>
+          <h1 className="glitch-text" style={{
+            fontSize: 'clamp(2.8rem, 7vw, 5.5rem)',
+            fontWeight: 700,
+            color: '#00ff9f',
+            fontFamily: "'JetBrains Mono', monospace",
+            lineHeight: 1.1,
+            marginBottom: 20,
+            textShadow: '0 0 24px rgba(0,255,159,0.6), 0 0 48px rgba(0,255,159,0.2)',
+            letterSpacing: -1,
+          }}>
+            Alice Exam Proctor
+          </h1>
+          <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.4rem)', color: '#00ff9f', fontFamily: "'JetBrains Mono', monospace", minHeight: '2em', marginBottom: 16, opacity: 0.85 }}>
+            <span>{typedText}</span>
+            <span style={{ animation: 'blink 1s step-end infinite', color: '#00ff9f' }}>█</span>
+          </div>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 'clamp(0.9rem, 1.8vw, 1.05rem)', maxWidth: 520, margin: '0 auto 52px', lineHeight: 1.8, fontFamily: "'JetBrains Mono', monospace" }}>
+            AI-powered online exam proctoring. Real-time face detection, gaze tracking, and violation monitoring — keeping every exam fair.
+          </p>
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/auth" className="neon-btn-solid">Launch System →</Link>
+            <a href="#features" className="neon-btn">Explore Features</a>
+          </div>
+          <div style={{ marginTop: 72, display: 'flex', gap: 48, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {[['99.9%', 'Detection Rate'], ['10K+', 'Exams Proctored'], ['<50ms', 'Response Time']].map(([val, label], i) => (
+              <div key={label} style={{ textAlign: 'center', animation: `float-up ${3 + i * 0.5}s ease-in-out infinite`, animationDelay: `${i * 0.3}s` }}>
+                <div style={{ color: '#00ff9f', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 700, textShadow: '0 0 14px rgba(0,255,159,0.5)', fontFamily: "'JetBrains Mono', monospace" }}>{val}</div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', fontFamily: 'monospace', marginTop: 6, letterSpacing: 1 }}>{label}</div>
               </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-
-      {/* About Section */}
-      <section id="about" className={`py-32 px-6 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-900/30' : 'bg-white/40'
-      }`}>
-        <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className={`text-4xl md:text-6xl font-bold mb-6 transition-colors duration-300 ${
-              darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              About Alice
-            </h2>
-            <p className={`text-xl max-w-3xl mx-auto transition-colors duration-300 ${
-              darkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Alice is an advanced AI-powered exam proctoring platform designed to ensure fairness and integrity in online examinations. Built with cutting-edge technology, we help educational institutions conduct secure, reliable, and efficient remote assessments.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <FaShieldAlt className="text-4xl" />,
-                title: 'Our Mission',
-                description: 'To make online education fair and accessible by providing reliable, AI-powered proctoring solutions that maintain academic integrity.'
-              },
-              {
-                icon: <FaBrain className="text-4xl" />,
-                title: 'Our Technology',
-                description: 'Leveraging advanced machine learning and computer vision to detect violations in real-time while respecting student privacy.'
-              },
-              {
-                icon: <FaTrophy className="text-4xl" />,
-                title: 'Our Impact',
-                description: 'Trusted by thousands of institutions worldwide, helping conduct millions of fair examinations every year.'
-              }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={`p-8 rounded-2xl transition-all duration-300 hover:scale-105 ${
-                  darkMode ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-white/80 hover:bg-white backdrop-blur-sm'
-                }`}
-              >
-                <div className={`mb-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                  {item.icon}
-                </div>
-                <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {item.title}
-                </h3>
-                <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                  {item.description}
-                </p>
-              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className={`py-32 px-6 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-800/50' : 'bg-transparent'
-      }`}>
-        <div className="container mx-auto max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className={`text-4xl md:text-6xl font-bold mb-6 transition-colors duration-300 ${
-              darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Get in Touch
+      {/* ABOUT */}
+      <section id="about" style={{ padding: '110px 5%', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 64, alignItems: 'center' }}>
+          <div ref={aboutRef} style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? 'translateX(0)' : 'translateX(-50px)', transition: 'opacity 0.9s cubic-bezier(0.4,0,0.2,1), transform 0.9s cubic-bezier(0.4,0,0.2,1)' }}>
+            <div className="section-label">// about</div>
+            <h2 style={{ color: '#ffffff', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", marginBottom: 20, lineHeight: 1.2 }}>
+              Built for <span style={{ color: '#00ff9f', textShadow: '0 0 14px rgba(0,255,159,0.5)' }}>Integrity.</span>
+              <br />Designed for <span style={{ color: '#00ff9f', textShadow: '0 0 14px rgba(0,255,159,0.5)' }}>Scale.</span>
             </h2>
-            <p className={`text-xl max-w-2xl mx-auto transition-colors duration-300 ${
-              darkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            <p style={{ color: 'rgba(255,255,255,0.55)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.88rem', lineHeight: 1.9, marginBottom: 14 }}>
+              Alice is an AI-powered exam proctoring platform that monitors students in real-time using computer vision and behavioral analysis.
             </p>
-          </motion.div>
+            <p style={{ color: 'rgba(255,255,255,0.55)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.88rem', lineHeight: 1.9, marginBottom: 36 }}>
+              From face detection to gaze tracking, every exam session is secured with military-grade encryption and intelligent violation detection.
+            </p>
+            <Link to="/auth" className="neon-btn">Access System →</Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            {[
+              { label: 'Students Monitored', val: '10,000+' },
+              { label: 'Violations Detected', val: '50,000+' },
+              { label: 'Institutions', val: '200+' },
+              { label: 'Uptime', val: '99.99%' },
+            ].map((s, i) => (
+              <div key={i} className="stat-card" style={{
+                background: 'rgba(0,255,159,0.03)',
+                border: '1px solid rgba(0,255,159,0.15)',
+                borderRadius: 10,
+                padding: '28px 20px',
+                textAlign: 'center',
+                opacity: aboutVisible ? 1 : 0,
+                transform: aboutVisible ? 'translateY(0)' : 'translateY(20px)',
+                transition: `opacity 0.7s ease ${0.2 + i * 0.1}s, transform 0.7s ease ${0.2 + i * 0.1}s`,
+              }}>
+                <div style={{ color: '#00ff9f', fontSize: '1.9rem', fontWeight: 700, textShadow: '0 0 12px rgba(0,255,159,0.4)', fontFamily: "'JetBrains Mono', monospace" }}>{s.val}</div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', fontFamily: 'monospace', marginTop: 8, letterSpacing: 1 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className={`p-8 rounded-3xl ${
-              darkMode ? 'bg-slate-800/50 border border-slate-700' : 'bg-white/80 border border-gray-200'
-            }`}
-          >
-            {/* Success/Error Message */}
-            {submitStatus.message && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`mb-6 p-4 rounded-xl ${
-                  submitStatus.type === 'success'
-                    ? darkMode
-                      ? 'bg-green-500/20 border border-green-500/50 text-green-400'
-                      : 'bg-green-100 border border-green-300 text-green-700'
-                    : darkMode
-                      ? 'bg-red-500/20 border border-red-500/50 text-red-400'
-                      : 'bg-red-100 border border-red-300 text-red-700'
-                }`}
-              >
-                {submitStatus.message}
-              </motion.div>
-            )}
+      {/* FEATURES */}
+      <section id="features" style={{ padding: '110px 5%', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div ref={featRef} style={{ textAlign: 'center', marginBottom: 64, opacity: featVisible ? 1 : 0, transform: featVisible ? 'translateY(0)' : 'translateY(30px)', transition: 'opacity 0.8s cubic-bezier(0.4,0,0.2,1), transform 0.8s cubic-bezier(0.4,0,0.2,1)' }}>
+            <div className="section-label">// features</div>
+            <h2 style={{ color: '#ffffff', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+              System <span style={{ color: '#00ff9f', textShadow: '0 0 14px rgba(0,255,159,0.5)' }}>Capabilities</span>
+            </h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18 }}>
+            {features.map((f, i) => <FeatureCard key={i} feature={f} idx={i} />)}
+          </div>
+        </div>
+      </section>
 
-            <form onSubmit={handleContactSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+      {/* TERMINAL SECTION */}
+      <section id="terminal" style={{ padding: '110px 5%', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
+          <div className="section-label">// system_boot</div>
+          <h2 style={{ color: '#ffffff', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", marginBottom: 52 }}>
+            Watch It <span style={{ color: '#00ff9f', textShadow: '0 0 14px rgba(0,255,159,0.5)' }}>Boot Up</span>
+          </h2>
+          <TerminalBox />
+          <div style={{ marginTop: 48, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/auth" className="neon-btn-solid">Start Your Session →</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section style={{ padding: '110px 5%', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <div className="section-label">// how_it_works</div>
+            <h2 style={{ color: '#ffffff', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+              Three <span style={{ color: '#00ff9f', textShadow: '0 0 14px rgba(0,255,159,0.5)' }}>Steps</span>
+            </h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+            {[
+              { step: '01', title: 'Create Exam', desc: 'Teachers set up exams with questions, time limits, and proctoring rules in minutes.' },
+              { step: '02', title: 'Students Join', desc: 'Students enter the exam code. Camera and mic are verified before the session starts.' },
+              { step: '03', title: 'AI Monitors', desc: 'Alice AI watches in real-time. Violations are flagged, logged, and reported instantly.' },
+            ].map((s, i) => (
+              <div key={i} className="step-card" style={{
+                background: 'rgba(0,255,159,0.02)',
+                border: '1px solid rgba(0,255,159,0.12)',
+                borderRadius: 12,
+                padding: '36px 28px',
+                position: 'relative',
+              }}>
+                <div style={{ color: '#00ff9f', fontSize: '3.5rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", opacity: 0.08, position: 'absolute', top: 12, right: 20, lineHeight: 1 }}>{s.step}</div>
+                <div style={{ color: 'rgba(0,255,159,0.5)', fontFamily: 'monospace', fontSize: '0.72rem', marginBottom: 12, letterSpacing: 3 }}>STEP_{s.step}</div>
+                <h3 style={{ color: '#ffffff', fontFamily: "'JetBrains Mono', monospace", fontSize: '1.05rem', marginBottom: 14, fontWeight: 600 }}>{s.title}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'monospace', fontSize: '0.83rem', lineHeight: 1.8 }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CONTACT */}
+      <section id="contact" style={{ padding: '110px 5%', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 680, margin: '0 auto' }}>
+          <div ref={contactRef} style={{ textAlign: 'center', marginBottom: 52, opacity: contactVisible ? 1 : 0, transform: contactVisible ? 'translateY(0)' : 'translateY(30px)', transition: 'opacity 0.8s cubic-bezier(0.4,0,0.2,1), transform 0.8s cubic-bezier(0.4,0,0.2,1)' }}>
+            <div className="section-label">// contact</div>
+            <h2 style={{ color: '#ffffff', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+              Send a <span style={{ color: '#00ff9f', textShadow: '0 0 14px rgba(0,255,159,0.5)' }}>Transmission</span>
+            </h2>
+          </div>
+          <div style={{ background: 'rgba(0,255,159,0.02)', border: '1px solid rgba(0,255,159,0.18)', borderRadius: 14, padding: '44px 40px', boxShadow: '0 0 60px rgba(0,255,159,0.04)' }}>
+            <form onSubmit={handleContactSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 18 }}>
                 <div>
-                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={contactForm.name}
-                    onChange={handleContactChange}
-                    required
-                    disabled={isSubmitting}
-                    className={`w-full px-4 py-3 rounded-xl border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
-                      darkMode 
-                        ? 'bg-slate-900/50 border-slate-600 text-white placeholder-gray-500' 
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                    } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    placeholder="Your name"
-                  />
+                  <label style={{ color: 'rgba(0,255,159,0.5)', fontFamily: 'monospace', fontSize: '0.7rem', display: 'block', marginBottom: 8, letterSpacing: 2 }}>NAME_</label>
+                  <input name="name" value={contactForm.name} onChange={handleContactChange} placeholder="Your name" required />
                 </div>
                 <div>
-                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={contactForm.email}
-                    onChange={handleContactChange}
-                    required
-                    disabled={isSubmitting}
-                    className={`w-full px-4 py-3 rounded-xl border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
-                      darkMode 
-                        ? 'bg-slate-900/50 border-slate-600 text-white placeholder-gray-500' 
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                    } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    placeholder="your@email.com"
-                  />
+                  <label style={{ color: 'rgba(0,255,159,0.5)', fontFamily: 'monospace', fontSize: '0.7rem', display: 'block', marginBottom: 8, letterSpacing: 2 }}>EMAIL_</label>
+                  <input name="email" type="email" value={contactForm.email} onChange={handleContactChange} placeholder="your@email.com" required />
                 </div>
               </div>
               <div>
-                <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  name="subject"
-                  value={contactForm.subject}
-                  onChange={handleContactChange}
-                  required
-                  disabled={isSubmitting}
-                  className={`w-full px-4 py-3 rounded-xl border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
-                    darkMode 
-                      ? 'bg-slate-900/50 border-slate-600 text-white placeholder-gray-500' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  placeholder="How can we help?"
-                />
+                <label style={{ color: 'rgba(0,255,159,0.5)', fontFamily: 'monospace', fontSize: '0.7rem', display: 'block', marginBottom: 8, letterSpacing: 2 }}>SUBJECT_</label>
+                <input name="subject" value={contactForm.subject} onChange={handleContactChange} placeholder="Subject" required />
               </div>
               <div>
-                <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Message
-                </label>
-                <textarea
-                  name="message"
-                  value={contactForm.message}
-                  onChange={handleContactChange}
-                  required
-                  disabled={isSubmitting}
-                  rows="6"
-                  className={`w-full px-4 py-3 rounded-xl border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none ${
-                    darkMode 
-                      ? 'bg-slate-900/50 border-slate-600 text-white placeholder-gray-500' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  placeholder="Tell us more about your inquiry..."
-                />
+                <label style={{ color: 'rgba(0,255,159,0.5)', fontFamily: 'monospace', fontSize: '0.7rem', display: 'block', marginBottom: 8, letterSpacing: 2 }}>MESSAGE_</label>
+                <textarea name="message" value={contactForm.message} onChange={handleContactChange} placeholder="Your message..." rows={5} required />
               </div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full px-8 py-4 rounded-xl font-semibold text-lg shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 ${
-                  darkMode
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-2xl hover:shadow-blue-500/50'
-                    : 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white hover:shadow-2xl hover:shadow-indigo-500/30'
-                } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
-              >
-                <Mail className="w-5 h-5" />
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+              {submitStatus.message && (
+                <div style={{ color: submitStatus.type === 'success' ? '#00ff9f' : '#ff5555', fontFamily: 'monospace', fontSize: '0.82rem', padding: '12px 16px', border: `1px solid ${submitStatus.type === 'success' ? 'rgba(0,255,159,0.3)' : 'rgba(255,85,85,0.3)'}`, borderRadius: 6, background: submitStatus.type === 'success' ? 'rgba(0,255,159,0.05)' : 'rgba(255,85,85,0.05)' }}>
+                  {submitStatus.type === 'success' ? '✓ ' : '✗ '}{submitStatus.message}
+                </div>
+              )}
+              <button type="submit" disabled={isSubmitting} className="neon-btn-solid" style={{ marginTop: 6, opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer', width: '100%', textAlign: 'center' }}>
+                {isSubmitting ? 'Transmitting...' : 'Send Message →'}
               </button>
             </form>
-          </motion.div>
-
-          {/* Contact Info */}
-          <div className="grid md:grid-cols-3 gap-6 mt-12">
-            {[
-              { icon: <Mail />, title: 'Email', info: 'contact@aliceproctor.com' },
-              { icon: <FaUsers />, title: 'Support', info: '24/7 Live Chat' },
-              { icon: <FaShieldAlt />, title: 'Security', info: 'ISO 27001 Certified' }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={`p-6 rounded-2xl text-center ${
-                  darkMode ? 'bg-slate-800/30' : 'bg-white/60'
-                }`}
-              >
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3 ${
-                  darkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'
-                }`}>
-                  {item.icon}
-                </div>
-                <h4 className={`font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {item.title}
-                </h4>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {item.info}
-                </p>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>
 
-      {/* Documentation Section */}
-      <section id="docs" className={`py-32 px-6 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-900/30' : 'bg-white/40'
-      }`}>
-        <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className={`text-4xl md:text-6xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Documentation
-            </h2>
-            <p className={`text-xl max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Everything you need to get started with Alice
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: <BookOpen />, title: 'Getting Started', description: 'Quick start guide for new users' },
-              { icon: <FileText />, title: 'API Reference', description: 'Complete API documentation' },
-              { icon: <HelpCircle />, title: 'Help Center', description: 'FAQs and troubleshooting' }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={`p-8 rounded-2xl transition-all duration-300 hover:scale-105 ${
-                  darkMode ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-white/80 hover:bg-white'
-                }`}
-              >
-                <div className={`mb-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                  {item.icon}
-                </div>
-                <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {item.title}
-                </h3>
-                <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                  {item.description}
-                </p>
-              </motion.div>
-            ))}
+      {/* CTA BANNER */}
+      <section style={{ padding: '80px 5% 100px', position: 'relative', zIndex: 1, textAlign: 'center' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', background: 'rgba(0,255,159,0.03)', border: '1px solid rgba(0,255,159,0.2)', borderRadius: 16, padding: '64px 40px', boxShadow: '0 0 80px rgba(0,255,159,0.06)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 400, height: 300, background: 'radial-gradient(ellipse, rgba(0,255,159,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div className="section-label">// ready_to_deploy</div>
+          <h2 style={{ color: '#ffffff', fontSize: 'clamp(1.6rem, 4vw, 2.4rem)', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", marginBottom: 16 }}>
+            Start Proctoring <span style={{ color: '#00ff9f', textShadow: '0 0 14px rgba(0,255,159,0.5)' }}>Today</span>
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.88rem', marginBottom: 40, lineHeight: 1.8 }}>
+            Join thousands of institutions running fair, AI-monitored exams with Alice.
+          </p>
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/auth" className="neon-btn-solid">Get Started Free →</Link>
+            <a href="#contact" className="neon-btn">Contact Us</a>
           </div>
         </div>
       </section>
 
-      {/* Privacy & Legal Section - Enhanced */}
-      <section id="privacy" className={`relative py-32 px-6 overflow-hidden transition-colors duration-300 ${
-        darkMode ? 'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900' : 'bg-gradient-to-b from-gray-50 via-white to-gray-50'
-      }`}>
-        {/* Background Decorations */}
-        <div className="absolute inset-0 -z-10">
-          <motion.div
-            className={`absolute top-20 right-10 w-72 h-72 rounded-full filter blur-3xl ${
-              darkMode ? 'bg-blue-500/10' : 'bg-blue-400/5'
-            }`}
-            animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-            transition={{ duration: 20, repeat: Infinity }}
-          />
-          <motion.div
-            className={`absolute bottom-20 left-10 w-72 h-72 rounded-full filter blur-3xl ${
-              darkMode ? 'bg-purple-500/10' : 'bg-purple-400/5'
-            }`}
-            animate={{ scale: [1.2, 1, 1.2], rotate: [90, 0, 90] }}
-            transition={{ duration: 25, repeat: Infinity }}
-          />
-        </div>
-
-        <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 ${
-                darkMode 
-                  ? 'bg-blue-900/50 border border-blue-700' 
-                  : 'bg-blue-50 border border-blue-200'
-              }`}
-            >
-              <FaShieldAlt className={darkMode ? 'text-blue-400' : 'text-blue-600'} />
-              <span className={`text-sm font-semibold ${
-                darkMode ? 'text-blue-400' : 'text-blue-600'
-              }`}>Your Trust, Our Priority</span>
-            </motion.div>
-
-            <h2 className={`text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r bg-clip-text text-transparent ${
-              darkMode 
-                ? 'from-blue-400 via-purple-400 to-pink-400' 
-                : 'from-blue-600 via-purple-600 to-pink-600'
-            }`}>
-              Privacy & Legal
-            </h2>
-            <p className={`text-xl max-w-3xl mx-auto ${
-              darkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              We take your privacy seriously. Our commitment to data protection and legal compliance ensures a safe and trustworthy platform.
-            </p>
-          </motion.div>
-          
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
-            {/* Terms of Service */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              id="terms"
-              className={`group relative p-8 rounded-3xl border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
-                darkMode 
-                  ? 'bg-slate-800/80 border-slate-700 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20' 
-                  : 'bg-white/90 border-gray-200 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/10'
-              }`}
-            >
-              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full filter blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-                darkMode ? 'bg-blue-500/20' : 'bg-blue-400/10'
-              }`} />
-              
-              <div className="relative">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-blue-600 to-blue-800' 
-                    : 'bg-gradient-to-br from-blue-500 to-blue-600'
-                } shadow-lg`}>
-                  <FileText className="text-white text-2xl" />
-                </div>
-                
-                <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Terms of Service
-                </h3>
-                
-                <p className={`mb-6 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  By using Alice Exam Proctor, you agree to our terms of service. We are committed to providing a fair, secure, and reliable proctoring platform for educational institutions worldwide.
-                </p>
-
-                <ul className={`space-y-3 mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Fair usage policy for all users</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Clear guidelines for exam conduct</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Transparent violation policies</span>
-                  </li>
-                </ul>
-
-                <button className={`flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 ${
-                  darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
-                }`}>
-                  Read Full Terms
-                  <FaArrowRight className="text-sm" />
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Privacy Policy */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className={`group relative p-8 rounded-3xl border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
-                darkMode 
-                  ? 'bg-slate-800/80 border-slate-700 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/20' 
-                  : 'bg-white/90 border-gray-200 hover:border-purple-400 hover:shadow-2xl hover:shadow-purple-500/10'
-              }`}
-            >
-              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full filter blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-                darkMode ? 'bg-purple-500/20' : 'bg-purple-400/10'
-              }`} />
-              
-              <div className="relative">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-purple-600 to-purple-800' 
-                    : 'bg-gradient-to-br from-purple-500 to-purple-600'
-                } shadow-lg`}>
-                  <FaLock className="text-white text-2xl" />
-                </div>
-                
-                <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Privacy Policy
-                </h3>
-                
-                <p className={`mb-6 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Your privacy is our top priority. We collect only necessary data for exam proctoring and never share your information with third parties without explicit consent.
-                </p>
-
-                <ul className={`space-y-3 mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>End-to-end encrypted data transmission</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Minimal data collection policy</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>No third-party data sharing</span>
-                  </li>
-                </ul>
-
-                <button className={`flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 ${
-                  darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'
-                }`}>
-                  View Privacy Policy
-                  <FaArrowRight className="text-sm" />
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Cookie Policy */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              id="cookies"
-              className={`group relative p-8 rounded-3xl border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
-                darkMode 
-                  ? 'bg-slate-800/80 border-slate-700 hover:border-pink-500/50 hover:shadow-2xl hover:shadow-pink-500/20' 
-                  : 'bg-white/90 border-gray-200 hover:border-pink-400 hover:shadow-2xl hover:shadow-pink-500/10'
-              }`}
-            >
-              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full filter blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-                darkMode ? 'bg-pink-500/20' : 'bg-pink-400/10'
-              }`} />
-              
-              <div className="relative">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-pink-600 to-pink-800' 
-                    : 'bg-gradient-to-br from-pink-500 to-pink-600'
-                } shadow-lg`}>
-                  <FaClipboardList className="text-white text-2xl" />
-                </div>
-                
-                <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Cookie Policy
-                </h3>
-                
-                <p className={`mb-6 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  We use cookies to enhance your experience and maintain session security. You have full control over cookie preferences in your browser settings.
-                </p>
-
-                <ul className={`space-y-3 mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Essential cookies for functionality</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Optional analytics cookies</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Customizable preferences</span>
-                  </li>
-                </ul>
-
-                <button className={`flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 ${
-                  darkMode ? 'text-pink-400 hover:text-pink-300' : 'text-pink-600 hover:text-pink-700'
-                }`}>
-                  Manage Cookies
-                  <FaArrowRight className="text-sm" />
-                </button>
-              </div>
-            </motion.div>
-
-            {/* GDPR Compliance */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              id="gdpr"
-              className={`group relative p-8 rounded-3xl border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
-                darkMode 
-                  ? 'bg-slate-800/80 border-slate-700 hover:border-green-500/50 hover:shadow-2xl hover:shadow-green-500/20' 
-                  : 'bg-white/90 border-gray-200 hover:border-green-400 hover:shadow-2xl hover:shadow-green-500/10'
-              }`}
-            >
-              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full filter blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-                darkMode ? 'bg-green-500/20' : 'bg-green-400/10'
-              }`} />
-              
-              <div className="relative">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-green-600 to-green-800' 
-                    : 'bg-gradient-to-br from-green-500 to-green-600'
-                } shadow-lg`}>
-                  <MdSecurity className="text-white text-2xl" />
-                </div>
-                
-                <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  GDPR Compliance
-                </h3>
-                
-                <p className={`mb-6 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Alice is fully GDPR compliant. We respect your data rights and provide comprehensive tools for data access, correction, and deletion requests.
-                </p>
-
-                <ul className={`space-y-3 mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Right to access your data</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Right to data portability</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <FaCheck className={`mt-1 flex-shrink-0 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span>Right to be forgotten</span>
-                  </li>
-                </ul>
-
-                <button className={`flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 ${
-                  darkMode ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-700'
-                }`}>
-                  Learn About GDPR
-                  <FaArrowRight className="text-sm" />
-                </button>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Additional Security Features */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className={`relative p-10 rounded-3xl border backdrop-blur-sm overflow-hidden ${
-              darkMode 
-                ? 'bg-gradient-to-br from-slate-800/90 via-blue-900/30 to-purple-900/30 border-slate-700' 
-                : 'bg-gradient-to-br from-white/90 via-blue-50/50 to-purple-50/50 border-gray-200'
-            }`}
-          >
-            <div className={`absolute top-0 right-0 w-64 h-64 rounded-full filter blur-3xl ${
-              darkMode ? 'bg-blue-500/10' : 'bg-blue-400/5'
-            }`} />
-            
-            <div className="relative">
-              <div className="flex items-center gap-4 mb-6">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-blue-600 to-purple-600' 
-                    : 'bg-gradient-to-br from-blue-500 to-purple-500'
-                } shadow-lg`}>
-                  <FaShieldAlt className="text-white text-xl" />
-                </div>
-                <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Our Security Commitment
-                </h3>
-              </div>
-
-              <p className={`text-lg mb-8 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                We employ industry-leading security measures to protect your data and ensure the integrity of every examination.
-              </p>
-
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className={`p-6 rounded-2xl ${
-                  darkMode ? 'bg-slate-800/50' : 'bg-white/80'
-                }`}>
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                    darkMode ? 'bg-blue-500/20' : 'bg-blue-100'
-                  }`}>
-                    <FaLock className={`text-xl ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                  </div>
-                  <h4 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    256-bit Encryption
-                  </h4>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Bank-level encryption for all data transmission and storage
-                  </p>
-                </div>
-
-                <div className={`p-6 rounded-2xl ${
-                  darkMode ? 'bg-slate-800/50' : 'bg-white/80'
-                }`}>
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                    darkMode ? 'bg-purple-500/20' : 'bg-purple-100'
-                  }`}>
-                    <FaEye className={`text-xl ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                  </div>
-                  <h4 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Regular Audits
-                  </h4>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Third-party security audits and penetration testing
-                  </p>
-                </div>
-
-                <div className={`p-6 rounded-2xl ${
-                  darkMode ? 'bg-slate-800/50' : 'bg-white/80'
-                }`}>
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                    darkMode ? 'bg-green-500/20' : 'bg-green-100'
-                  }`}>
-                    <FaBell className={`text-xl ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                  </div>
-                  <h4 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    24/7 Monitoring
-                  </h4>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Continuous system monitoring and threat detection
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Contact for Legal Queries */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className={`mt-12 text-center p-8 rounded-3xl border ${
-              darkMode 
-                ? 'bg-slate-800/50 border-slate-700' 
-                : 'bg-white/80 border-gray-200'
-            }`}
-          >
-            <Mail className={`mx-auto mb-4 text-4xl ${
-              darkMode ? 'text-blue-400' : 'text-blue-600'
-            }`} />
-            <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Have Legal Questions?
-            </h3>
-            <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Our legal team is here to help. Contact us for any privacy or compliance inquiries.
-            </p>
-            <button className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-              darkMode 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/30' 
-                : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/20'
-            }`}>
-              Contact Legal Team
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Help & Community Section */}
-      <section id="help" className={`py-32 px-6 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-900/30' : 'bg-white/40'
-      }`}>
-        <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className={`text-4xl md:text-6xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Help & Community
-            </h2>
-            <p className={`text-xl max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Get support and connect with other users
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              id="community"
-              className={`p-8 rounded-2xl ${darkMode ? 'bg-slate-800/50' : 'bg-white/80'}`}
-            >
-              <FaUsers className={`text-4xl mb-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-              <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Community Forum
-              </h3>
-              <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Join our community of educators and students. Share experiences, ask questions, and learn from others.
-              </p>
-              <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                darkMode 
-                  ? 'bg-blue-600 text-white hover:bg-blue-500' 
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}>
-                Join Community
-              </button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              id="api"
-              className={`p-8 rounded-2xl ${darkMode ? 'bg-slate-800/50' : 'bg-white/80'}`}
-            >
-              <HelpCircle className={`text-4xl mb-4 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-              <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                24/7 Support
-              </h3>
-              <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Our support team is always here to help. Get instant answers to your questions anytime, anywhere.
-              </p>
-              <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                darkMode 
-                  ? 'bg-purple-600 text-white hover:bg-purple-500' 
-                  : 'bg-purple-600 text-white hover:bg-purple-700'
-              }`}>
-                Contact Support
-              </button>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section id="pricing" className={`py-32 px-6 transition-colors duration-300 ${
-        darkMode ? 'bg-slate-900/50' : 'bg-transparent'
-      }`}>
-        <div className="container mx-auto max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur-2xl opacity-30" />
-              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-16 text-center text-white shadow-2xl">
-                <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                  Ready to conduct fair online exams?
-                </h2>
-                <p className="text-xl mb-10 text-blue-100">
-                  Join thousands of institutions using Alice for secure examinations
-                </p>
-                <Link
-                  to="/auth"
-                  className="inline-flex items-center gap-3 px-10 py-5 bg-white text-blue-600 rounded-2xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300"
-                >
-                  Launch Alice
-                  <FaArrowRight />
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <PremiumFooterEnhanced darkMode={darkMode} />
+      {/* FOOTER — unchanged */}
+      <PremiumFooterEnhanced darkMode={true} />
     </div>
   )
 }
-
-// Feature Card Component
-const FeatureCard = ({ feature, index, darkMode }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay: index * 0.1, duration: 0.5 }}
-    whileHover={{ y: -8, transition: { duration: 0.3 } }}
-    className="group relative"
-  >
-    <div className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-      darkMode ? 'bg-gradient-to-r from-blue-600/10 to-purple-600/10' : 'bg-gradient-to-r from-[#6366F1]/5 to-[#8B5CF6]/5'
-    }`} />
-    <div className={`relative border rounded-2xl p-8 hover:shadow-xl transition-all duration-200 h-full backdrop-blur-xl ${
-      darkMode 
-        ? 'bg-slate-800/90 border-slate-700 hover:border-blue-500/50' 
-        : 'bg-white/65 border-[rgba(15,23,42,0.06)] hover:border-[#6366F1]/30'
-    }`}>
-      <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg ${
-        darkMode 
-          ? 'bg-gradient-to-br from-blue-600 to-purple-600'
-          : 'bg-gradient-to-br from-[#6366F1] to-[#8B5CF6]'
-      }`}>
-        {feature.icon}
-      </div>
-      <h3 className={`text-2xl font-bold mb-4 transition-colors duration-300 ${
-        darkMode ? 'text-white' : 'text-[#020617]'
-      }`}>{feature.title}</h3>
-      <p className={`leading-relaxed transition-colors duration-300 ${
-        darkMode ? 'text-gray-300' : 'text-[#334155]'
-      }`}>{feature.description}</p>
-    </div>
-  </motion.div>
-)
-
-// Step Card Component
-const StepCard = ({ step, index, darkMode }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay: index * 0.2, duration: 0.5 }}
-    whileHover={{ y: -10, transition: { duration: 0.3 } }}
-    className="relative group"
-  >
-    {/* Glow Effect on Hover */}
-    <div className={`absolute inset-0 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-      darkMode ? 'bg-blue-500/30' : 'bg-[#6366F1]/10'
-    }`} />
-
-    {/* Card Content */}
-    <div className={`relative backdrop-blur-xl border rounded-3xl p-8 transition-all duration-200 ${
-      darkMode 
-        ? 'bg-white/10 border-white/20 group-hover:bg-white/15 group-hover:border-white/30' 
-        : 'bg-white/65 border-[rgba(15,23,42,0.06)] group-hover:bg-white/80 group-hover:border-[#6366F1]/20 group-hover:shadow-xl'
-    }`}>
-      {/* Icon & Number Badge */}
-      <div className="flex items-center justify-center mb-6">
-        <motion.div 
-          className={`relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 ${
-            darkMode 
-              ? 'bg-gradient-to-br from-blue-500 to-purple-600' 
-              : 'bg-gradient-to-br from-[#6366F1] to-[#8B5CF6]'
-          }`}
-          whileHover={{ rotate: 360, scale: 1.1 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="text-3xl text-white">
-            {step.icon}
-          </div>
-          {/* Step Number Badge */}
-          <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ${
-            darkMode 
-              ? 'bg-white text-blue-600' 
-              : 'bg-[#6366F1] text-white'
-          }`}>
-            {index + 1}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Title */}
-      <h3 className={`text-2xl font-bold mb-4 transition-colors duration-300 ${
-        darkMode ? 'text-white' : 'text-[#020617]'
-      }`}>
-        {step.title}
-      </h3>
-
-      {/* Description */}
-      <p className={`leading-relaxed mb-6 transition-colors duration-300 ${
-        darkMode ? 'text-blue-200' : 'text-[#334155]'
-      }`}>
-        {step.description}
-      </p>
-
-      {/* Features List */}
-      <ul className="space-y-2">
-        {step.features.map((feature, i) => (
-          <motion.li
-            key={i}
-            initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 + index * 0.2 + i * 0.1 }}
-            className={`flex items-center gap-2 text-sm transition-colors duration-300 ${
-              darkMode ? 'text-blue-100' : 'text-[#334155]'
-            }`}
-          >
-            <FaCheck className={`text-xs flex-shrink-0 ${
-              darkMode ? 'text-green-400' : 'text-[#6366F1]'
-            }`} />
-            <span>{feature}</span>
-          </motion.li>
-        ))}
-      </ul>
-
-      {/* Connecting Arrow (Desktop only) */}
-      {index < 2 && (
-        <motion.div 
-          className="hidden lg:block absolute top-1/2 -right-6 transform -translate-y-1/2"
-          initial={{ opacity: 0, x: -10 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5 + index * 0.2 }}
-        >
-          <FaArrowRight className={`text-3xl transition-colors duration-300 ${
-            darkMode ? 'text-white/30' : 'text-[#6366F1]/20'
-          }`} />
-        </motion.div>
-      )}
-    </div>
-  </motion.div>
-)
-
-// Chat Bubble Component
-const ChatBubble = ({ message, isAI, darkMode }) => (
-  <motion.div
-    initial={{ opacity: 0, x: isAI ? -20 : 20 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ duration: 0.5 }}
-    className={`flex ${isAI ? 'justify-start' : 'justify-end'}`}
-  >
-    <div className={`max-w-[80%] px-6 py-4 rounded-2xl shadow-md ${
-      isAI 
-        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
-        : darkMode 
-          ? 'bg-slate-700 text-gray-100'
-          : 'bg-gray-100 text-gray-700'
-    }`}>
-      <p className="text-sm md:text-base">{message}</p>
-    </div>
-  </motion.div>
-)
-
-// Dashboard Stats Data
-const dashboardStats = [
-  { icon: <FaUsers />, value: '48', label: 'Active Students', color: 'text-blue-400' },
-  { icon: <FaVideo />, value: '12', label: 'Live Exams', color: 'text-purple-400' },
-  { icon: <FaBell />, value: '3', label: 'Alerts', color: 'text-yellow-400' },
-  { icon: <FaCheck />, value: '156', label: 'Completed', color: 'text-green-400' }
-]
-
-// Recent Alerts Data
-const recentAlerts = [
-  { text: 'Multiple faces detected - Student #23', time: '2 min ago', color: 'bg-red-400' },
-  { text: 'Tab switch detected - Student #15', time: '5 min ago', color: 'bg-yellow-400' },
-  { text: 'Audio anomaly - Student #31', time: '8 min ago', color: 'bg-orange-400' }
-]
-
-// Active Students Data
-const activeStudents = [
-  { name: 'Aditya Singh ', initials: 'A', status: 'active' },
-  { name: 'gourav', initials: 'G', status: 'active' },
-  { name: 'Bhumi', initials: 'B', status: 'warning' },
-  { name: 'Aditya Waghe', initials: 'W', status: 'active' }
-]
-
-// Features Data
-const features = [
-  {
-    icon: <MdSecurity className="text-2xl text-white" />,
-    title: 'Real-Time AI Monitoring',
-    description: 'Advanced AI algorithms monitor exam sessions in real-time, ensuring fair and secure examinations.'
-  },
-  {
-    icon: <FaShieldAlt className="text-2xl text-white" />,
-    title: 'Face & Audio Detection',
-    description: 'Sophisticated facial recognition and audio analysis to detect and prevent cheating attempts.'
-  },
-  {
-    icon: <FaBell className="text-2xl text-white" />,
-    title: 'Live Violation Alerts',
-    description: 'Instant notifications when suspicious behavior is detected during examination sessions.'
-  },
-  {
-    icon: <FaChartLine className="text-2xl text-white" />,
-    title: 'Role-Based Dashboards',
-    description: 'Customized interfaces for students and teachers with relevant tools and insights.'
-  },
-  {
-    icon: <FaLock className="text-2xl text-white" />,
-    title: 'Secure Exams',
-    description: 'Bank-level encryption and security measures to protect exam integrity and student data.'
-  },
-  {
-    icon: <FaBrain className="text-2xl text-white" />,
-    title: 'Alice AI Assistant',
-    description: 'Intelligent chatbot providing instant help and support throughout the examination process.'
-  }
-]
-
-// Steps Data
-const steps = [
-  {
-    icon: <FaClipboardList />,
-    title: 'Create Exam',
-    description: 'Set up your exam with questions, duration, and proctoring settings in minutes.',
-    features: [
-      'Custom question types',
-      'Flexible time limits',
-      'Easy quiz builder'
-    ]
-  },
-  {
-    icon: <FaEye />,
-    title: 'Monitor with AI',
-    description: 'Alice AI monitors students in real-time, detecting violations and suspicious behavior.',
-    features: [
-      'Face detection',
-      'Audio monitoring',
-      'Real-time alerts'
-    ]
-  },
-  {
-    icon: <FaTrophy />,
-    title: 'Get Fair Results',
-    description: 'Review comprehensive reports with violation logs and student performance analytics.',
-    features: [
-      'Detailed analytics',
-      'Violation reports',
-      'Performance insights'
-    ]
-  }
-]
 
 export default PremiumLandingPage

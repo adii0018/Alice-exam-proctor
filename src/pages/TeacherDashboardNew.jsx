@@ -10,11 +10,13 @@ import ExamTable from '../components/teacher/ExamTable';
 import LiveMonitorCard from '../components/teacher/LiveMonitorCard';
 import ViolationsTable from '../components/teacher/ViolationsTable';
 import PerformanceChart from '../components/teacher/PerformanceChart';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function TeacherDashboardNew() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const { darkMode } = useTheme();
   
   // Real data from backend
   const [quizzes, setQuizzes] = useState([]);
@@ -156,17 +158,20 @@ export default function TeacherDashboardNew() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div style={darkMode ? { minHeight: '100vh', backgroundColor: '#0d1117', display: 'flex', alignItems: 'center', justifyContent: 'center' } : {}} className={darkMode ? '' : 'min-h-screen bg-gray-50 flex items-center justify-center'}>
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+          <div style={{ width: 56, height: 56, border: `3px solid ${darkMode ? '#2ea043' : '#3b82f6'}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+          <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div
+      style={darkMode ? { minHeight: '100vh', backgroundColor: '#0d1117' } : {}}
+      className={darkMode ? '' : 'min-h-screen bg-gray-50 transition-colors'}
+    >
       <TeacherSidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -190,11 +195,16 @@ export default function TeacherDashboardNew() {
           >
             {/* Search Results Info */}
             {searchQuery && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Showing results for: <span className="font-semibold">"{searchQuery}"</span>
+              <div style={{
+                background: darkMode ? 'rgba(46,160,67,0.08)' : '#eff6ff',
+                border: `1px solid ${darkMode ? 'rgba(46,160,67,0.25)' : '#bfdbfe'}`,
+                borderRadius: 8,
+                padding: '12px 16px',
+              }}>
+                <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#1e40af' }}>
+                  Showing results for: <span style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#1e3a8a' }}>"{searchQuery}"</span>
                   {exams.length === 0 && violations.length === 0 && (
-                    <span className="ml-2 text-blue-600 dark:text-blue-300">- No results found</span>
+                    <span style={{ marginLeft: 8, color: darkMode ? '#3fb950' : '#2563eb' }}>- No results found</span>
                   )}
                 </p>
               </div>
@@ -209,18 +219,24 @@ export default function TeacherDashboardNew() {
             {/* Exam Management Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>
                   {searchQuery ? `Search Results - Exams (${exams.length})` : 'Recent Exams'}
                 </h2>
-                <a href="/teacher/exams" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+                <a href="/teacher/exams" style={{ fontSize: '0.875rem', color: darkMode ? '#3fb950' : '#2563eb', fontWeight: 500, textDecoration: 'none' }}>
                   View All
                 </a>
               </div>
               {exams.length > 0 ? (
                 <ExamTable exams={exams.slice(0, searchQuery ? 10 : 4)} onAction={handleExamAction} />
               ) : (
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border border-gray-200 dark:border-gray-700">
-                  <p className="text-gray-500 dark:text-gray-400">No exams found</p>
+                <div style={{
+                  background: darkMode ? '#161b22' : '#fff',
+                  border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
+                  borderRadius: 8,
+                  padding: '32px',
+                  textAlign: 'center',
+                }}>
+                  <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>No exams found</p>
                 </div>
               )}
             </div>
@@ -228,7 +244,7 @@ export default function TeacherDashboardNew() {
             {/* Live Monitoring */}
             {liveExams.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Live Monitoring</h2>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>Live Monitoring</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {liveExams.map((exam) => (
                     <LiveMonitorCard key={exam.id} exam={exam} />
@@ -244,10 +260,10 @@ export default function TeacherDashboardNew() {
             {violations.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>
                     {searchQuery ? `Search Results - Violations (${violations.length})` : 'Recent Violations'}
                   </h2>
-                  <a href="/teacher/violations" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+                  <a href="/teacher/violations" style={{ fontSize: '0.875rem', color: darkMode ? '#3fb950' : '#2563eb', fontWeight: 500, textDecoration: 'none' }}>
                     View All
                   </a>
                 </div>
