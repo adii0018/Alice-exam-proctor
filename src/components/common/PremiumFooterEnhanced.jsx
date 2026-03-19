@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Github, Linkedin, Instagram, Mail, Shield, Eye, BookOpen, FileText, HelpCircle, Users, Send, Zap, Lock, Globe, ArrowUpRight } from 'lucide-react';
+import FooterContentModal from './FooterContentModal';
 
 const PremiumFooterEnhanced = () => {
   const footerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [activeModal, setActiveModal] = useState(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -33,16 +35,19 @@ const PremiumFooterEnhanced = () => {
 
   const navLinks = [
     { label: 'About', href: '#about' },
-    { label: 'Features', href: '#features' },
+    { label: 'Features', modal: 'features' },
     { label: 'Terminal', href: '#terminal' },
     { label: 'Contact', href: '#contact' },
+    { label: 'How it Works', modal: 'howItWorks' },
+    { label: 'Pricing', modal: 'pricing' },
+    { label: 'Changelog', modal: 'changelog' },
   ];
 
   const resources = [
-    { icon: BookOpen, label: 'Documentation', href: '#docs' },
-    { icon: FileText, label: 'API Reference', href: '#api' },
-    { icon: HelpCircle, label: 'Help Center', href: '#help' },
-    { icon: Users, label: 'Community', href: '#community' },
+    { icon: BookOpen, label: 'Documentation', modal: 'docs' },
+    { icon: FileText, label: 'API Reference', modal: 'api' },
+    { icon: HelpCircle, label: 'Help Center', modal: 'help' },
+    { icon: Users, label: 'Community', modal: 'community' },
   ];
 
   const socialLinks = [
@@ -53,6 +58,7 @@ const PremiumFooterEnhanced = () => {
   ];
 
   return (
+    <>
     <footer ref={footerRef} style={{
       background: '#080c10',
       borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -269,7 +275,7 @@ const PremiumFooterEnhanced = () => {
             <div className="ft-label">Navigate</div>
             <nav>
               {navLinks.map(l => (
-                <a key={l.label} href={l.href} className="ft-link">
+                <a key={l.label} href={l.href || '#'} onClick={l.modal ? (e) => { e.preventDefault(); setActiveModal(l.modal); } : undefined} className="ft-link">
                   {l.label}
                   <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
                 </a>
@@ -278,11 +284,12 @@ const PremiumFooterEnhanced = () => {
             <div className="ft-label" style={{ marginTop: 28 }}>Legal</div>
             <nav>
               {[
-                { label: 'Privacy Policy', href: '#privacy' },
-                { label: 'Terms of Service', href: '#terms' },
-                { label: 'Cookie Policy', href: '#cookies' },
+                { label: 'Privacy Policy', modal: 'privacy' },
+                { label: 'Terms of Service', modal: 'terms' },
+                { label: 'Cookie Policy', modal: 'cookies' },
+                { label: 'GDPR', modal: 'gdpr' },
               ].map(l => (
-                <a key={l.label} href={l.href} className="ft-link">
+                <a key={l.label} href="#" onClick={(e) => { e.preventDefault(); setActiveModal(l.modal); }} className="ft-link">
                   {l.label}
                   <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
                 </a>
@@ -295,7 +302,7 @@ const PremiumFooterEnhanced = () => {
             <div className="ft-label">Resources</div>
             <nav>
               {resources.map(r => (
-                <a key={r.label} href={r.href} className="ft-link">
+                <a key={r.label} href="#" onClick={(e) => { e.preventDefault(); setActiveModal(r.modal); }} className="ft-link">
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <r.icon style={{ width: 13, height: 13, flexShrink: 0 }} />
                     {r.label}
@@ -368,6 +375,8 @@ const PremiumFooterEnhanced = () => {
         </div>
       </div>
     </footer>
+    {activeModal && <FooterContentModal contentKey={activeModal} onClose={() => setActiveModal(null)} />}
+    </>
   );
 };
 
