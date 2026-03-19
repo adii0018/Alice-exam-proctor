@@ -53,7 +53,7 @@ const LoginForm = ({ onToggle }) => {
       else if (user.role === 'student') navigate('/student')
       else navigate('/teacher')
     } catch (err) {
-      const msg = err.response?.data?.message || 'Sign in failed'
+      const msg = err.response?.data?.error || err.response?.data?.message || 'Sign in failed'
       toast.error(msg)
       setErrors({ submit: msg })
     } finally {

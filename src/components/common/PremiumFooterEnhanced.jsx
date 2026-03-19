@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Github, Linkedin, Instagram, Mail, Shield, Eye, BookOpen, FileText, HelpCircle, Users, Send, ArrowUpRight, Zap, Lock, Globe } from 'lucide-react';
+import { Github, Linkedin, Instagram, Mail, Shield, Eye, BookOpen, FileText, HelpCircle, Users, Send, Zap, Lock, Globe, ArrowUpRight } from 'lucide-react';
 
 const PremiumFooterEnhanced = () => {
   const footerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
-  const [hoveredSocial, setHoveredSocial] = useState(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -46,352 +45,285 @@ const PremiumFooterEnhanced = () => {
     { icon: Users, label: 'Community', href: '#community' },
   ];
 
-  const legal = [
-    { label: 'Privacy Policy', href: '#privacy' },
-    { label: 'Terms of Service', href: '#terms' },
-    { label: 'Cookie Policy', href: '#cookies' },
-    { label: 'GDPR Compliance', href: '#gdpr' },
-  ];
-
   const socialLinks = [
-    { icon: Github, label: 'GitHub', href: 'https://github.com/adii0018', accent: '#00ff9f' },
-    { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/in/aditya-singh-rajput-720aa8326', accent: '#00b4ff' },
-    { icon: Instagram, label: 'Instagram', href: 'https://www.instagram.com/http._.adiix?igsh=MXVscHpwMWtxZGZpNg==', accent: '#ff6eb4' },
-    { icon: Mail, label: 'Email', href: 'mailto:singhrajputaditya982@gmail.com', accent: '#00ff9f' },
+    { icon: Github, label: 'GitHub', href: 'https://github.com/adii0018', color: '#e2e8f0' },
+    { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/in/aditya-singh-rajput-720aa8326', color: '#60a5fa' },
+    { icon: Instagram, label: 'Instagram', href: 'https://www.instagram.com/http._.adiix?igsh=MXVscHpwMWtxZGZpNg==', color: '#f472b6' },
+    { icon: Mail, label: 'Email', href: 'mailto:singhrajputaditya982@gmail.com', color: '#34d399' },
   ];
 
   return (
     <footer ref={footerRef} style={{
-      background: 'linear-gradient(180deg, #050505 0%, #000 100%)',
-      borderTop: '1px solid rgba(0,255,159,0.1)',
+      background: '#080c10',
+      borderTop: '1px solid rgba(255,255,255,0.06)',
       position: 'relative',
       overflow: 'hidden',
-      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+      fontFamily: "'Inter', 'SF Pro Display', -apple-system, sans-serif",
       opacity: isVisible ? 1 : 0,
-      transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
-      transition: 'opacity 1s ease, transform 1s ease',
+      transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+      transition: 'opacity 0.8s ease, transform 0.8s ease',
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         @keyframes pulse-dot {
-          0%, 100% { opacity: 1; box-shadow: 0 0 6px #00ff9f; }
-          50% { opacity: 0.4; box-shadow: 0 0 14px #00ff9f; }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.4); }
+          50% { box-shadow: 0 0 0 4px rgba(52,211,153,0); }
         }
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
+        @keyframes shimmer-grad {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
-        @keyframes float-up {
-          0% { opacity: 0; transform: translateY(20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
+        @keyframes fade-up {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
-        .f-stat-card {
+        .ft-stat {
+          padding: 20px;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.05);
           background: rgba(255,255,255,0.02);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(0,255,159,0.08);
-          border-radius: 16px;
-          padding: 24px 20px;
           text-align: center;
-          transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
-          position: relative;
-          overflow: hidden;
+          transition: border-color 0.3s, background 0.3s, transform 0.3s;
         }
-        .f-stat-card::before {
-          content: '';
-          position: absolute; inset: 0;
-          background: radial-gradient(circle at 50% 0%, rgba(0,255,159,0.1) 0%, transparent 70%);
-          opacity: 0;
-          transition: opacity 0.4s;
+        .ft-stat:hover {
+          border-color: rgba(52,211,153,0.2);
+          background: rgba(52,211,153,0.04);
+          transform: translateY(-4px);
         }
-        .f-stat-card:hover {
-          border-color: rgba(0,255,159,0.35);
-          transform: translateY(-6px);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(0,255,159,0.08);
-          background: rgba(0,255,159,0.03);
-        }
-        .f-stat-card:hover::before { opacity: 1; }
-        .f-stat-card:hover .f-stat-icon { color: #00ff9f !important; filter: drop-shadow(0 0 8px #00ff9f); }
 
-        .f-link {
-          color: rgba(255,255,255,0.35);
-          text-decoration: none;
-          font-size: 0.8rem;
+        .ft-link {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 7px 0;
-          transition: all 0.25s ease;
-          border-bottom: 1px solid transparent;
-        }
-        .f-link .f-arrow { opacity: 0; transform: translate(-4px, 4px); transition: all 0.25s ease; }
-        .f-link:hover { color: #00ff9f; padding-left: 6px; }
-        .f-link:hover .f-arrow { opacity: 1; transform: translate(0, 0); }
-
-        .f-social {
-          width: 44px; height: 44px;
-          border-radius: 12px;
-          border: 1px solid rgba(255,255,255,0.08);
-          background: rgba(255,255,255,0.03);
-          backdrop-filter: blur(10px);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+          justify-content: space-between;
+          color: rgba(255,255,255,0.4);
           text-decoration: none;
-          position: relative;
-          overflow: hidden;
+          font-size: 0.85rem;
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          transition: color 0.2s;
+          gap: 8px;
         }
-        .f-social:hover { transform: translateY(-5px) scale(1.08); }
+        .ft-link:last-child { border-bottom: none; }
+        .ft-link .ft-icon { opacity: 0; transform: translateX(-4px); transition: all 0.2s; }
+        .ft-link:hover { color: #fff; }
+        .ft-link:hover .ft-icon { opacity: 1; transform: translateX(0); }
 
-        .f-input {
-          background: rgba(255,255,255,0.03) !important;
-          border: 1px solid rgba(0,255,159,0.12) !important;
-          color: #fff !important;
-          font-family: 'JetBrains Mono', monospace !important;
-          font-size: 0.8rem !important;
-          border-radius: 10px !important;
-          padding: 12px 16px !important;
-          width: 100% !important;
-          outline: none !important;
-          transition: all 0.3s !important;
-          box-sizing: border-box !important;
-        }
-        .f-input:focus {
-          border-color: rgba(0,255,159,0.45) !important;
-          box-shadow: 0 0 0 3px rgba(0,255,159,0.07), 0 0 20px rgba(0,255,159,0.05) !important;
-          background: rgba(0,255,159,0.03) !important;
-        }
-        .f-input::placeholder { color: rgba(255,255,255,0.18) !important; }
-
-        .f-btn {
-          width: 100%;
-          padding: 12px;
+        .ft-social {
+          width: 40px; height: 40px;
           border-radius: 10px;
-          border: 1px solid rgba(0,255,159,0.3);
-          background: linear-gradient(135deg, rgba(0,255,159,0.08) 0%, rgba(0,180,255,0.05) 100%);
-          color: #00ff9f;
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.8rem;
+          border: 1px solid rgba(255,255,255,0.07);
+          background: rgba(255,255,255,0.03);
+          display: flex; align-items: center; justify-content: center;
+          text-decoration: none;
+          transition: all 0.25s ease;
+        }
+        .ft-social:hover {
+          border-color: rgba(255,255,255,0.15);
+          background: rgba(255,255,255,0.07);
+          transform: translateY(-3px);
+        }
+
+        .ft-input {
+          width: 100%;
+          padding: 11px 14px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          color: #fff;
+          font-size: 0.85rem;
+          font-family: 'Inter', sans-serif;
+          outline: none;
+          transition: border-color 0.2s, background 0.2s;
+          box-sizing: border-box;
+        }
+        .ft-input:focus {
+          border-color: rgba(52,211,153,0.35);
+          background: rgba(52,211,153,0.03);
+        }
+        .ft-input::placeholder { color: rgba(255,255,255,0.2); }
+
+        .ft-btn {
+          width: 100%;
+          padding: 11px;
+          border-radius: 10px;
+          border: 1px solid rgba(52,211,153,0.25);
+          background: rgba(52,211,153,0.08);
+          color: #34d399;
+          font-size: 0.85rem;
+          font-family: 'Inter', sans-serif;
+          font-weight: 500;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center; gap: 8px;
-          transition: all 0.3s ease;
-          letter-spacing: 0.5px;
-          position: relative;
-          overflow: hidden;
+          transition: all 0.25s ease;
         }
-        .f-btn::before {
-          content: '';
-          position: absolute; inset: 0;
-          background: linear-gradient(135deg, rgba(0,255,159,0.15) 0%, rgba(0,180,255,0.1) 100%);
-          opacity: 0;
-          transition: opacity 0.3s;
+        .ft-btn:hover {
+          background: rgba(52,211,153,0.14);
+          border-color: rgba(52,211,153,0.45);
+          transform: translateY(-1px);
         }
-        .f-btn:hover::before { opacity: 1; }
-        .f-btn:hover {
-          border-color: rgba(0,255,159,0.6);
-          box-shadow: 0 0 30px rgba(0,255,159,0.15), 0 4px 20px rgba(0,0,0,0.3);
-          transform: translateY(-2px);
-        }
+        .ft-btn:disabled { opacity: 0.7; cursor: default; transform: none; }
 
-        .f-section-label {
-          font-size: 0.65rem;
-          letter-spacing: 3px;
-          color: rgba(0,255,159,0.6);
+        .ft-label {
+          font-size: 0.7rem;
+          font-weight: 600;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
-          margin-bottom: 20px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .f-section-label::after {
-          content: '';
-          flex: 1;
-          height: 1px;
-          background: linear-gradient(90deg, rgba(0,255,159,0.2), transparent);
+          color: rgba(255,255,255,0.25);
+          margin-bottom: 18px;
         }
 
-        .f-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          padding: 4px 12px;
-          border-radius: 20px;
-          border: 1px solid rgba(0,255,159,0.15);
-          background: rgba(0,255,159,0.04);
-          color: rgba(0,255,159,0.65);
-          font-size: 0.65rem;
-          letter-spacing: 1px;
-          transition: all 0.2s;
-        }
-        .f-tag:hover {
-          border-color: rgba(0,255,159,0.35);
-          background: rgba(0,255,159,0.08);
-          color: #00ff9f;
-        }
-
-        .f-glass-box {
-          background: rgba(255,255,255,0.02);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 12px;
-          padding: 16px;
-        }
-
-        .f-shimmer-text {
-          background: linear-gradient(90deg, #00ff9f 0%, #00b4ff 50%, #00ff9f 100%);
-          background-size: 200% auto;
+        .ft-shimmer {
+          background: linear-gradient(270deg, #34d399, #60a5fa, #a78bfa, #34d399);
+          background-size: 300% 300%;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
-          animation: shimmer 3s linear infinite;
+          animation: shimmer-grad 4s ease infinite;
+        }
+
+        .ft-tech-tag {
+          padding: 3px 10px;
+          border-radius: 6px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.07);
+          color: rgba(255,255,255,0.3);
+          font-size: 0.72rem;
+          font-weight: 500;
+          transition: all 0.2s;
+        }
+        .ft-tech-tag:hover {
+          background: rgba(255,255,255,0.07);
+          color: rgba(255,255,255,0.6);
         }
       `}</style>
 
-      {/* Ambient glows */}
-      <div style={{ position: 'absolute', top: '-100px', left: '5%', width: 600, height: 500, background: 'radial-gradient(ellipse, rgba(0,255,159,0.04) 0%, transparent 65%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', top: '-60px', right: '10%', width: 400, height: 400, background: 'radial-gradient(ellipse, rgba(0,180,255,0.04) 0%, transparent 65%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: 0, left: '30%', width: 500, height: 300, background: 'radial-gradient(ellipse, rgba(0,255,159,0.03) 0%, transparent 65%)', pointerEvents: 'none' }} />
+      {/* Subtle top glow */}
+      <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 600, height: 1, background: 'linear-gradient(90deg, transparent, rgba(52,211,153,0.3), rgba(96,165,250,0.2), transparent)', pointerEvents: 'none' }} />
 
-      {/* ── STATS BAR ── */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '40px 5%' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
-            {stats.map((s, i) => (
-              <div key={s.label} className="f-stat-card" style={{
-                animation: isVisible ? `float-up 0.6s ease ${i * 0.1}s both` : 'none',
-              }}>
-                <s.icon className="f-stat-icon" style={{ width: 20, height: 20, color: 'rgba(0,255,159,0.35)', margin: '0 auto 12px', display: 'block', transition: 'all 0.3s' }} />
-                <div style={{ color: '#00ff9f', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-1px', textShadow: '0 0 30px rgba(0,255,159,0.4)' }}>{s.value}</div>
-                <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.68rem', marginTop: 6, letterSpacing: '2px', textTransform: 'uppercase' }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
+      {/* Stats row */}
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '36px 5%' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+          {stats.map((s, i) => (
+            <div key={s.label} className="ft-stat" style={{ animation: isVisible ? `fade-up 0.5s ease ${i * 0.08}s both` : 'none' }}>
+              <s.icon style={{ width: 18, height: 18, color: 'rgba(52,211,153,0.5)', margin: '0 auto 10px', display: 'block' }} />
+              <div style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, letterSpacing: '-0.5px' }}>{s.value}</div>
+              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', marginTop: 4, letterSpacing: '0.05em' }}>{s.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── MAIN CONTENT ── */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '72px 5% 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.4fr', gap: 56, marginBottom: 0 }}>
+      {/* Main grid */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 5% 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr', gap: 48 }}>
 
-          {/* Brand column */}
-          <div>
-            {/* Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+          {/* Brand */}
+          <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.1s both' : 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
               <div style={{
-                width: 42, height: 42, borderRadius: 12,
-                border: '1px solid rgba(0,255,159,0.25)',
-                background: 'linear-gradient(135deg, rgba(0,255,159,0.1) 0%, rgba(0,180,255,0.05) 100%)',
+                width: 38, height: 38, borderRadius: 10,
+                background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(96,165,250,0.1))',
+                border: '1px solid rgba(52,211,153,0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(0,255,159,0.1)',
               }}>
-                <Eye style={{ width: 20, height: 20, color: '#00ff9f', filter: 'drop-shadow(0 0 8px #00ff9f)' }} />
+                <Eye style={{ width: 18, height: 18, color: '#34d399' }} />
               </div>
               <div>
-                <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', letterSpacing: '1px' }}>
-                  Alice<span style={{ color: '#00ff9f' }}>_</span>
-                  <span style={{ animation: 'blink 1.2s step-end infinite', color: '#00ff9f' }}>|</span>
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', letterSpacing: '0.02em' }}>
+                  Alice<span style={{ color: '#34d399' }}>.</span>
                 </div>
-                <div style={{ color: 'rgba(0,255,159,0.45)', fontSize: '0.58rem', letterSpacing: '3px', marginTop: 2 }}>EXAM PROCTOR</div>
+                <div style={{ color: 'rgba(52,211,153,0.4)', fontSize: '0.6rem', letterSpacing: '0.2em', marginTop: 1 }}>EXAM PROCTOR</div>
               </div>
             </div>
 
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem', lineHeight: 1.9, marginBottom: 28, maxWidth: 290 }}>
-              Next-gen AI proctoring platform. Real-time behavioral analysis, zero-compromise integrity, built for the modern classroom.
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', lineHeight: 1.8, marginBottom: 24, maxWidth: 280 }}>
+              Next-gen AI proctoring platform with real-time behavioral analysis and zero-compromise integrity.
             </p>
 
-            {/* Tags */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
-              <span className="f-tag"><Shield style={{ width: 10, height: 10 }} /> AI-Powered</span>
-              <span className="f-tag"><Lock style={{ width: 10, height: 10 }} /> Secure</span>
-              <span className="f-tag"><Zap style={{ width: 10, height: 10 }} /> Real-time</span>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
+              {['AI-Powered', 'Secure', 'Real-time'].map(tag => (
+                <span key={tag} style={{
+                  padding: '4px 12px', borderRadius: 20,
+                  background: 'rgba(52,211,153,0.06)',
+                  border: '1px solid rgba(52,211,153,0.12)',
+                  color: 'rgba(52,211,153,0.6)',
+                  fontSize: '0.7rem', fontWeight: 500,
+                }}>{tag}</span>
+              ))}
             </div>
 
-            {/* Socials */}
-            <div style={{ display: 'flex', gap: 10 }}>
-              {socialLinks.map((s, i) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="f-social"
-                  onMouseEnter={() => setHoveredSocial(i)}
-                  onMouseLeave={() => setHoveredSocial(null)}
-                  style={{
-                    borderColor: hoveredSocial === i ? `${s.accent}60` : 'rgba(255,255,255,0.08)',
-                    boxShadow: hoveredSocial === i ? `0 0 24px ${s.accent}30, 0 8px 20px rgba(0,0,0,0.4)` : 'none',
-                    background: hoveredSocial === i ? `${s.accent}10` : 'rgba(255,255,255,0.03)',
-                  }}
-                >
-                  <s.icon style={{ width: 17, height: 17, color: hoveredSocial === i ? s.accent : 'rgba(255,255,255,0.4)', transition: 'color 0.3s', position: 'relative', zIndex: 1 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              {socialLinks.map(s => (
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="ft-social">
+                  <s.icon style={{ width: 16, height: 16, color: 'rgba(255,255,255,0.45)' }} />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Navigate */}
-          <div>
-            <div className="f-section-label">Navigate</div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {navLinks.map((l) => (
-                <li key={l.label}>
-                  <a href={l.href} className="f-link">
-                    {l.label}
-                    <ArrowUpRight className="f-arrow" style={{ width: 13, height: 13, marginLeft: 'auto' }} />
-                  </a>
-                </li>
+          {/* Navigate + Legal */}
+          <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.15s both' : 'none' }}>
+            <div className="ft-label">Navigate</div>
+            <nav>
+              {navLinks.map(l => (
+                <a key={l.label} href={l.href} className="ft-link">
+                  {l.label}
+                  <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
+                </a>
               ))}
-            </ul>
-
-            <div className="f-section-label" style={{ marginTop: 32 }}>Legal</div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {legal.map((l) => (
-                <li key={l.label}>
-                  <a href={l.href} className="f-link">
-                    {l.label}
-                    <ArrowUpRight className="f-arrow" style={{ width: 13, height: 13, marginLeft: 'auto' }} />
-                  </a>
-                </li>
+            </nav>
+            <div className="ft-label" style={{ marginTop: 28 }}>Legal</div>
+            <nav>
+              {[
+                { label: 'Privacy Policy', href: '#privacy' },
+                { label: 'Terms of Service', href: '#terms' },
+                { label: 'Cookie Policy', href: '#cookies' },
+              ].map(l => (
+                <a key={l.label} href={l.href} className="ft-link">
+                  {l.label}
+                  <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
+                </a>
               ))}
-            </ul>
+            </nav>
           </div>
 
-          {/* Resources */}
-          <div>
-            <div className="f-section-label">Resources</div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {resources.map((r) => (
-                <li key={r.label}>
-                  <a href={r.href} className="f-link">
+          {/* Resources + Status */}
+          <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.2s both' : 'none' }}>
+            <div className="ft-label">Resources</div>
+            <nav>
+              {resources.map(r => (
+                <a key={r.label} href={r.href} className="ft-link">
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <r.icon style={{ width: 13, height: 13, flexShrink: 0 }} />
                     {r.label}
-                    <ArrowUpRight className="f-arrow" style={{ width: 13, height: 13, marginLeft: 'auto' }} />
-                  </a>
-                </li>
+                  </span>
+                  <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
+                </a>
               ))}
-            </ul>
+            </nav>
 
-            {/* Status indicator */}
-            <div style={{ marginTop: 32 }} className="f-glass-box">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00ff9f', display: 'inline-block', animation: 'pulse-dot 2s infinite', flexShrink: 0 }} />
-                <span style={{ color: '#00ff9f', fontSize: '0.68rem', letterSpacing: '1.5px' }}>ALL SYSTEMS OPERATIONAL</span>
+            <div style={{
+              marginTop: 28, padding: '14px 16px',
+              borderRadius: 12,
+              background: 'rgba(52,211,153,0.04)',
+              border: '1px solid rgba(52,211,153,0.1)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34d399', display: 'inline-block', animation: 'pulse-dot 2s infinite', flexShrink: 0 }} />
+                <span style={{ color: '#34d399', fontSize: '0.72rem', fontWeight: 500, letterSpacing: '0.05em' }}>All systems operational</span>
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.65rem', paddingLeft: 16 }}>Last checked: just now</div>
+              <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', marginTop: 6, paddingLeft: 15 }}>Last checked: just now</div>
             </div>
           </div>
 
           {/* Newsletter */}
-          <div>
-            <div className="f-section-label">Stay Updated</div>
-            <p style={{ color: 'rgba(255,255,255,0.28)', fontSize: '0.8rem', lineHeight: 1.8, marginBottom: 20 }}>
-              Get notified about new features, security updates, and platform releases.
+          <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.25s both' : 'none' }}>
+            <div className="ft-label">Stay Updated</div>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.83rem', lineHeight: 1.7, marginBottom: 18 }}>
+              Get notified about new features, security updates, and releases.
             </p>
             <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <input
@@ -399,29 +331,21 @@ const PremiumFooterEnhanced = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="f-input"
+                className="ft-input"
                 disabled={subscribed}
               />
-              <button type="submit" disabled={subscribed} className="f-btn">
+              <button type="submit" disabled={subscribed} className="ft-btn">
                 {subscribed
-                  ? <><span style={{ color: '#00ff9f', position: 'relative', zIndex: 1 }}>✓</span> <span style={{ position: 'relative', zIndex: 1 }}>Subscribed!</span></>
-                  : <><Send style={{ width: 13, height: 13, position: 'relative', zIndex: 1 }} /> <span style={{ position: 'relative', zIndex: 1 }}>Subscribe</span></>}
+                  ? <><span>✓</span> Subscribed!</>
+                  : <><Send style={{ width: 13, height: 13 }} /> Subscribe</>}
               </button>
             </form>
 
-            {/* Built with */}
-            <div style={{ marginTop: 24 }} className="f-glass-box">
-              <div style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.65rem', marginBottom: 10, letterSpacing: '2px' }}>BUILT WITH</div>
+            <div style={{ marginTop: 24 }}>
+              <div style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>Built with</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {['React', 'Django', 'WebSocket', 'TensorFlow'].map(t => (
-                  <span key={t} style={{
-                    padding: '3px 10px', borderRadius: 6,
-                    background: 'rgba(0,255,159,0.04)',
-                    border: '1px solid rgba(0,255,159,0.1)',
-                    color: 'rgba(0,255,159,0.5)',
-                    fontSize: '0.65rem',
-                    transition: 'all 0.2s',
-                  }}>{t}</span>
+                  <span key={t} className="ft-tech-tag">{t}</span>
                 ))}
               </div>
             </div>
@@ -429,31 +353,20 @@ const PremiumFooterEnhanced = () => {
         </div>
       </div>
 
-      {/* ── BOTTOM BAR ── */}
-      <div style={{ maxWidth: 1200, margin: '56px auto 0', padding: '0 5%' }}>
-        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,159,0.15) 30%, rgba(0,180,255,0.1) 70%, transparent 100%)' }} />
-        <div style={{ padding: '24px 0 32px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.72rem', letterSpacing: '0.5px' }}>
-              © {new Date().getFullYear()} Alice Exam Proctor
-            </span>
-            <span style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.08)' }} />
-            <span style={{ color: 'rgba(255,255,255,0.12)', fontSize: '0.72rem' }}>All rights reserved</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '0.7rem' }}>Crafted by</span>
-            <span className="f-shimmer-text" style={{ fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.5px' }}>
-              Aditya Singh Rajput
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>with</span>
-            <span style={{ color: 'rgba(255,80,80,0.7)', fontSize: '0.85rem' }}>♥</span>
+      {/* Bottom bar */}
+      <div style={{ maxWidth: 1200, margin: '48px auto 0', padding: '0 5%' }}>
+        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07) 30%, rgba(255,255,255,0.07) 70%, transparent)' }} />
+        <div style={{ padding: '20px 0 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.78rem' }}>
+            © {new Date().getFullYear()} Alice Exam Proctor — All rights reserved
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.78rem' }}>Crafted by</span>
+            <span className="ft-shimmer" style={{ fontSize: '0.82rem', fontWeight: 600 }}>Aditya Singh Rajput</span>
+            <span style={{ color: 'rgba(255,100,100,0.6)', fontSize: '0.9rem' }}>♥</span>
           </div>
         </div>
       </div>
-
-      {/* Bottom glow line */}
-      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,159,0.3) 40%, rgba(0,180,255,0.2) 60%, transparent 100%)' }} />
     </footer>
   );
 };

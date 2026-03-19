@@ -40,8 +40,11 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       setUser(user)
       return user
+    } catch (err) {
+      setAuthLoading(false)
+      throw err
     } finally {
-      setTimeout(() => setAuthLoading(false), 2000) // Show loader for 2 seconds
+      setTimeout(() => setAuthLoading(false), 2000)
     }
   }
 
@@ -54,8 +57,11 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       setUser(user)
       return user
+    } catch (err) {
+      setAuthLoading(false)
+      throw err
     } finally {
-      setTimeout(() => setAuthLoading(false), 2000) // Show loader for 2 seconds
+      setTimeout(() => setAuthLoading(false), 2000)
     }
   }
 

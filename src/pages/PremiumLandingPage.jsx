@@ -621,8 +621,7 @@ const PremiumLandingPage = () => {
         </div>
       </section>
 
-      {/* FOOTER — unchanged */}
-      <PremiumFooterEnhanced darkMode={true} />
+
     </div>
   )
 }

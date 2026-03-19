@@ -111,7 +111,7 @@ function useReveal(threshold = 0.12) {
 }
 
 // ── static data ───────────────────────────────────────────────────────────────
-const NAV_LINKS = ['Features', 'How it Works', 'Pricing', 'Contact']
+const NAV_LINKS = ['Features', 'How it Works', 'GitHub', 'Contact']
 
 const FEATURES = [
   {
@@ -202,6 +202,19 @@ export default function GithubLandingPage() {
   const [submitStatus, setSubmitStatus] = useState(null)
 
   const [heroRef, heroVisible] = useReveal(0.05)
+  const heroLabels = ['AI-Powered Proctoring', 'Real-time Monitoring', 'Zero Compromise Integrity', 'Behavioral Analysis']
+  const [labelIndex, setLabelIndex] = useState(0)
+  const [labelFade, setLabelFade] = useState(true)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLabelFade(false)
+      setTimeout(() => {
+        setLabelIndex(i => (i + 1) % heroLabels.length)
+        setLabelFade(true)
+      }, 300)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [])
   const [featRef, featVisible] = useReveal()
   const [stepsRef, stepsVisible] = useReveal()
   const [statsRef, statsVisible] = useReveal()
@@ -218,7 +231,7 @@ export default function GithubLandingPage() {
     setSubmitting(true)
     setSubmitStatus(null)
     try {
-      const res = await fetch('http://localhost:8000/api/contact/', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/contact/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contactForm),
@@ -374,6 +387,11 @@ export default function GithubLandingPage() {
           margin-bottom: 16px;
         }
 
+        @keyframes gh-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(63,185,80,0.5); }
+          50% { box-shadow: 0 0 0 4px rgba(63,185,80,0); }
+        }
+
         /* divider */
         .gh-divider { border: none; border-top: 1px solid #21262d; }
 
@@ -417,7 +435,13 @@ export default function GithubLandingPage() {
           {/* Desktop nav */}
           <nav className="gh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             {NAV_LINKS.map(l => (
-              <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, '-')}`} className="gh-nav-link">{l}</a>
+              <a
+                key={l}
+                href={l === 'GitHub' ? 'https://github.com/adii0018' : `#${l.toLowerCase().replace(/\s+/g, '-')}`}
+                target={l === 'GitHub' ? '_blank' : undefined}
+                rel={l === 'GitHub' ? 'noopener noreferrer' : undefined}
+                className="gh-nav-link"
+              >{l}</a>
             ))}
           </nav>
 
@@ -447,7 +471,15 @@ export default function GithubLandingPage() {
         {mobileOpen && (
           <div style={{ background: '#161b22', borderTop: '1px solid #21262d', padding: '12px 24px 20px' }}>
             {NAV_LINKS.map(l => (
-              <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, '-')}`} className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }} onClick={() => setMobileOpen(false)}>{l}</a>
+              <a
+                key={l}
+                href={l === 'GitHub' ? 'https://github.com/adii0018' : `#${l.toLowerCase().replace(/\s+/g, '-')}`}
+                target={l === 'GitHub' ? '_blank' : undefined}
+                rel={l === 'GitHub' ? 'noopener noreferrer' : undefined}
+                className="gh-nav-link"
+                style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}
+                onClick={() => setMobileOpen(false)}
+              >{l}</a>
             ))}
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <Link to="/auth" className="gh-btn-outline" style={{ flex: 1, justifyContent: 'center' }}>Sign in</Link>
@@ -471,9 +503,16 @@ export default function GithubLandingPage() {
         >
           {/* Left */}
           <div className={`reveal ${heroVisible ? 'reveal-visible' : 'reveal-hidden'}`}>
-            <div className="gh-label">
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3fb950', display: 'inline-block' }} />
-              AI-Powered Proctoring
+            <div className="gh-label" style={{ minWidth: 220 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3fb950', display: 'inline-block', flexShrink: 0, animation: 'gh-pulse 2s infinite' }} />
+              <span style={{
+                opacity: labelFade ? 1 : 0,
+                transform: labelFade ? 'translateY(0)' : 'translateY(-6px)',
+                transition: 'opacity 0.3s ease, transform 0.3s ease',
+                display: 'inline-block',
+              }}>
+                {heroLabels[labelIndex]}
+              </span>
             </div>
             <h1 style={{
               fontSize: 'clamp(2.2rem, 5vw, 3.6rem)',
@@ -483,8 +522,8 @@ export default function GithubLandingPage() {
               letterSpacing: -1,
               marginBottom: 20,
             }}>
-              Fair exams,<br />
-              <span style={{ color: '#3fb950' }}>powered by AI.</span>
+              Alice 🍃<br />
+              <span style={{ color: '#3fb950' }}> Exam Proctor !!</span>
             </h1>
             <p style={{ color: '#8b949e', fontSize: '1.05rem', lineHeight: 1.75, maxWidth: 480, marginBottom: 36 }}>
               Alice monitors students in real-time using computer vision and behavioral analysis — keeping every online exam honest and secure.
@@ -750,44 +789,92 @@ export default function GithubLandingPage() {
         </div>
       </section>
 
-      {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
-      <footer style={{ background: '#161b22', borderTop: '1px solid #21262d', padding: '48px 24px 32px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ position: 'relative', background: 'linear-gradient(180deg, #0d1117 0%, #010409 100%)', borderTop: '1px solid #21262d', overflow: 'hidden' }}>
+        {/* Glow accent */}
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 600, height: 1, background: 'linear-gradient(90deg, transparent, #3fb950, transparent)', opacity: 0.6 }} />
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 300, height: 80, background: 'radial-gradient(ellipse at top, rgba(63,185,80,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '56px 24px 32px' }}>
+
+          {/* Top grid */}
           <div className="gh-footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
-            {/* Brand */}
+
+            {/* Brand col */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <AliceLogo size={28} />
-                <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '0.9rem' }}>Alice Proctor</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <AliceLogo size={30} />
+                <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>Alice Proctor</span>
               </div>
-              <p style={{ color: '#8b949e', fontSize: '0.82rem', lineHeight: 1.7, maxWidth: 260 }}>
-                AI-powered exam proctoring for fair, secure online assessments.
+              <p style={{ color: '#8b949e', fontSize: '0.83rem', lineHeight: 1.75, maxWidth: 240, marginBottom: 24 }}>
+                AI-powered exam proctoring for fair, secure, and stress-free online assessments.
               </p>
-              <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+              {/* Social icons */}
+              <div style={{ display: 'flex', gap: 10 }}>
                 {[
-                  { href: 'https://github.com/adii0018', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> },
-                  { href: 'https://www.linkedin.com/in/aditya-singh-rajput-720aa8326', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> },
-                  { href: 'mailto:singhrajputaditya982@gmail.com', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
-                ].map((s, i) => (
-                  <a key={i} href={s.href} target="_blank" rel="noopener noreferrer" style={{ color: '#8b949e', transition: 'color 0.15s ease' }} onMouseEnter={e => e.currentTarget.style.color = '#e6edf3'} onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}>
-                    {s.icon}
+                  {
+                    href: 'https://github.com/adii0018',
+                    label: 'GitHub',
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02.005 2.05.14 3 .4 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.69.8.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                  },
+                  {
+                    href: 'https://www.linkedin.com/in/aditya-singh-rajput-720aa8326',
+                    label: 'LinkedIn',
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+                  },
+                  {
+                    href: 'https://www.instagram.com/http._.adiix?igsh=MXVscHpwMWtxZGZpNg==',
+                    label: 'Instagram',
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                  },
+                  {
+                    href: 'mailto:singhrajputaditya982@gmail.com',
+                    label: 'Email',
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  },
+                ].map(({ href, label, icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 34, height: 34, borderRadius: 8,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid #30363d',
+                      color: '#8b949e',
+                      transition: 'all 0.2s ease',
+                      textDecoration: 'none',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(63,185,80,0.1)'; e.currentTarget.style.borderColor = '#3fb950'; e.currentTarget.style.color = '#3fb950'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.color = '#8b949e'; }}
+                  >
+                    {icon}
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Links */}
+            {/* Link columns */}
             {[
               { title: 'Product', links: [['Features', '#features'], ['How it Works', '#how-it-works'], ['Pricing', '#pricing'], ['Changelog', '#']] },
               { title: 'Resources', links: [['Documentation', '#'], ['API Reference', '#'], ['Help Center', '#'], ['Community', '#']] },
               { title: 'Legal', links: [['Privacy Policy', '#'], ['Terms of Service', '#'], ['Cookie Policy', '#'], ['GDPR', '#']] },
             ].map(col => (
               <div key={col.title}>
-                <div style={{ color: '#e6edf3', fontWeight: 700, fontSize: '0.82rem', marginBottom: 16 }}>{col.title}</div>
-                <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <p style={{ color: '#e6edf3', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 16 }}>{col.title}</p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {col.links.map(([label, href]) => (
                     <li key={label}>
-                      <a href={href} style={{ color: '#8b949e', fontSize: '0.82rem', textDecoration: 'none', transition: 'color 0.15s ease' }} onMouseEnter={e => e.currentTarget.style.color = '#e6edf3'} onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}>
+                      <a
+                        href={href}
+                        style={{ color: '#8b949e', fontSize: '0.83rem', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#3fb950'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}
+                      >
                         {label}
                       </a>
                     </li>
@@ -797,20 +884,34 @@ export default function GithubLandingPage() {
             ))}
           </div>
 
-          <hr className="gh-divider" />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, paddingTop: 24 }}>
-            <p style={{ color: '#8b949e', fontSize: '0.78rem' }}>
+          {/* Divider */}
+          <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, #21262d 20%, #21262d 80%, transparent)', marginBottom: 28 }} />
+
+          {/* Bottom bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+            <p style={{ color: '#484f58', fontSize: '0.78rem', margin: 0 }}>
               © {new Date().getFullYear()} Alice Exam Proctor. All rights reserved.
             </p>
-            <p style={{ color: '#8b949e', fontSize: '0.78rem' }}>
-              Designed & built by{' '}
-              <a href="https://github.com/adii0018" target="_blank" rel="noopener noreferrer" style={{ color: '#3fb950', textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ color: '#484f58', fontSize: '0.78rem' }}>Built with</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="#e05d5d"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span style={{ color: '#484f58', fontSize: '0.78rem' }}>by</span>
+              <a
+                href="https://github.com/adii0018"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#3fb950', fontSize: '0.78rem', textDecoration: 'none', fontWeight: 500 }}
+                onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+              >
                 Aditya Singh Rajput
               </a>
-            </p>
+            </div>
           </div>
+
         </div>
       </footer>
+
     </div>{/* end z-index wrapper */}
     </div>
   )

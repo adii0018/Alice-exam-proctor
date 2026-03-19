@@ -67,7 +67,7 @@ const RegisterForm = ({ onToggle }) => {
       toast.success('Account created successfully')
       navigate(user.role === 'student' ? '/student' : '/teacher')
     } catch (err) {
-      const msg = err.response?.data?.message || 'Registration failed'
+      const msg = err.response?.data?.error || err.response?.data?.message || 'Registration failed'
       toast.error(msg)
       setErrors({ submit: msg })
     } finally {
