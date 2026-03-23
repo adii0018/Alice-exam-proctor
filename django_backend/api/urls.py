@@ -13,6 +13,7 @@ urlpatterns = [
     path('quizzes/by-code/<str:code>/', quiz.get_quiz_by_code, name='quiz_by_code'),
     path('quizzes/<str:quiz_id>/', quiz.get_quiz, name='get_quiz'),
     path('quizzes/<str:quiz_id>/update/', quiz.update_quiz, name='update_quiz'),
+    path('quizzes/<str:quiz_id>/toggle-active/', quiz.toggle_quiz_active, name='toggle_quiz_active'),
     path('quizzes/<str:quiz_id>/submit/', quiz.submit_quiz, name='submit_quiz'),
     path('quizzes/<str:quiz_id>/delete/', quiz.delete_quiz, name='delete_quiz'),
     
@@ -25,6 +26,7 @@ urlpatterns = [
     path('violations/', violation.list_violations, name='list_violations'),
     path('violations/create/', violation.create_violation, name='create_violation'),
     path('violations/stats/<str:quiz_id>/', violation.get_violation_stats, name='violation_stats'),
+    path('violations/quiz/<str:quiz_id>/students/', violation.get_quiz_violations_by_student, name='quiz_violations_by_student'),
     
     # AI
     path('ai/chat/', ai.chat, name='ai_chat'),

@@ -34,6 +34,12 @@ export const flagAPI = {
   update: (id, data) => api.put(`/flags/${id}/update/`, data)
 }
 
+// Violation APIs
+export const violationAPI = {
+  getAll: (params) => api.get('/violations/', { params }),
+  getByQuizStudents: (quizId) => api.get(`/violations/quiz/${quizId}/students/`),
+}
+
 // User/Profile APIs
 export const userAPI = {
   getCurrentUser: () => api.get('/auth/me/'),

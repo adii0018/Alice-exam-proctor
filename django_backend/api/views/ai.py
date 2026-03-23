@@ -16,41 +16,32 @@ def chat(request):
         if not message:
             return JsonResponse({'error': 'Message is required'}, status=400)
         
-        # Check if Groq API key is configured
-        if not settings.GROQ_API_KEY:
+        # Check if Gemini API key is configured
+        if not settings.GEMINI_API_KEY:
             return JsonResponse({
-                'response': 'Alice AI is running in demo mode. To enable full functionality, please add your GROQ_API_KEY to the .env file. Get a free API key from https://console.groq.com/'
+                'response': 'Alice AI is running in demo mode. To enable full functionality, please add your GEMINI_API_KEY to the .env file.'
             })
         
-        # Use Groq API for AI responses
+        # Use Gemini API for AI responses
         try:
-            from groq import Groq
+            import google.generativeai as genai
             
-            client = Groq(api_key=settings.GROQ_API_KEY)
-            
-            messages = [
-                {"role": "system", "content": "You are Alice, a helpful AI assistant for an exam proctoring platform. Be friendly, concise, and helpful."}
-            ]
-            
-            # Add conversation history
-            for msg in history[-5:]:  # Last 5 messages for context
-                messages.append({
-                    "role": msg.get('role'),
-                    "content": msg.get('content')
-                })
-            
-            messages.append({"role": "user", "content": message})
-            
-            completion = client.chat.completions.create(
-                model="mixtral-8x7b-32768",
-                messages=messages,
-                temperature=0.7,
-                max_tokens=500
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                system_instruction="You are Alice, a helpful AI assistant for an exam proctoring platform. Be friendly, concise, and helpful."
             )
             
-            response = completion.choices[0].message.content
+            # Build conversation history for Gemini
+            chat_history = []
+            for msg in history[-5:]:  # Last 5 messages for context
+                role = "user" if msg.get('role') == 'user' else "model"
+                chat_history.append({"role": role, "parts": [msg.get('content', '')]})
             
-            return JsonResponse({'response': response})
+            chat_session = model.start_chat(history=chat_history)
+            result = chat_session.send_message(message)
+            
+            return JsonResponse({'response': result.text})
             
         except Exception as e:
             return JsonResponse({

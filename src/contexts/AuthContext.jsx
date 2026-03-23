@@ -3,7 +3,7 @@ import axios from 'axios'
 import FullPageLoader from '../components/loaders/FullPageLoader'
 
 const AuthContext = createContext(null)
-// knekdjnwdkn
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -13,18 +13,33 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token')
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      fetchUser()
+      // Restore user from localStorage immediately to avoid flash
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        try { setUser(JSON.parse(storedUser)) } catch { /* ignore */ }
+      }
+      fetchUser() // Still verify token with backend
     } else {
       setLoading(false)
     }
   }, [])
 
+  // Normalize user object so both `_id` and `id` are always present
+  const normalizeUser = (u) => ({
+    ...u,
+    _id: u._id || u.id,
+    id: u.id || u._id,
+  })
+
   const fetchUser = async () => {
     try {
       const response = await axios.get('/api/auth/me/')
-      setUser(response.data)
+      const user = normalizeUser(response.data)
+      setUser(user)
+      localStorage.setItem('user', JSON.stringify(user))
     } catch (error) {
       localStorage.removeItem('token')
+      localStorage.removeItem('user')
       delete axios.defaults.headers.common['Authorization']
     } finally {
       setLoading(false)
@@ -35,8 +50,10 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(true)
     try {
       const response = await axios.post('/api/auth/login/', { email, password })
-      const { token, user } = response.data
+      const { token } = response.data
+      const user = normalizeUser(response.data.user)
       localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       setUser(user)
       return user
@@ -52,8 +69,10 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(true)
     try {
       const response = await axios.post('/api/auth/register/', userData)
-      const { token, user } = response.data
+      const { token } = response.data
+      const user = normalizeUser(response.data.user)
       localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       setUser(user)
       return user
@@ -68,13 +87,16 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setAuthLoading(true)
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
     delete axios.defaults.headers.common['Authorization']
     setUser(null)
-    setTimeout(() => setAuthLoading(false), 2000) // Show loader for 2 seconds
+    setTimeout(() => setAuthLoading(false), 2000)
   }
 
   const updateUser = (updatedUserData) => {
-    setUser(updatedUserData)
+    const user = normalizeUser(updatedUserData)
+    setUser(user)
+    localStorage.setItem('user', JSON.stringify(user))
   }
 
   return (

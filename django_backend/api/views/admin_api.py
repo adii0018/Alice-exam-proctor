@@ -9,6 +9,22 @@ from bson import ObjectId
 from datetime import datetime, timedelta
 
 
+def _write_audit_log(action, target_id, request, details=''):
+    """Helper to write an audit log entry"""
+    try:
+        from ..models import db
+        db['audit_logs'].insert_one({
+            'action': action,
+            'admin_id': str(request.user.get('_id', 'unknown')) if hasattr(request, 'user') else 'unknown',
+            'admin_name': request.user.get('name', 'Admin') if hasattr(request, 'user') else 'Admin',
+            'target': str(target_id),
+            'timestamp': datetime.utcnow(),
+            'details': details,
+        })
+    except Exception:
+        pass  # Audit logging should never break the main action
+
+
 @api_view(['GET'])
 def dashboard_stats(request):
     """Get dashboard statistics for super admin"""
@@ -53,15 +69,34 @@ def user_action(request, user_id, action):
                 {'_id': ObjectId(user_id)},
                 {'$set': {'status': 'inactive'}}
             )
+            _write_audit_log('deactivate_user', user_id, request)
         elif action == 'activate':
             result = users_collection.update_one(
                 {'_id': ObjectId(user_id)},
                 {'$set': {'status': 'active'}}
             )
+            _write_audit_log('activate_user', user_id, request)
         elif action == 'reset-password':
-            # Generate temporary password and send email
-            # Implementation depends on your email service
-            pass
+            import secrets
+            import string
+            temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(10))
+            import bcrypt
+            hashed = bcrypt.hashpw(temp_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            users_collection.update_one(
+                {'_id': ObjectId(user_id)},
+                {'$set': {'password': hashed, 'must_change_password': True}}
+            )
+            # Log the action
+            from ..models import db
+            db['audit_logs'].insert_one({
+                'action': 'reset_password',
+                'admin_id': str(request.user.get('_id', 'admin')),
+                'target_user_id': user_id,
+                'timestamp': datetime.utcnow(),
+                'details': 'Password reset by admin',
+                'temp_password': temp_password,  # In production: send via email instead
+            })
+            return Response({'success': True, 'temp_password': temp_password})
         
         return Response({'success': True})
     except Exception as e:
@@ -101,19 +136,13 @@ def violations_list(request):
 def audit_logs(request):
     """Get audit logs (admin actions)"""
     try:
-        # This would come from a dedicated audit_logs collection
-        # For now, return mock data
-        logs = [
-            {
-                '_id': '1',
-                'action': 'user_ban',
-                'admin_id': str(request.user.id) if hasattr(request, 'user') else 'admin1',
-                'admin_name': 'Super Admin',
-                'target': 'john.doe@example.com',
-                'timestamp': datetime.utcnow().isoformat(),
-                'details': 'User banned for repeated violations',
-            }
-        ]
+        from ..models import db
+        audit_collection = db['audit_logs']
+        logs = list(audit_collection.find().sort('timestamp', -1).limit(100))
+        for log in logs:
+            log['_id'] = str(log['_id'])
+            if 'timestamp' in log and hasattr(log['timestamp'], 'isoformat'):
+                log['timestamp'] = log['timestamp'].isoformat()
         return Response({'logs': logs})
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -173,11 +202,13 @@ def exam_action(request, exam_id, action):
                 {'_id': ObjectId(exam_id)},
                 {'$set': {'status': 'stopped', 'stopped_by_admin': True}}
             )
+            _write_audit_log('force_stop_exam', exam_id, request, 'Exam force-stopped by admin')
         elif action == 'lock':
             result = quizzes_collection.update_one(
                 {'_id': ObjectId(exam_id)},
                 {'$set': {'locked': True}}
             )
+            _write_audit_log('lock_exam', exam_id, request, 'Exam locked by admin')
         
         return Response({'success': True})
     except Exception as e:

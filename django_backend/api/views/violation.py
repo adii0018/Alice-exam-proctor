@@ -121,6 +121,50 @@ def list_violations(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 @require_auth
+def get_quiz_violations_by_student(request, quiz_id):
+    """
+    Get all violations for a quiz grouped by student with names
+    GET /api/violations/quiz/<quiz_id>/students/
+    """
+    try:
+        from ..models import users_collection, violations_collection
+        violations = Violation.find_by_quiz(quiz_id)
+
+        # Group by student
+        student_map = {}
+        for v in violations:
+            sid = str(v['student_id'])
+            if sid not in student_map:
+                student_map[sid] = {
+                    'student_id': sid,
+                    'student_name': 'Unknown',
+                    'violations': []
+                }
+            student_map[sid]['violations'].append({
+                'type': v['violation_type'],
+                'severity': v['severity'],
+                'timestamp': v['timestamp'].isoformat() if isinstance(v['timestamp'], datetime) else v['timestamp'],
+            })
+
+        # Fetch student names in bulk
+        if student_map:
+            student_ids = [ObjectId(sid) for sid in student_map.keys()]
+            students = list(users_collection.find({'_id': {'$in': student_ids}}, {'name': 1}))
+            for s in students:
+                sid = str(s['_id'])
+                if sid in student_map:
+                    student_map[sid]['student_name'] = s.get('name', 'Unknown')
+
+        result = sorted(student_map.values(), key=lambda x: len(x['violations']), reverse=True)
+        return JsonResponse({'students': result}, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+@require_auth
 def get_violation_stats(request, quiz_id):
     """
     Get violation statistics for a quiz

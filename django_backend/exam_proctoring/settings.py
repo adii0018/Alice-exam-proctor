@@ -98,8 +98,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [],
 }
 
-# Groq AI
-GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
+# Gemini AI
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'

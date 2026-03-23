@@ -12,6 +12,8 @@ import PerformanceSummary from '../components/student/PerformanceSummary'
 import QuizCodeEntry from '../components/student/QuizCodeEntry'
 import QuizInterface from '../components/student/QuizInterface'
 import { useTheme } from '../contexts/ThemeContext'
+import AliceAIChat from '../components/ai/AliceAIChat'
+import { FaLeaf } from 'react-icons/fa'
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -45,6 +47,7 @@ const StudentDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [activeQuiz, setActiveQuiz] = useState(null)
   const [showCodeEntry, setShowCodeEntry] = useState(false)
+  const [showAliceChat, setShowAliceChat] = useState(false)
   const { darkMode } = useTheme()
 
   // Handle quiz start from code entry
@@ -201,6 +204,17 @@ const StudentDashboard = () => {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+
+      {/* Alice AI Chat */}
+      {showAliceChat && <AliceAIChat onClose={() => setShowAliceChat(false)} />}
+      <button
+        onClick={() => setShowAliceChat(prev => !prev)}
+        className="fixed bottom-20 right-6 md:bottom-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50"
+        style={{ background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }}
+        title="Chat with Alice AI"
+      >
+        <FaLeaf className="text-white text-xl" />
+      </button>
     </div>
   )
 }

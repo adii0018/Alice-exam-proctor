@@ -45,7 +45,8 @@ export default function Exams() {
     status: quiz.status === 'active' ? 'Live' : 'Draft',
     date: new Date(quiz.createdAt).toLocaleString(),
     duration: `${quiz.duration} min`,
-    students: quiz.submissions?.length || 0
+    students: quiz.submissions?.length || 0,
+    is_active: quiz.is_active || false
   }));
 
   const handleExamAction = async (action, exam) => {
@@ -81,6 +82,20 @@ export default function Exams() {
         fetchQuizzes();
       } catch (error) {
         toast.error('Failed to end exam');
+      }
+    } else if (action === 'toggle_active') {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:8000/api/quizzes/${exam.id}/toggle-active/`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast.success(data.message);
+        fetchQuizzes();
+      } catch (error) {
+        toast.error('Failed to toggle quiz status');
       }
     }
   };

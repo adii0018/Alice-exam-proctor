@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
-import { quizAPI } from '../../utils/api'
+import { useState, useEffect, useRef } from 'react'
+import { quizAPI, flagAPI } from '../../utils/api'
 import toast from 'react-hot-toast'
-import { FaClock, FaArrowLeft, FaArrowRight, FaCheckCircle } from 'react-icons/fa'
-import ProctoringMonitor from './ProctoringMonitor'
+import { FaClock } from 'react-icons/fa'
+import ProctorSidebar from '../exam/ProctorSidebar'
 import QuizResult from './QuizResult'
+import useProctoring, { Decision } from '../../hooks/useProctoring'
 
 const QuizInterface = ({ quiz, onExit }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0)
@@ -12,6 +13,38 @@ const QuizInterface = ({ quiz, onExit }) => {
   const [submitting, setSubmitting] = useState(false)
   const [quizResult, setQuizResult] = useState(null)
   const [startTime] = useState(Date.now())
+
+  const videoRef = useRef(null)
+
+  // ── Proctoring ──────────────────────────────────────────────────────────
+  const {
+    isReady, faceCount, isLookingAway, gazeDirection,
+    score, decision, tabSwitchCount, violations, getReport,
+  } = useProctoring({
+    videoRef,
+    enabled: true,
+    onViolation: async (entry) => {
+      // Persist every confirmed violation to the backend
+      try {
+        await flagAPI.create({
+          quiz_id:   quiz._id,
+          type:      entry.type,
+          severity:  entry.severity,
+          timestamp: entry.timestamp,
+          metadata:  entry,
+        })
+      } catch { /* non-blocking */ }
+    },
+  })
+
+  // Warn student when risk score crosses thresholds
+  useEffect(() => {
+    if (decision === Decision.CHEATING) {
+      toast.error('⚠️ High risk activity detected. Your session is being recorded.', { id: 'cheat-high', duration: 5000 })
+    } else if (decision === Decision.SUSPECT) {
+      toast('Suspicious activity detected. Please focus on your exam.', { id: 'cheat-med', icon: '⚠️', duration: 4000 })
+    }
+  }, [decision])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -27,47 +60,36 @@ const QuizInterface = ({ quiz, onExit }) => {
     return () => clearInterval(timer)
   }, [])
 
-  const handleAnswerSelect = (questionId, answer) => {
-    setAnswers({ ...answers, [questionId]: answer })
-  }
-
   const handleSubmit = async () => {
     setSubmitting(true)
 
     try {
-      // Calculate results
       const timeTaken = Math.floor((Date.now() - startTime) / 1000)
-      const minutes = Math.floor(timeTaken / 60)
-      const seconds = timeTaken % 60
-      const timeString = `${minutes}m ${seconds}s`
+      const timeString = `${Math.floor(timeTaken / 60)}m ${timeTaken % 60}s`
 
-      let correctAnswers = 0
-      let wrongAnswers = 0
-
-      quiz.questions.forEach((question) => {
-        if (answers[question._id] === question.correctAnswer) {
-          correctAnswers++
-        } else if (answers[question._id]) {
-          wrongAnswers++
-        }
+      let correctAnswers = 0, wrongAnswers = 0
+      quiz.questions.forEach((q) => {
+        if (answers[q._id] === q.correctAnswer) correctAnswers++
+        else if (answers[q._id]) wrongAnswers++
       })
 
       const totalQuestions = quiz.questions.length
-      const score = correctAnswers
       const percentage = Math.round((correctAnswers / totalQuestions) * 100)
 
-      // Submit to backend
-      const response = await quizAPI.submit(quiz._id, { answers })
-      
-      // Show result page with violations from backend (if available)
+      // Attach proctoring report to submission
+      const proctoringReport = getReport()
+      const response = await quizAPI.submit(quiz._id, { answers, proctoringReport })
+
       setQuizResult({
-        score,
+        score: correctAnswers,
         totalQuestions,
         correctAnswers,
         wrongAnswers,
         timeTaken: timeString,
         percentage,
-        violations: response.data?.violations || []
+        violations:       response.data?.violations ?? violations,
+        proctoringScore:  score,
+        proctoringDecision: decision,
       })
 
       toast.success('Quiz submitted successfully!')
@@ -77,6 +99,18 @@ const QuizInterface = ({ quiz, onExit }) => {
     }
   }
 
+  // ── Camera setup ────────────────────────────────────────────────────────
+  useEffect(() => {
+    let stream
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(s => {
+        stream = s
+        if (videoRef.current) videoRef.current.srcObject = s
+      })
+      .catch(() => toast.error('Camera access required for proctoring'))
+    return () => stream?.getTracks().forEach(t => t.stop())
+  }, [])
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -85,7 +119,6 @@ const QuizInterface = ({ quiz, onExit }) => {
 
   const question = quiz.questions[currentQuestion]
 
-  // Show result page if quiz is completed
   if (quizResult) {
     return <QuizResult result={quizResult} quiz={quiz} onBackToDashboard={onExit} />
   }
@@ -132,7 +165,7 @@ const QuizInterface = ({ quiz, onExit }) => {
                     name={question._id}
                     value={option}
                     checked={answers[question._id] === option}
-                    onChange={() => handleAnswerSelect(question._id, option)}
+                    onChange={() => setAnswers({ ...answers, [question._id]: option })}
                     className="mr-3"
                   />
                   {option}
@@ -149,20 +182,12 @@ const QuizInterface = ({ quiz, onExit }) => {
             >
               Previous
             </button>
-
             {currentQuestion === quiz.questions.length - 1 ? (
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="btn-primary"
-              >
-                {submitting ? 'Submitting...' : 'Submit Quiz'}
+              <button onClick={handleSubmit} disabled={submitting} className="btn-primary">
+                {submitting ? 'Submitting…' : 'Submit Quiz'}
               </button>
             ) : (
-              <button
-                onClick={() => setCurrentQuestion(currentQuestion + 1)}
-                className="btn-primary"
-              >
+              <button onClick={() => setCurrentQuestion(currentQuestion + 1)} className="btn-primary">
                 Next
               </button>
             )}
@@ -171,7 +196,17 @@ const QuizInterface = ({ quiz, onExit }) => {
       </div>
 
       <div className="lg:col-span-1">
-        <ProctoringMonitor quizId={quiz._id} />
+        <ProctorSidebar
+          videoRef={videoRef}
+          faceCount={faceCount}
+          isLookingAway={isLookingAway}
+          gazeDirection={gazeDirection}
+          score={score}
+          decision={decision}
+          tabSwitchCount={tabSwitchCount}
+          violations={violations}
+          isReady={isReady}
+        />
       </div>
     </div>
   )

@@ -95,9 +95,10 @@ export default function LiveMonitoring() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
+    // Always poll every 5s as fallback (also works when WebSocket is not connected)
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isConnected]);
 
   // Subscribe to active quizzes for real-time monitoring
   useEffect(() => {
@@ -156,12 +157,10 @@ export default function LiveMonitoring() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>Live Monitoring</h2>
         <p style={{ color: darkMode ? '#8b949e' : '#6b7280', marginTop: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
           Monitor active exams in real-time
-          {isConnected && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#3fb950', fontSize: '0.85rem' }}>
-              <span style={{ width: 8, height: 8, background: '#3fb950', borderRadius: '50%', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-              Connected
-            </span>
-          )}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.85rem', color: isConnected ? '#3fb950' : '#f0883e' }}>
+            <span style={{ width: 8, height: 8, background: isConnected ? '#3fb950' : '#f0883e', borderRadius: '50%', display: 'inline-block' }} />
+            {isConnected ? 'Live' : 'Polling'}
+          </span>
         </p>
       </div>
 

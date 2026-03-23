@@ -1,13 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Square, Eye, Edit, Trash2, AlertTriangle, Copy, Check } from 'lucide-react';
+import { Play, Square, Eye, Edit, Trash2, AlertTriangle, Copy, Check, ToggleLeft, ToggleRight, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTheme } from '../../contexts/ThemeContext';
+import QuizViolationsModal from './QuizViolationsModal';
 
 export default function ExamTable({ exams, onAction }) {
   const { darkMode } = useTheme();
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [copiedCode, setCopiedCode] = useState(null);
+  const [violationsExam, setViolationsExam] = useState(null);
 
   const statusStyle = (status) => {
     if (!darkMode) {
@@ -78,8 +80,8 @@ export default function ExamTable({ exams, onAction }) {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['Exam Name', 'Status', 'Date & Time', 'Duration', 'Students', 'Actions'].map((h, i) => (
-                  <th key={h} style={{ ...th, textAlign: i === 5 ? 'right' : 'left' }}>{h}</th>
+                {['Exam Name', 'Status', 'Active', 'Date & Time', 'Duration', 'Students', 'Actions'].map((h, i) => (
+                  <th key={h} style={{ ...th, textAlign: i === 6 ? 'right' : 'left' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -120,6 +122,22 @@ export default function ExamTable({ exams, onAction }) {
                       {exam.status}
                     </span>
                   </td>
+                  <td style={td}>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => onAction('toggle_active', exam)}
+                      title={exam.is_active ? 'Deactivate quiz' : 'Activate quiz'}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: 0 }}
+                    >
+                      {exam.is_active
+                        ? <ToggleRight size={26} color="#3fb950" />
+                        : <ToggleLeft size={26} color={darkMode ? '#8b949e' : '#9ca3af'} />
+                      }
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: exam.is_active ? '#3fb950' : (darkMode ? '#8b949e' : '#9ca3af') }}>
+                        {exam.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </motion.button>
+                  </td>
                   <td style={td}>{exam.date}</td>
                   <td style={td}>{exam.duration}</td>
                   <td style={td}>{exam.students}</td>
@@ -140,6 +158,9 @@ export default function ExamTable({ exams, onAction }) {
                           <Square size={15} />
                         </ActionBtn>
                       )}
+                      <ActionBtn onClick={() => setViolationsExam(exam)} title="View Violations" color="#f85149" darkMode={darkMode}>
+                        <ShieldAlert size={15} />
+                      </ActionBtn>
                       <ActionBtn onClick={() => onAction('edit', exam)} title="Edit" color={darkMode ? '#8b949e' : '#6b7280'} darkMode={darkMode}>
                         <Edit size={15} />
                       </ActionBtn>
@@ -160,6 +181,13 @@ export default function ExamTable({ exams, onAction }) {
           </div>
         )}
       </div>
+
+      {/* Violations Modal */}
+      <AnimatePresence>
+        {violationsExam && (
+          <QuizViolationsModal quiz={violationsExam} onClose={() => setViolationsExam(null)} />
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>

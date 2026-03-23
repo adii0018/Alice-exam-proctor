@@ -80,6 +80,7 @@ class Quiz:
             'questions': questions,
             'teacher_id': teacher_id,
             'code': generate_quiz_code(),
+            'is_active': False,
             'created_at': None
         }
         result = quizzes_collection.insert_one(quiz)
@@ -113,13 +114,16 @@ class Quiz:
 
 class Submission:
     @staticmethod
-    def create(quiz_id, student_id, answers, score):
+    def create(quiz_id, student_id, answers, score, proctoring_report=None, time_spent=0):
+        from datetime import datetime
         submission = {
             'quiz_id': quiz_id,
             'student_id': student_id,
             'answers': answers,
             'score': score,
-            'submitted_at': None
+            'proctoring_report': proctoring_report or {},
+            'time_spent': time_spent,
+            'submitted_at': datetime.utcnow(),
         }
         result = submissions_collection.insert_one(submission)
         return result.inserted_id

@@ -54,7 +54,8 @@ const QuizCodeEntry = ({ onQuizStart, onBack }) => {
       
     } catch (error) {
       console.error('Quiz code error:', error);
-      toast.error(error.response?.data?.message || error.message || 'Quiz not found')
+      const msg = error.response?.data?.error || error.response?.data?.message || error.message || 'Quiz not found'
+      toast.error(msg)
     } finally {
       setLoading(false)
     }

@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from bson import ObjectId
-from ..models import Flag
+from ..models import Flag, users_collection, quizzes_collection
 from ..authentication import require_auth
 
 
@@ -21,7 +21,24 @@ def serialize_flag(flag):
 def list_flags(request):
     try:
         flags = Flag.find_all()
-        return JsonResponse([serialize_flag(f) for f in flags], safe=False)
+
+        # Enrich with student names and quiz titles
+        student_ids = list({ObjectId(f['student_id']) for f in flags if f.get('student_id')})
+        quiz_ids    = list({ObjectId(f['quiz_id'])    for f in flags if f.get('quiz_id')})
+
+        students = {str(s['_id']): s.get('name', 'Unknown')
+                    for s in users_collection.find({'_id': {'$in': student_ids}}, {'name': 1})}
+        quizzes  = {str(q['_id']): q.get('title', 'Unknown')
+                    for q in quizzes_collection.find({'_id': {'$in': quiz_ids}}, {'title': 1})}
+
+        result = []
+        for f in flags:
+            f = serialize_flag(f)
+            f['student_name'] = students.get(f['student_id'], 'Unknown')
+            f['quiz_title']   = quizzes.get(f['quiz_id'], 'Unknown')
+            result.append(f)
+
+        return JsonResponse(result, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 

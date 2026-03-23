@@ -78,7 +78,31 @@ def get_quiz_by_code(request, code):
         if not quiz:
             return JsonResponse({'error': 'Quiz not found'}, status=404)
         
+        # Students can only join active quizzes
+        if request.user['role'] == 'student' and not quiz.get('is_active', False):
+            return JsonResponse({'error': 'This quiz is not active. Please contact your teacher.'}, status=403)
+        
         return JsonResponse(serialize_quiz(quiz))
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@require_role('teacher')
+def toggle_quiz_active(request, quiz_id):
+    try:
+        quiz = Quiz.find_by_id(quiz_id)
+        if not quiz:
+            return JsonResponse({'error': 'Quiz not found'}, status=404)
+        
+        if str(quiz['teacher_id']) != str(request.user['_id']):
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        new_status = not quiz.get('is_active', False)
+        Quiz.update(quiz_id, {'is_active': new_status})
+        
+        return JsonResponse({'is_active': new_status, 'message': f"Quiz {'activated' if new_status else 'deactivated'} successfully"})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -90,27 +114,31 @@ def submit_quiz(request, quiz_id):
     try:
         data = json.loads(request.body)
         answers = data.get('answers', {})
-        
+        proctoring_report = data.get('proctoringReport', {})
+        time_spent = data.get('timeSpent', 0)
+
         quiz = Quiz.find_by_id(quiz_id)
         if not quiz:
             return JsonResponse({'error': 'Quiz not found'}, status=404)
-        
+
         # Calculate score
         correct = 0
         for question in quiz['questions']:
             q_id = str(question.get('_id', ''))
             if answers.get(q_id) == question.get('correctAnswer'):
                 correct += 1
-        
+
         score = (correct / len(quiz['questions'])) * 100 if quiz['questions'] else 0
-        
+
         submission_id = Submission.create(
             ObjectId(quiz_id),
             request.user['_id'],
             answers,
-            score
+            score,
+            proctoring_report=proctoring_report,
+            time_spent=time_spent,
         )
-        
+
         return JsonResponse({
             'submission_id': str(submission_id),
             'score': score,

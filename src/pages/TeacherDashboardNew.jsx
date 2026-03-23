@@ -11,11 +11,14 @@ import LiveMonitorCard from '../components/teacher/LiveMonitorCard';
 import ViolationsTable from '../components/teacher/ViolationsTable';
 import PerformanceChart from '../components/teacher/PerformanceChart';
 import { useTheme } from '../contexts/ThemeContext';
+import AliceAIChat from '../components/ai/AliceAIChat';
+import { FaLeaf } from 'react-icons/fa';
 
 export default function TeacherDashboardNew() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAliceChat, setShowAliceChat] = useState(false);
   const { darkMode } = useTheme();
   
   // Real data from backend
@@ -80,7 +83,8 @@ export default function TeacherDashboardNew() {
     status: quiz.status === 'active' ? 'Live' : 'Draft',
     date: new Date(quiz.createdAt).toLocaleString(),
     duration: `${quiz.duration} min`,
-    students: quiz.submissions?.length || 0
+    students: quiz.submissions?.length || 0,
+    is_active: quiz.is_active || false
   }));
 
   // Get live exams
@@ -148,6 +152,20 @@ export default function TeacherDashboardNew() {
       } catch (error) {
         toast.error('Failed to end exam');
         console.error('End error:', error);
+      }
+    } else if (action === 'toggle_active') {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:8000/api/quizzes/${exam.id}/toggle-active/`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast.success(data.message);
+        fetchData();
+      } catch (error) {
+        toast.error('Failed to toggle quiz status');
       }
     }
   };
@@ -273,6 +291,17 @@ export default function TeacherDashboardNew() {
           </motion.div>
         </main>
       </div>
+
+      {/* Alice AI Chat */}
+      {showAliceChat && <AliceAIChat onClose={() => setShowAliceChat(false)} />}
+      <button
+        onClick={() => setShowAliceChat(prev => !prev)}
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50"
+        style={{ background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }}
+        title="Chat with Alice AI"
+      >
+        <FaLeaf className="text-white text-xl" />
+      </button>
     </div>
   );
 }
