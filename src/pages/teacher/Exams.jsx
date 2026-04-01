@@ -86,7 +86,7 @@ export default function Exams() {
     } else if (action === 'toggle_active') {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:8000/api/quizzes/${exam.id}/toggle-active/`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${exam.id}/toggle-active/`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
