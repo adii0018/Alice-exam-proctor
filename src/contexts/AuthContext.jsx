@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import FullPageLoader from '../components/loaders/FullPageLoader'
 
 const AuthContext = createContext(null)
