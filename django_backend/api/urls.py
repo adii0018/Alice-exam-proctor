@@ -5,6 +5,7 @@ urlpatterns = [
     # Auth
     path('auth/register/', auth.register, name='register'),
     path('auth/login/', auth.login, name='login'),
+    path('auth/google/', auth.google_auth, name='google_auth'),
     path('auth/me/', auth.get_current_user, name='current_user'),
     path('auth/profile/', auth.update_profile, name='update_profile'),
     

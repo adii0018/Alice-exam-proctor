@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import TestimonialsSection from '../components/common/TestimonialsSection'
+import PremiumFooter from '../components/common/PremiumFooter'
 
 // ── Alice logo — leaf, GitHub dark theme ─────────────────────────────────────
 function AliceLogo({ size = 32 }) {
@@ -429,7 +431,7 @@ export default function GithubLandingPage() {
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <AliceLogo size={34} />
-            <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', letterSpacing: -0.3 }}>Alice Proctor</span>
+            <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', letterSpacing: -0.3 }}>Alice Exam Proctor</span>
           </div>
 
           {/* Desktop nav */}
@@ -773,144 +775,12 @@ export default function GithubLandingPage() {
         </div>
       </section>
 
-      {/* ── CTA BANNER ─────────────────────────────────────────────────────── */}
-      <section style={{ padding: '80px 24px', textAlign: 'center', borderTop: '1px solid #21262d' }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: -0.5, marginBottom: 14 }}>
-            Ready to run fair exams?
-          </h2>
-          <p style={{ color: '#8b949e', fontSize: '0.9rem', marginBottom: 32, lineHeight: 1.7 }}>
-            Join thousands of educators using Alice to proctor exams with confidence.
-          </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/auth" className="gh-btn" style={{ padding: '11px 28px', fontSize: '0.95rem' }}>Get started free</Link>
-            <a href="#contact" className="gh-btn-outline" style={{ padding: '11px 28px', fontSize: '0.95rem' }}>Contact us</a>
-          </div>
-        </div>
-      </section>
+      {/* ── TESTIMONIALS ───────────────────────────────────────────────────── */}
+      <TestimonialsSection />
 
 
       {/* ── FOOTER ── */}
-      <footer style={{ position: 'relative', background: 'linear-gradient(180deg, #0d1117 0%, #010409 100%)', borderTop: '1px solid #21262d', overflow: 'hidden' }}>
-        {/* Glow accent */}
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 600, height: 1, background: 'linear-gradient(90deg, transparent, #3fb950, transparent)', opacity: 0.6 }} />
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 300, height: 80, background: 'radial-gradient(ellipse at top, rgba(63,185,80,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '56px 24px 32px' }}>
-
-          {/* Top grid */}
-          <div className="gh-footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
-
-            {/* Brand col */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <AliceLogo size={30} />
-                <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>Alice Proctor</span>
-              </div>
-              <p style={{ color: '#8b949e', fontSize: '0.83rem', lineHeight: 1.75, maxWidth: 240, marginBottom: 24 }}>
-                AI-powered exam proctoring for fair, secure, and stress-free online assessments.
-              </p>
-              {/* Social icons */}
-              <div style={{ display: 'flex', gap: 10 }}>
-                {[
-                  {
-                    href: 'https://github.com/adii0018',
-                    label: 'GitHub',
-                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02.005 2.05.14 3 .4 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.69.8.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
-                  },
-                  {
-                    href: 'https://www.linkedin.com/in/aditya-singh-rajput-720aa8326',
-                    label: 'LinkedIn',
-                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z"/></svg>
-                  },
-                  {
-                    href: 'https://www.instagram.com/http._.adiix?igsh=MXVscHpwMWtxZGZpNg==',
-                    label: 'Instagram',
-                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                  },
-                  {
-                    href: 'mailto:singhrajputaditya982@gmail.com',
-                    label: 'Email',
-                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                  },
-                ].map(({ href, label, icon }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      width: 34, height: 34, borderRadius: 8,
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid #30363d',
-                      color: '#8b949e',
-                      transition: 'all 0.2s ease',
-                      textDecoration: 'none',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(63,185,80,0.1)'; e.currentTarget.style.borderColor = '#3fb950'; e.currentTarget.style.color = '#3fb950'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.color = '#8b949e'; }}
-                  >
-                    {icon}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Link columns */}
-            {[
-              { title: 'Product', links: [['Features', '#features'], ['How it Works', '#how-it-works'], ['Pricing', '#pricing'], ['Changelog', '#']] },
-              { title: 'Resources', links: [['Documentation', '#'], ['API Reference', '#'], ['Help Center', '#'], ['Community', '#']] },
-              { title: 'Legal', links: [['Privacy Policy', '#'], ['Terms of Service', '#'], ['Cookie Policy', '#'], ['GDPR', '#']] },
-            ].map(col => (
-              <div key={col.title}>
-                <p style={{ color: '#e6edf3', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 16 }}>{col.title}</p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {col.links.map(([label, href]) => (
-                    <li key={label}>
-                      <a
-                        href={href}
-                        style={{ color: '#8b949e', fontSize: '0.83rem', textDecoration: 'none', transition: 'color 0.15s ease' }}
-                        onMouseEnter={e => e.currentTarget.style.color = '#3fb950'}
-                        onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}
-                      >
-                        {label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          {/* Divider */}
-          <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, #21262d 20%, #21262d 80%, transparent)', marginBottom: 28 }} />
-
-          {/* Bottom bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-            <p style={{ color: '#484f58', fontSize: '0.78rem', margin: 0 }}>
-              © {new Date().getFullYear()} Alice Exam Proctor. All rights reserved.
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ color: '#484f58', fontSize: '0.78rem' }}>Built with</span>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="#e05d5d"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-              <span style={{ color: '#484f58', fontSize: '0.78rem' }}>by</span>
-              <a
-                href="https://github.com/adii0018"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: '#3fb950', fontSize: '0.78rem', textDecoration: 'none', fontWeight: 500 }}
-                onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-                onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-              >
-                Aditya Singh Rajput
-              </a>
-            </div>
-          </div>
-
-        </div>
-      </footer>
+      <PremiumFooter />
 
     </div>{/* end z-index wrapper */}
     </div>

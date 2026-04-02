@@ -1,4 +1,6 @@
 import json
+import os
+import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -87,6 +89,48 @@ def get_current_user(request):
         'department': user.get('department'),
         'profile_picture': user.get('profile_picture')
     })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def google_auth(request):
+    try:
+        data = json.loads(request.body)
+        access_token = data.get('credential')  # Google access token from frontend
+        if not access_token:
+            return JsonResponse({'error': 'Missing Google credential'}, status=400)
+
+        # Get user info from Google using access token
+        google_resp = requests.get(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=10
+        )
+        if google_resp.status_code != 200:
+            return JsonResponse({'error': 'Invalid Google token'}, status=401)
+
+        info = google_resp.json()
+        email = info.get('email')
+        name = info.get('name', email.split('@')[0])
+        role = data.get('role', 'student')
+
+        # Find or create user
+        user = User.find_by_email(email)
+        if not user:
+            user = User.create(name, email, password_hash='', role=role)
+
+        token = generate_token(user['_id'], user['role'])
+        return JsonResponse({
+            'token': token,
+            'user': {
+                'id': str(user['_id']),
+                'name': user['name'],
+                'email': user['email'],
+                'role': user['role'],
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @csrf_exempt
