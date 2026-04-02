@@ -79,8 +79,28 @@ const FEATURES = [
   },
 ]
 
+const TRUST_LABELS = [
+  'Trusted by 10,000+ institutions',
+  'Used in 200+ universities',
+  'GDPR compliant & secure',
+  'Free for educators',
+]
+
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true)
+  const [trustIndex, setTrustIndex] = useState(0)
+  const [trustFade, setTrustFade] = useState(true)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTrustFade(false)
+      setTimeout(() => {
+        setTrustIndex(i => (i + 1) % TRUST_LABELS.length)
+        setTrustFade(true)
+      }, 300)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div style={{ minHeight: '100vh', background: '#0d1117', display: 'flex', flexDirection: 'column', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif', position: 'relative' }}>
@@ -145,11 +165,25 @@ const AuthPage = () => {
               ))}
             </div>
 
-            {/* Trust badge */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(46,160,67,0.08)', border: '1px solid rgba(46,160,67,0.2)', borderRadius: 20, padding: '6px 14px', width: 'fit-content' }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3fb950', display: 'inline-block', boxShadow: '0 0 6px #3fb950' }} />
-              <span style={{ color: '#3fb950', fontSize: '0.78rem', fontWeight: 600 }}>Trusted by 10,000+ institutions</span>
+            {/* Trust badge — dynamic */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(46,160,67,0.08)', border: '1px solid rgba(46,160,67,0.2)', borderRadius: 20, padding: '6px 14px', width: 'fit-content', minWidth: 260 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3fb950', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 6px #3fb950', animation: 'auth-pulse 2s infinite' }} />
+              <span style={{
+                color: '#3fb950', fontSize: '0.78rem', fontWeight: 600,
+                opacity: trustFade ? 1 : 0,
+                transform: trustFade ? 'translateY(0)' : 'translateY(-5px)',
+                transition: 'opacity 0.3s ease, transform 0.3s ease',
+                display: 'inline-block',
+              }}>
+                {TRUST_LABELS[trustIndex]}
+              </span>
             </div>
+            <style>{`
+              @keyframes auth-pulse {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(63,185,80,0.5); }
+                50% { box-shadow: 0 0 0 4px rgba(63,185,80,0); }
+              }
+            `}</style>
           </div>
 
           {/* Right — form card */}

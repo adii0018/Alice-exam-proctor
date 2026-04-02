@@ -194,6 +194,25 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const googleLogin = async (accessToken, role = 'student') => {
+    setAuthLoading(true)
+    try {
+      const response = await axios.post('/api/auth/google/', { credential: accessToken, role })
+      const { token } = response.data
+      const user = normalizeUser(response.data.user)
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      setUser(user)
+      return user
+    } catch (err) {
+      setAuthLoading(false)
+      throw err
+    } finally {
+      setTimeout(() => setAuthLoading(false), 2000)
+    }
+  }
+
   const logout = () => {
     setAuthLoading(true)
     localStorage.removeItem('token')
@@ -210,7 +229,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, updateUser }}>
       {authLoading && <FullPageLoader />}
       {children}
     </AuthContext.Provider>
