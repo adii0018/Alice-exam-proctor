@@ -23,6 +23,7 @@ import ExamsManagement from './pages/admin/ExamsManagement'
 import ViolationsManagement from './pages/admin/ViolationsManagement'
 import AuditLogs from './pages/admin/AuditLogs'
 import SystemSettings from './pages/admin/SystemSettings'
+import AvatarTest from './pages/AvatarTest'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
@@ -36,6 +37,7 @@ function App() {
         <Routes>
           <Route path="/" element={<PremiumLandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/avatar-test" element={<AvatarTest />} />
           <Route 
             path="/student" 
             element={

@@ -4,6 +4,7 @@ import { User, Mail, Phone, MapPin, Calendar, Award, TrendingUp, Edit2, X, Camer
 import { useAuth } from '../../contexts/AuthContext';
 import { userAPI } from '../../utils/api';
 import TeacherLayout from '../../components/teacher/TeacherLayout';
+import UserAvatar from '../../components/common/UserAvatar';
 import toast from 'react-hot-toast';
 
 export default function Profile() {
@@ -157,14 +158,20 @@ export default function Profile() {
                 {/* Glow effect */}
                 <div className="absolute inset-0 bg-white rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
                 
-                {/* Main avatar */}
-                <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-white/30 to-white/10 backdrop-blur-md flex items-center justify-center text-5xl font-bold border-4 border-white/30 shadow-2xl"
+                {/* Main avatar with UserAvatar component */}
+                <div className="relative"
                   style={{
                     transform: 'translateZ(30px)',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.3), inset 0 0 20px rgba(255,255,255,0.2)'
+                    filter: 'drop-shadow(0 20px 60px rgba(0,0,0,0.3))'
                   }}
                 >
-                  {profileData?.name?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'T'}
+                  <UserAvatar
+                    user={profileData || user}
+                    size={128}
+                    showBorder={true}
+                    borderColor="rgba(255,255,255,0.3)"
+                    className="ring-4 ring-white/30 shadow-2xl"
+                  />
                 </div>
 
                 {/* Camera button with 3D effect */}

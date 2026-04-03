@@ -3,8 +3,7 @@ import { motion } from 'framer-motion';
 import { Plus, FileText, Users, MonitorPlay, AlertTriangle } from 'lucide-react';
 import { quizAPI, flagAPI } from '../utils/api';
 import toast from 'react-hot-toast';
-import TeacherSidebar from '../components/teacher/TeacherSidebar';
-import TeacherNavbar from '../components/teacher/TeacherNavbar';
+import TeacherLayout from '../components/teacher/TeacherLayout';
 import StatCard from '../components/teacher/StatCard';
 import ExamTable from '../components/teacher/ExamTable';
 import LiveMonitorCard from '../components/teacher/LiveMonitorCard';
@@ -15,7 +14,6 @@ import AliceAIChat from '../components/ai/AliceAIChat';
 import { FaLeaf } from 'react-icons/fa';
 
 export default function TeacherDashboardNew() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAliceChat, setShowAliceChat] = useState(false);
@@ -176,132 +174,114 @@ export default function TeacherDashboardNew() {
 
   if (loading) {
     return (
-      <div style={darkMode ? { minHeight: '100vh', backgroundColor: '#0d1117', display: 'flex', alignItems: 'center', justifyContent: 'center' } : {}} className={darkMode ? '' : 'min-h-screen bg-gray-50 flex items-center justify-center'}>
-        <div className="text-center">
-          <div style={{ width: 56, height: 56, border: `3px solid ${darkMode ? '#2ea043' : '#3b82f6'}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
-          <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>Loading dashboard...</p>
+      <TeacherLayout title="Dashboard">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+          <div className="text-center">
+            <div style={{ width: 56, height: 56, border: `3px solid ${darkMode ? '#2ea043' : '#3b82f6'}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+            <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>Loading dashboard...</p>
+          </div>
         </div>
-      </div>
+      </TeacherLayout>
     );
   }
 
   return (
-    <div
-      style={darkMode ? { minHeight: '100vh', backgroundColor: '#0d1117' } : {}}
-      className={darkMode ? '' : 'min-h-screen bg-gray-50 transition-colors'}
-    >
-      <TeacherSidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-      />
-
-      <div
-        className="transition-all"
-        style={{ marginLeft: sidebarCollapsed ? 80 : 280 }}
+    <TeacherLayout title="Dashboard">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="space-y-6"
       >
-        <TeacherNavbar
-          title="Dashboard"
-          sidebarCollapsed={sidebarCollapsed}
-          onSearch={handleSearch}
-        />
+        {/* Search Results Info */}
+        {searchQuery && (
+          <div style={{
+            background: darkMode ? 'rgba(46,160,67,0.08)' : '#eff6ff',
+            border: `1px solid ${darkMode ? 'rgba(46,160,67,0.25)' : '#bfdbfe'}`,
+            borderRadius: 8,
+            padding: '12px 16px',
+          }}>
+            <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#1e40af' }}>
+              Showing results for: <span style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#1e3a8a' }}>"{searchQuery}"</span>
+              {exams.length === 0 && violations.length === 0 && (
+                <span style={{ marginLeft: 8, color: darkMode ? '#3fb950' : '#2563eb' }}>- No results found</span>
+              )}
+            </p>
+          </div>
+        )}
 
-        <main className="pt-16 p-6">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="max-w-7xl mx-auto space-y-6"
-          >
-            {/* Search Results Info */}
-            {searchQuery && (
-              <div style={{
-                background: darkMode ? 'rgba(46,160,67,0.08)' : '#eff6ff',
-                border: `1px solid ${darkMode ? 'rgba(46,160,67,0.25)' : '#bfdbfe'}`,
-                borderRadius: 8,
-                padding: '12px 16px',
-              }}>
-                <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#1e40af' }}>
-                  Showing results for: <span style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#1e3a8a' }}>"{searchQuery}"</span>
-                  {exams.length === 0 && violations.length === 0 && (
-                    <span style={{ marginLeft: 8, color: darkMode ? '#3fb950' : '#2563eb' }}>- No results found</span>
-                  )}
-                </p>
-              </div>
-            )}
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {statsCards.map((stat, index) => (
-                <StatCard key={index} {...stat} />
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          {statsCards.map((stat, index) => (
+            <StatCard key={index} {...stat} />
+          ))}
+        </div>
+
+        {/* Exam Management Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 style={{ fontSize: '1.125rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }} className="md:text-xl">
+              {searchQuery ? `Search Results - Exams (${exams.length})` : 'Recent Exams'}
+            </h2>
+            <a href="/teacher/exams" style={{ fontSize: '0.875rem', color: darkMode ? '#3fb950' : '#2563eb', fontWeight: 500, textDecoration: 'none' }}>
+              View All
+            </a>
+          </div>
+          {exams.length > 0 ? (
+            <ExamTable exams={exams.slice(0, searchQuery ? 10 : 4)} onAction={handleExamAction} />
+          ) : (
+            <div style={{
+              background: darkMode ? '#161b22' : '#fff',
+              border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
+              borderRadius: 8,
+              padding: '32px',
+              textAlign: 'center',
+            }}>
+              <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>No exams found</p>
+            </div>
+          )}
+        </div>
+
+        {/* Live Monitoring */}
+        {liveExams.length > 0 && (
+          <div className="space-y-4">
+            <h2 style={{ fontSize: '1.125rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }} className="md:text-xl">Live Monitoring</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {liveExams.map((exam) => (
+                <LiveMonitorCard key={exam.id} exam={exam} />
               ))}
             </div>
+          </div>
+        )}
 
-            {/* Exam Management Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>
-                  {searchQuery ? `Search Results - Exams (${exams.length})` : 'Recent Exams'}
-                </h2>
-                <a href="/teacher/exams" style={{ fontSize: '0.875rem', color: darkMode ? '#3fb950' : '#2563eb', fontWeight: 500, textDecoration: 'none' }}>
-                  View All
-                </a>
-              </div>
-              {exams.length > 0 ? (
-                <ExamTable exams={exams.slice(0, searchQuery ? 10 : 4)} onAction={handleExamAction} />
-              ) : (
-                <div style={{
-                  background: darkMode ? '#161b22' : '#fff',
-                  border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
-                  borderRadius: 8,
-                  padding: '32px',
-                  textAlign: 'center',
-                }}>
-                  <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>No exams found</p>
-                </div>
-              )}
+        {/* Performance Insights */}
+        <PerformanceChart />
+
+        {/* Recent Violations */}
+        {violations.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 style={{ fontSize: '1.125rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }} className="md:text-xl">
+                {searchQuery ? `Search Results - Violations (${violations.length})` : 'Recent Violations'}
+              </h2>
+              <a href="/teacher/violations" style={{ fontSize: '0.875rem', color: darkMode ? '#3fb950' : '#2563eb', fontWeight: 500, textDecoration: 'none' }}>
+                View All
+              </a>
             </div>
-
-            {/* Live Monitoring */}
-            {liveExams.length > 0 && (
-              <div className="space-y-4">
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>Live Monitoring</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {liveExams.map((exam) => (
-                    <LiveMonitorCard key={exam.id} exam={exam} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Performance Insights */}
-            <PerformanceChart />
-
-            {/* Recent Violations */}
-            {violations.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>
-                    {searchQuery ? `Search Results - Violations (${violations.length})` : 'Recent Violations'}
-                  </h2>
-                  <a href="/teacher/violations" style={{ fontSize: '0.875rem', color: darkMode ? '#3fb950' : '#2563eb', fontWeight: 500, textDecoration: 'none' }}>
-                    View All
-                  </a>
-                </div>
-                <ViolationsTable violations={violations} />
-              </div>
-            )}
-          </motion.div>
-        </main>
-      </div>
+            <ViolationsTable violations={violations} />
+          </div>
+        )}
+      </motion.div>
 
       {/* Alice AI Chat */}
       {showAliceChat && <AliceAIChat onClose={() => setShowAliceChat(false)} />}
       <button
         onClick={() => setShowAliceChat(prev => !prev)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50"
+        className="fixed bottom-20 md:bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-40"
         style={{ background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }}
         title="Chat with Alice AI"
       >
         <FaLeaf className="text-white text-xl" />
       </button>
-    </div>
+    </TeacherLayout>
   );
 }
