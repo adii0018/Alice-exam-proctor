@@ -114,7 +114,7 @@ const ExamPage = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/quizzes/${examId}/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       if (!response.ok) {
@@ -274,7 +274,7 @@ const ExamPage = () => {
       const proctoringReport = getReport();
 
       // Submit to backend
-      const res = await fetch(`http://localhost:8000/api/quizzes/${examId}/submit/`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/submit/`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers: transformedAnswers, proctoringReport, timeSpent: timeSpentSeconds })

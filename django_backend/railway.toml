@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "python manage.py migrate --run-syncdb && daphne -b 0.0.0.0 -p $PORT exam_proctoring.asgi:application"
+healthcheckPath = "/api/health/"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

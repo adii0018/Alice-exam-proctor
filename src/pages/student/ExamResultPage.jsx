@@ -21,7 +21,7 @@ const ExamResultPage = () => {
       const studentId = user._id || user.id;
 
       // Fetch quiz details
-      const quizRes = await fetch(`http://localhost:8000/api/quizzes/${examId}/`, {
+      const quizRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       if (!quizRes.ok) throw new Error('Failed to fetch quiz details');
@@ -38,7 +38,7 @@ const ExamResultPage = () => {
 
       // Fallback: fetch violations from backend to reconstruct result
       const violationsRes = await fetch(
-        `http://localhost:8000/api/violations/?quiz_id=${examId}&student_id=${studentId}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/violations/?quiz_id=${examId}&student_id=${studentId}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       const violationsData = violationsRes.ok ? await violationsRes.json() : { violations: [] };
