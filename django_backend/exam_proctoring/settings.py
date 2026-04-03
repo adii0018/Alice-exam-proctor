@@ -12,6 +12,11 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Render auto-provides RENDER_EXTERNAL_HOSTNAME
+render_domain = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if render_domain:
+    ALLOWED_HOSTS.append(render_domain)
+
 INSTALLED_APPS = [
     'daphne',
     'django.contrib.admin',
@@ -28,6 +33,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -82,10 +88,20 @@ CHANNEL_LAYERS = {
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5174,http://127.0.0.1:5174').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:5174,http://127.0.0.1:5174,https://alice-exam-proctor01.vercel.app'
+).split(',')
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://alice-exam-proctor01.vercel.app'
+).split(',')
 
 # Security Settings for Production
-SECURE_SSL_REDIRECT = not DEBUG
+# Railway handles SSL termination via proxy, so don't redirect
+SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_BROWSER_XSS_FILTER = True

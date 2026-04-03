@@ -1,140 +1,98 @@
-# 🤖 Alice Exam Proctor - AI-Powered Online Proctoring System
+# 🍃 Alice Exam Proctor — AI-Powered Online Proctoring System
 
-A modern, clean, and efficient exam proctoring platform with real-time AI monitoring, violation detection, and a beautiful responsive UI. Built with React and Django for seamless online examination experiences.
+A modern exam proctoring platform with real-time AI monitoring, violation detection, and a clean responsive UI. Built with React + Django.
 
-## 🚀 DEPLOYMENT READY!
+🌐 **Live Demo:** [https://alice-exam-proctor01.vercel.app](https://alice-exam-proctor01.vercel.app)  
+⚙️ **Backend API:** [https://alice-exam-proctor.onrender.com](https://alice-exam-proctor.onrender.com)
 
-**Quick Start:** See [DEPLOY_QUICK_START.md](DEPLOY_QUICK_START.md) for 30-minute deployment guide  
-**Full Checklist:** See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for comprehensive deployment guide
-
-### Recent Updates for Production:
-- ✅ Environment variables configured for frontend & backend
-- ✅ Dynamic API and WebSocket URLs
-- ✅ Production security settings enabled
-- ✅ CORS properly configured
-- ✅ Deployment configs added (Vercel, Railway, Render)
-- ✅ Static files configuration ready
+---
 
 ## ✨ Features
 
-### 🎯 Core Features
-- **Role-based Authentication** - Separate portals for Students and Teachers
-- **AI-Powered Proctoring** - Real-time face detection and audio monitoring
-- **Multi-Face Detection** - Detects multiple people in webcam feed (NEW!)
-- **Real-time Violation Alerts** - Instant teacher notifications via - (NEW!)
-- **Alice AI Assistant** - Built-in AI chatbot for instant help and support
-- **Quiz Management** - Create, manage, and conduct online exams
-- **Violation Detection** - Automatic flagging of suspicious behavior
-- **Real-time Monitoring** - WebSocket-based live updates
-- **Clean Modern UI** - Simple, fast, and professional design
+- **Role-based Auth** — Student, Teacher, and Admin portals
+- **Google OAuth** — Sign in / Register with Google
+- **AI Proctoring** — Real-time face detection, gaze tracking, head pose analysis
+- **Multi-Face Detection** — Flags multiple people in webcam feed
+- **Live Monitoring** — WebSocket-based real-time teacher dashboard
+- **Alice AI Assistant** — Built-in Gemini-powered chatbot
+- **Quiz Management** — Create, manage, and conduct online exams
+- **Violation Logging** — Full audit trail stored in MongoDB
+- **Responsive UI** — Works on all devices
 
-### 🎨 UI/UX Features
-- **Clean Design** - Modern, minimalist interface
-- **Fast Performance** - Optimized for speed and efficiency
-- **Responsive Design** - Works perfectly on all devices
-- **Smooth Transitions** - Subtle animations for better UX
-- **Professional Theme** - Clean white/blue color scheme
-- **Accessibility** - WCAG compliant design
-
-### 🔒 Proctoring Features (NEW!)
-- **Browser-based Face Detection** - Uses face-api.js for client-side detection
-- **Configurable Thresholds** - Adjust detection sensitivity and timing
-- **Calm Student Warnings** - Non-intrusive amber alerts
-- **Teacher Real-time Alerts** - Toast notifications with sound
-- **Violation Logging** - Complete audit trail in MongoDB
-- **Privacy-focused** - No video upload, only metadata
-- **Debounce Logic** - Prevents false positives
+---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **React 18.2** - UI library
-- **Vite 5.x** - Build tool & dev server
-- **Tailwind CSS 3.4** - Utility-first CSS framework
-- **React Router 6** - Client-side routing
-- **Axios** - HTTP client for API calls
-- **React Hot Toast** - Toast notifications
+| Layer | Tech |
+|---|---|
+| Frontend | React 18, Vite, React Router, Axios |
+| Backend | Django 4.2, Django REST Framework, Django Channels |
+| Database | MongoDB (PyMongo) |
+| Auth | JWT + Google OAuth |
+| AI/ML | face-api.js, OpenCV.js, Gemini AI |
+| Real-time | WebSockets via Django Channels + Redis |
+| Deployment | Vercel (frontend), Render (backend) |
+
+---
+
+## � Local Setup
 
 ### Backend
-- **Django 4.2.7** - Web framework
-- **Django REST Framework** - API
-- **Django Channels** - WebSocket support
-- **Daphne** - ASGI server
-- **Redis** - Channel layer for WebSocket
-- **MongoDB** - Database
-- **PyMongo** - MongoDB driver
-- **JWT** - Authentication
-- **Bcrypt** - Password hashing
-
-### AI & Detection
-- **OpenCV.js** - High accuracy face detection (primary)
-- **face-api.js** - Lightweight fallback option
-- **Auto Engine Selection** - Automatic best engine selection
-- **Haar Cascade** - Industry-standard face detection
-- **TinyFaceDetector** - Fast ML model
-- **WebRTC** - Camera access
-- **WebSocket** - Real-time communication
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Python 3.10+
-- MongoDB 6.0+
-- Redis 6.0+ (for WebSocket support)
-
-### Backend Setup
 ```bash
 cd django_backend
 python -m venv venv
-venv\Scripts\activate
+venv\Scripts\activate        # Windows
 pip install -r requirements.txt
-copy .env.example .env
+copy .env.example .env       # fill in your values
 python init_database.py
 python create_sample_data.py
-
-# Start Redis (required for WebSocket)
-redis-server
-
-# Start Django with Daphne (ASGI server for WebSocket)
 daphne -b 0.0.0.0 -p 8000 exam_proctoring.asgi:application
 ```
 
-### Frontend Setup
+### Frontend
 ```bash
 npm install
 npm run dev
 ```
 
-### Test Face Detection
-Open `TEST_FACE_DETECTION.html` in your browser to test face-api.js detection.  
-Open `TEST_OPENCV_DETECTION.html` in your browser to test OpenCV.js detection.
+### Environment Variables
 
-## 📚 Documentation
+**Frontend (`.env.local`)**
+```
+VITE_API_URL=http://localhost:8000/api
+VITE_WS_URL=ws://localhost:8000/ws
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+```
 
-- **[Feature Summary](FEATURE_SUMMARY.md)** - Overview of multi-face detection feature
-- **[Setup Guide](SETUP_FACE_DETECTION.md)** - Quick setup instructions
-- **[Implementation Details](MULTI_FACE_DETECTION_IMPLEMENTATION.md)** - Complete technical documentation
-- **[Flow Diagrams](FLOW_DIAGRAM.md)** - Visual system architecture
-- **[OpenCV vs face-api.js](OPENCV_VS_FACEAPI.md)** - Engine comparison guide (NEW!)
+**Backend (`django_backend/.env`)**
+```
+SECRET_KEY=your_secret_key
+DEBUG=True
+MONGODB_URI=your_mongodb_uri
+REDIS_URL=redis://localhost:6379
+GEMINI_API_KEY=your_gemini_key
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
+
+---
 
 ## 🎮 Demo Credentials
 
-### Students
-- **Email:** student1@example.com
-- **Password:** password123
+| Role | Email | Password |
+|---|---|---|
+| Student | student1@example.com | password123 |
+| Teacher | teacher1@example.com | password123 |
 
-### Teachers
-- **Email:** teacher1@example.com
-- **Password:** password123
-
-## 👥 Authors
-**Alice Exam Proctor Team**
-- Developed by: **Aditya Singh Rajput**
-
-## 📞 Support
-For issues or questions:
-- Email: opg21139@gmail.com
+Or just use **Continue with Google** on the auth page.
 
 ---
-Made with ❤️ and modern web technologies by **Alice Team**
+
+## 👤 Author
+
+**Aditya Singh Rajput**  
+📧 opg21139@gmail.com
+
+---
+
+Made with ❤️ by the Alice Team
