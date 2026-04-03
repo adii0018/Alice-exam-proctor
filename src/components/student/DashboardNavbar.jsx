@@ -4,6 +4,8 @@ import { FiBell, FiMoon, FiSun, FiChevronDown, FiLogOut, FiUser, FiSettings } fr
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useNavigate } from 'react-router-dom'
+import UserAvatar from '../common/UserAvatar'
+import { AVATAR_STYLES } from '../../utils/avatarGenerator'
 
 const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
   const { darkMode, toggleDarkMode } = useTheme()
@@ -153,15 +155,13 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
               onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center font-semibold"
-                style={darkMode
-                  ? { backgroundColor: gh.avatarBg, border: `1px solid ${gh.avatarBorder}`, color: gh.avatarColor }
-                  : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)', color: 'white' }
-                }
-              >
-                {user?.name?.charAt(0) || 'S'}
-              </div>
+              <UserAvatar
+                user={user}
+                size={40}
+                showBorder={darkMode}
+                borderColor={gh.avatarBorder}
+                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+              />
               <div className="text-left hidden md:block">
                 <p className="text-sm font-medium" style={{ color: gh.titleColor }}>{user?.name || 'Student'}</p>
                 <p className="text-xs" style={{ color: gh.subColor }}>Student</p>

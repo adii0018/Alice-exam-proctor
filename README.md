@@ -18,6 +18,7 @@ A modern exam proctoring platform with real-time AI monitoring, violation detect
 - **Quiz Management** — Create, manage, and conduct online exams
 - **Violation Logging** — Full audit trail stored in MongoDB
 - **Responsive UI** — Works on all devices
+- **Dynamic Avatars** — DiceBear-powered unique user avatars
 
 ---
 
@@ -74,6 +75,43 @@ GEMINI_API_KEY=your_gemini_key
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
+
+---
+
+## 🎨 Avatar System
+
+Alice uses [DiceBear](https://dicebear.com) to generate unique, consistent avatars for each user based on their username or email. No image uploads needed!
+
+### Features
+- **10+ Avatar Styles** — From professional to playful
+- **Consistent Generation** — Same username = same avatar
+- **Zero Storage** — Generated via API on-the-fly
+- **Fallback Support** — Shows initials if API fails
+- **Customizable** — Size, border, style options
+
+### Usage Example
+```jsx
+import UserAvatar from './components/common/UserAvatar';
+import { AVATAR_STYLES } from './utils/avatarGenerator';
+
+<UserAvatar 
+  user={user} 
+  size={64} 
+  style={AVATAR_STYLES.INITIALS}
+  showBorder={true}
+/>
+```
+
+### Available Styles
+- `INITIALS` — Text-based (default)
+- `LORELEI` — Illustrated characters
+- `AVATAAARS` — Cartoon style
+- `BOTTTS` — Robots
+- `PIXEL_ART` — 8-bit retro
+- `ADVENTURER` — Adventure characters
+- And more...
+
+Visit `/avatar-showcase` (when implemented in routes) to see all styles in action!
 
 ---
 

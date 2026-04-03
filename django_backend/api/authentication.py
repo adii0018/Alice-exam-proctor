@@ -62,14 +62,31 @@ def require_auth(view_func):
     return wrapper
 
 
-def require_role(role):
-    """Decorator to require specific role"""
+def require_role(*roles):
+    """Decorator to require specific role(s). Already includes authentication check."""
     def decorator(view_func):
         @wraps(view_func)
-        @require_auth
         def wrapper(request, *args, **kwargs):
-            if request.user['role'] != role:
+            auth_header = request.headers.get('Authorization', '')
+            
+            if not auth_header.startswith('Bearer '):
+                return JsonResponse({'error': 'No token provided'}, status=401)
+            
+            token = auth_header.split(' ')[1]
+            payload = decode_token(token)
+            
+            if not payload:
+                return JsonResponse({'error': 'Invalid token'}, status=401)
+            
+            user = User.find_by_id(payload['user_id'])
+            if not user:
+                return JsonResponse({'error': 'User not found'}, status=401)
+            
+            # Check if user has required role
+            if user['role'] not in roles:
                 return JsonResponse({'error': 'Unauthorized'}, status=403)
+            
+            request.user = user
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator

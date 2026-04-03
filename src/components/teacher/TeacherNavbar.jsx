@@ -4,6 +4,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import UserAvatar from '../common/UserAvatar';
+import { AVATAR_STYLES } from '../../utils/avatarGenerator';
 
 export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
   const navigate = useNavigate();
@@ -156,17 +158,13 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
               onMouseEnter={e => e.currentTarget.style.backgroundColor = gh.hoverBg}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <div style={{
-                width: 32, height: 32, borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 600, fontSize: 13,
-                ...(darkMode
-                  ? { backgroundColor: gh.avatarBg, border: `1px solid ${gh.avatarBorder}`, color: gh.avatarColor }
-                  : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)', color: 'white' }
-                )
-              }}>
-                {user?.username?.[0]?.toUpperCase() || 'T'}
-              </div>
+              <UserAvatar
+                user={user}
+                size={32}
+                showBorder={darkMode}
+                borderColor={gh.avatarBorder}
+                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+              />
               <span className="hidden lg:block" style={{ fontSize: 13, fontWeight: 500, color: gh.titleColor }}>
                 {user?.username || 'Teacher'}
               </span>

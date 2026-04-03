@@ -6,6 +6,9 @@ import {
 } from 'react-icons/fi'
 import { Link, useLocation } from 'react-router-dom'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useAuth } from '../../contexts/AuthContext'
+import UserAvatar from '../common/UserAvatar'
+import { AVATAR_STYLES } from '../../utils/avatarGenerator'
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -38,6 +41,7 @@ const AliceLogo = ({ size = 36, dark }) => (
 const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
   const location = useLocation()
   const { darkMode } = useTheme()
+  const { user } = useAuth()
 
   const navItems = [
     { icon: FiHome, label: 'Dashboard', path: '/student', badge: null },
@@ -202,35 +206,39 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
 
       {/* Bottom Section */}
       <div className="p-4" style={{ borderTop: `1px solid ${gh.border}` }}>
-        <div
-          className={`p-3 rounded-xl ${isCollapsed ? 'flex justify-center' : 'flex items-center gap-3'}`}
-          style={darkMode
-            ? { backgroundColor: '#161b22', border: `1px solid ${gh.bottomBorder}` }
-            : { background: 'linear-gradient(135deg, #eff6ff, #f5f3ff)', border: '1px solid #dbeafe' }
-          }
-        >
+        <Link to="/student/profile">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center font-semibold flex-shrink-0"
+            className={`p-3 rounded-xl ${isCollapsed ? 'flex justify-center' : 'flex items-center gap-3'} cursor-pointer transition-all`}
             style={darkMode
-              ? { backgroundColor: '#21262d', border: `1px solid #30363d`, color: '#3fb950' }
-              : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)', color: 'white' }
+              ? { backgroundColor: '#161b22', border: `1px solid ${gh.bottomBorder}` }
+              : { background: 'linear-gradient(135deg, #eff6ff, #f5f3ff)', border: '1px solid #dbeafe' }
             }
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            S
+            <UserAvatar
+              user={user}
+              size={32}
+              showBorder={darkMode}
+              borderColor={gh.avatarBorder}
+              fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+            />
+            <AnimatePresence mode="wait">
+              {!isCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <p className="text-sm font-medium" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>
+                    {user?.name || user?.username || 'Student'}
+                  </p>
+                  <p style={{ fontSize: '11px', color: gh.subText }}>View Profile</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <p className="text-sm font-medium" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>Student</p>
-                <p style={{ fontSize: '11px', color: gh.subText }}>View Profile</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        </Link>
       </div>
     </motion.aside>
   )

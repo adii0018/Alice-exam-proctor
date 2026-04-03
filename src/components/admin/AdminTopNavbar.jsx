@@ -12,6 +12,8 @@ import {
   Activity,
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import UserAvatar from '../common/UserAvatar';
+import { AVATAR_STYLES } from '../../utils/avatarGenerator';
 
 const AdminTopNavbar = ({ onMenuClick }) => {
   const { theme, toggleTheme } = useTheme();
@@ -122,9 +124,12 @@ const AdminTopNavbar = ({ onMenuClick }) => {
               onClick={() => setShowProfile(!showProfile)}
               className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-              </div>
+              <UserAvatar
+                user={{ username: 'admin', email: 'admin@alice.com' }}
+                size={32}
+                showBorder={false}
+                fallbackGradient="linear-gradient(135deg, #3b82f6, #9333ea)"
+              />
               <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Admin
               </span>
