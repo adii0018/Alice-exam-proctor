@@ -1,0 +1,42 @@
+# ========================================
+# COPY THESE TO RENDER ENVIRONMENT VARIABLES
+# ========================================
+# Go to: https://dashboard.render.com
+# Select your service → Environment → Add Environment Variable
+# Copy-paste each line below (without the # comments)
+
+SECRET_KEY=8d59f0ea88be809b699ac86b5785a2bcfe08eac8e6b125058e561c9168388ee6891181e38a4ffebdcd9e034790bef7c8c96a
+
+DEBUG=False
+
+ALLOWED_HOSTS=alice-exam-proctor.onrender.com,alice-exam-proctor01.vercel.app,localhost,127.0.0.1
+
+CORS_ALLOWED_ORIGINS=https://alice-exam-proctor01.vercel.app,http://localhost:5174,http://127.0.0.1:5174
+
+CSRF_TRUSTED_ORIGINS=https://alice-exam-proctor01.vercel.app,https://alice-exam-proctor.onrender.com
+
+MONGODB_URI=mongodb+srv://singhrajputaditya982_db_user:adii001@adii.3y2zwkw.mongodb.net/alice_exam_proctor?retryWrites=true&w=majority&appName=ADII
+
+MONGODB_DB=alice_exam_proctor
+
+REDIS_URL=redis://localhost:6379
+
+EMAIL_HOST_USER=opg21139@gmail.com
+
+EMAIL_HOST_PASSWORD=jntd ylix yasf eyue
+
+GOOGLE_CLIENT_ID=747022156815-9q3rhol4q46e9livqnefh37ksbt35phd.apps.googleusercontent.com
+
+GOOGLE_CLIENT_SECRET=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
+
+GEMINI_API_KEY=AIzaSyBSOxSyymLuGfUakN2eT3o67YzufYOlgfc
+
+# ========================================
+# IMPORTANT: REDIS SETUP ON RENDER
+# ========================================
+# 1. Go to Render Dashboard
+# 2. Click "New +" → "Redis"
+# 3. Create a Redis instance
+# 4. Copy the "Internal Redis URL" 
+# 5. Replace the REDIS_URL value above with that URL
+# Example: redis://red-xxxxx:6379

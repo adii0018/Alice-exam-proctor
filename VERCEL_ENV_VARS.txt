@@ -1,0 +1,20 @@
+# ========================================
+# COPY THESE TO VERCEL ENVIRONMENT VARIABLES
+# ========================================
+# Go to: https://vercel.com/dashboard
+# Select your project → Settings → Environment Variables
+# Add each variable below:
+
+VITE_API_URL=https://alice-exam-proctor.onrender.com/api
+
+VITE_WS_URL=wss://alice-exam-proctor.onrender.com/ws
+
+VITE_GOOGLE_CLIENT_ID=747022156815-9q3rhol4q46e9livqnefh37ksbt35phd.apps.googleusercontent.com
+
+# ========================================
+# AFTER ADDING VARIABLES:
+# ========================================
+# 1. Click "Save"
+# 2. Redeploy your project (Deployments → Click "..." → Redeploy)
+# 3. Wait for deployment to complete
+# 4. Test Google login!

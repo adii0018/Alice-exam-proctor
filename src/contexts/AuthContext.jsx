@@ -111,7 +111,7 @@
 
 
 import { createContext, useContext, useState, useEffect } from 'react'
-import axios from '../utils/api'
+import api from '../utils/api'
 import FullPageLoader from '../components/loaders/FullPageLoader'
 
 const AuthContext = createContext(null)
@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
       const storedUser = localStorage.getItem('user')
       if (storedUser) {
         try { setUser(JSON.parse(storedUser)) } catch { /* ignore */ }
@@ -143,14 +143,14 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get('/auth/me/')
+      const response = await api.get('/auth/me/')
       const user = normalizeUser(response.data)
       setUser(user)
       localStorage.setItem('user', JSON.stringify(user))
     } catch (error) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      delete axios.defaults.headers.common['Authorization']
+      delete api.defaults.headers.common['Authorization']
     } finally {
       setLoading(false)
     }
@@ -159,12 +159,12 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setAuthLoading(true)
     try {
-      const response = await axios.post('/auth/login/', { email, password })
+      const response = await api.post('/auth/login/', { email, password })
       const { token } = response.data
       const user = normalizeUser(response.data.user)
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
       setUser(user)
       return user
     } catch (err) {
@@ -178,12 +178,12 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     setAuthLoading(true)
     try {
-      const response = await axios.post('/auth/register/', userData)
+      const response = await api.post('/auth/register/', userData)
       const { token } = response.data
       const user = normalizeUser(response.data.user)
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
       setUser(user)
       return user
     } catch (err) {
@@ -197,31 +197,12 @@ export const AuthProvider = ({ children }) => {
   const googleLogin = async (accessToken, role = 'student') => {
     setAuthLoading(true)
     try {
-      const response = await axios.post('/api/auth/google/', { credential: accessToken, role })
+      const response = await api.post('/auth/google/', { credential: accessToken, role })
       const { token } = response.data
       const user = normalizeUser(response.data.user)
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      setUser(user)
-      return user
-    } catch (err) {
-      setAuthLoading(false)
-      throw err
-    } finally {
-      setTimeout(() => setAuthLoading(false), 2000)
-    }
-  }
-
-  const googleLogin = async (accessToken, role = 'student') => {
-    setAuthLoading(true)
-    try {
-      const response = await axios.post('/api/auth/google/', { credential: accessToken, role })
-      const { token } = response.data
-      const user = normalizeUser(response.data.user)
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
       setUser(user)
       return user
     } catch (err) {
@@ -236,7 +217,7 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(true)
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    delete axios.defaults.headers.common['Authorization']
+    delete api.defaults.headers.common['Authorization']
     setUser(null)
     setTimeout(() => setAuthLoading(false), 2000)
   }
