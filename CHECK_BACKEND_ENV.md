@@ -32,16 +32,16 @@ Render dashboard mein ye sab variables hone chahiye:
    - Value: `opg21139@gmail.com`
 
 10. ✅ **EMAIL_HOST_PASSWORD**
-    - Value: `jntd ylix yasf eyue`
+    - Value: `your_email_app_password_here`
 
 11. ✅ **GOOGLE_CLIENT_ID**
-    - Value: `747022156815-9q3rhol4q46e9livqnefh37ksbt35phd.apps.googleusercontent.com`
+    - Value: `your_google_client_id_here`
 
 12. ✅ **GOOGLE_CLIENT_SECRET**
-    - Value: `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`
+    - Value: `your_google_client_secret_here`
 
 13. ✅ **GEMINI_API_KEY**
-    - Value: `AIzaSyBSOxSyymLuGfUakN2eT3o67YzufYOlgfc`
+    - Value: `your_gemini_api_key_here`
 
 ---
 

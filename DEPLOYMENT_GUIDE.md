@@ -47,15 +47,15 @@ MONGODB_DB=alice_exam_proctor
 REDIS_URL=redis://your-redis-url:6379
 
 # Email
-EMAIL_HOST_USER=opg21139@gmail.com
-EMAIL_HOST_PASSWORD=jntd ylix yasf eyue
+EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_email_app_password
 
 # Google OAuth
-GOOGLE_CLIENT_ID=747022156815-9q3rhol4q46e9livqnefh37ksbt35phd.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 
 # AI
-GEMINI_API_KEY=AIzaSyBSOxSyymLuGfUakN2eT3o67YzufYOlgfc
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 ---
@@ -67,7 +67,7 @@ GEMINI_API_KEY=AIzaSyBSOxSyymLuGfUakN2eT3o67YzufYOlgfc
 ```bash
 VITE_API_URL=https://alice-exam-proctor.onrender.com/api
 VITE_WS_URL=wss://alice-exam-proctor.onrender.com/ws
-VITE_GOOGLE_CLIENT_ID=747022156815-9q3rhol4q46e9livqnefh37ksbt35phd.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
 ```
 
 ---

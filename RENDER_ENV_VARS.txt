@@ -23,13 +23,13 @@ REDIS_URL=redis://localhost:6379
 
 EMAIL_HOST_USER=opg21139@gmail.com
 
-EMAIL_HOST_PASSWORD=jntd ylix yasf eyue
+EMAIL_HOST_PASSWORD=your_email_app_password_here
 
-GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_ID=your_google_client_id_here
 
-GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 
-GEMINI_API_KEY=AIzaSyBSOxSyymLuGfUakN2eT3o67YzufYOlgfc
+GEMINI_API_KEY=your_gemini_api_key_here
 
 # ========================================
 # IMPORTANT: REDIS SETUP ON RENDER
