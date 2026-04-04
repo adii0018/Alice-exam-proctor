@@ -38,11 +38,41 @@ const Violations = () => {
   }, [])
 
   const getSeverityStyles = (severity) => ({
-    critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', badge: 'bg-red-100 text-red-700 border-red-200', icon: 'text-red-600' },
-    high:     { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', badge: 'bg-orange-100 text-orange-700 border-orange-200', icon: 'text-orange-600' },
-    medium:   { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: 'text-yellow-600' },
-    low:      { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700 border-blue-200', icon: 'text-blue-600' },
-  }[severity] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', badge: 'bg-gray-100 text-gray-700 border-gray-200', icon: 'text-gray-600' })
+    critical: { 
+      bg: 'bg-red-50 dark:bg-red-900/20', 
+      border: 'border-red-200 dark:border-red-800', 
+      text: 'text-red-700 dark:text-red-400', 
+      badge: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700', 
+      icon: 'text-red-600 dark:text-red-400' 
+    },
+    high: { 
+      bg: 'bg-orange-50 dark:bg-orange-900/20', 
+      border: 'border-orange-200 dark:border-orange-800', 
+      text: 'text-orange-700 dark:text-orange-400', 
+      badge: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700', 
+      icon: 'text-orange-600 dark:text-orange-400' 
+    },
+    medium: { 
+      bg: 'bg-yellow-50 dark:bg-yellow-900/20', 
+      border: 'border-yellow-200 dark:border-yellow-800', 
+      text: 'text-yellow-700 dark:text-yellow-400', 
+      badge: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700', 
+      icon: 'text-yellow-600 dark:text-yellow-400' 
+    },
+    low: { 
+      bg: 'bg-blue-50 dark:bg-blue-900/20', 
+      border: 'border-blue-200 dark:border-blue-800', 
+      text: 'text-blue-700 dark:text-blue-400', 
+      badge: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700', 
+      icon: 'text-blue-600 dark:text-blue-400' 
+    },
+  }[severity] || { 
+    bg: 'bg-gray-50 dark:bg-gray-800', 
+    border: 'border-gray-200 dark:border-gray-700', 
+    text: 'text-gray-700 dark:text-gray-300', 
+    badge: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600', 
+    icon: 'text-gray-600 dark:text-gray-400' 
+  })
 
   const filtered = filter === 'all' ? violations : violations.filter(v => v.severity === filter)
 
@@ -57,15 +87,15 @@ const Violations = () => {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Critical', key: 'critical', color: 'red' },
-            { label: 'High', key: 'high', color: 'orange' },
-            { label: 'Medium', key: 'medium', color: 'yellow' },
-            { label: 'Low', key: 'low', color: 'blue' },
-          ].map(({ label, key, color }, i) => (
+            { label: 'Critical', key: 'critical', bgClass: 'bg-red-50 dark:bg-red-900/30', borderClass: 'border-red-200 dark:border-red-800', textClass: 'text-red-700 dark:text-red-400', valueClass: 'text-red-600 dark:text-red-400' },
+            { label: 'High', key: 'high', bgClass: 'bg-orange-50 dark:bg-orange-900/30', borderClass: 'border-orange-200 dark:border-orange-800', textClass: 'text-orange-700 dark:text-orange-400', valueClass: 'text-orange-600 dark:text-orange-400' },
+            { label: 'Medium', key: 'medium', bgClass: 'bg-yellow-50 dark:bg-yellow-900/30', borderClass: 'border-yellow-200 dark:border-yellow-800', textClass: 'text-yellow-700 dark:text-yellow-400', valueClass: 'text-yellow-600 dark:text-yellow-400' },
+            { label: 'Low', key: 'low', bgClass: 'bg-blue-50 dark:bg-blue-900/30', borderClass: 'border-blue-200 dark:border-blue-800', textClass: 'text-blue-700 dark:text-blue-400', valueClass: 'text-blue-600 dark:text-blue-400' },
+          ].map(({ label, key, bgClass, borderClass, textClass, valueClass }, i) => (
             <motion.div key={key} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-              className={`p-4 rounded-2xl bg-${color}-50 border border-${color}-200`}>
-              <p className={`text-sm text-${color}-700 mb-1`}>{label}</p>
-              <p className={`text-3xl font-bold text-${color}-600`}>{counts[key]}</p>
+              className={`p-4 rounded-2xl border ${bgClass} ${borderClass}`}>
+              <p className={`text-sm mb-1 ${textClass}`}>{label}</p>
+              <p className={`text-3xl font-bold ${valueClass}`}>{counts[key]}</p>
             </motion.div>
           ))}
         </div>

@@ -143,19 +143,6 @@ const Profile = () => {
                     className="ring-4 ring-white/30 shadow-2xl"
                   />
                 </div>
-
-                {/* Camera button with 3D effect */}
-                <motion.button 
-                  whileHover={{ scale: 1.1, translateZ: 10 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="absolute bottom-2 right-2 w-10 h-10 bg-white text-blue-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
-                  style={{
-                    transform: 'translateZ(40px)',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  <FiCamera className="w-5 h-5" />
-                </motion.button>
               </div>
             </motion.div>
 
