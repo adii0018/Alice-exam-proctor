@@ -13,7 +13,7 @@ import QuizCodeEntry from '../components/student/QuizCodeEntry'
 import QuizInterface from '../components/student/QuizInterface'
 import { useTheme } from '../contexts/ThemeContext'
 import AliceAIChat from '../components/ai/AliceAIChat'
-import { FaLeaf } from 'react-icons/fa'
+import { FaRobot } from 'react-icons/fa'
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -209,11 +209,23 @@ const StudentDashboard = () => {
       {showAliceChat && <AliceAIChat onClose={() => setShowAliceChat(false)} />}
       <button
         onClick={() => setShowAliceChat(prev => !prev)}
-        className="fixed bottom-20 right-6 md:bottom-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50"
-        style={{ background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }}
+        className="fixed bottom-20 right-6 md:bottom-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50 transition-all duration-300 hover:scale-110"
+        style={{ 
+          background: '#2ea043',
+          border: '2px solid #30363d',
+          boxShadow: '0 4px 12px rgba(46, 160, 67, 0.3), 0 0 0 1px rgba(48, 54, 61, 0.5)'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = '#2c974b'
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(46, 160, 67, 0.5), 0 0 0 2px #2ea043'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = '#2ea043'
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 160, 67, 0.3), 0 0 0 1px rgba(48, 54, 61, 0.5)'
+        }}
         title="Chat with Alice AI"
       >
-        <FaLeaf className="text-white text-xl" />
+        <FaRobot className="text-white text-xl" />
       </button>
     </div>
   )

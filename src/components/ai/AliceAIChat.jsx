@@ -11,10 +11,61 @@ const AliceAIChat = ({ onClose }) => {
   const [userName, setUserName] = useState(localStorage.getItem('aliceUserName') || '')
   const [showNamePrompt, setShowNamePrompt] = useState(!userName)
   const messagesEndRef = useRef(null)
+  const canvasRef = useRef(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Starfield animation
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    
+    const ctx = canvas.getContext('2d')
+    const stars = []
+    const starCount = 150
+    
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth
+      canvas.height = canvas.offsetHeight
+    }
+    resizeCanvas()
+    
+    for (let i = 0; i < starCount; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.5,
+        speed: Math.random() * 0.3 + 0.1,
+        opacity: Math.random() * 0.5 + 0.3
+      })
+    }
+    
+    const animate = () => {
+      ctx.fillStyle = '#0d1117'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      
+      stars.forEach(star => {
+        ctx.beginPath()
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(230, 237, 243, ${star.opacity})`
+        ctx.fill()
+        
+        star.y += star.speed
+        if (star.y > canvas.height) {
+          star.y = 0
+          star.x = Math.random() * canvas.width
+        }
+      })
+      
+      requestAnimationFrame(animate)
+    }
+    
+    animate()
+    window.addEventListener('resize', resizeCanvas)
+    return () => window.removeEventListener('resize', resizeCanvas)
+  }, [])
 
   const handleNameSubmit = (e) => {
     e.preventDefault()
@@ -58,20 +109,20 @@ const AliceAIChat = ({ onClose }) => {
     position: 'fixed',
     bottom: '96px',
     right: '24px',
-    width: '380px',
-    background: '#0a0a0a',
-    border: '1px solid rgba(0,255,159,0.35)',
+    width: '420px',
+    background: '#161b22',
+    border: '1px solid #30363d',
     borderRadius: '12px',
-    boxShadow: '0 0 40px rgba(0,255,159,0.12)',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
     zIndex: 50,
-    fontFamily: "'JetBrains Mono', monospace",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif",
     overflow: 'hidden',
   }
 
   const headerStyle = {
-    background: 'rgba(0,255,159,0.05)',
-    borderBottom: '1px solid rgba(0,255,159,0.2)',
-    padding: '14px 18px',
+    background: '#0d1117',
+    borderBottom: '1px solid #30363d',
+    padding: '16px 20px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -80,46 +131,135 @@ const AliceAIChat = ({ onClose }) => {
   if (showNamePrompt) {
     return (
       <div style={containerStyle}>
-        <div style={headerStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ color: '#00ff9f', fontSize: '1.1rem', fontWeight: 700, textShadow: '0 0 10px rgba(0,255,159,0.6)' }}>
-              {'>'} Alice AI
+        <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }} />
+        
+        <div style={{ ...headerStyle, position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ 
+              color: '#e6edf3', 
+              fontSize: '1rem', 
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}>
+              Alice AI
+              <span style={{ 
+                background: '#2ea043', 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%',
+                display: 'inline-block',
+                animation: 'pulse 2s ease-in-out infinite'
+              }} />
             </span>
-            <span style={{ color: 'rgba(0,255,159,0.4)', fontSize: '0.65rem', letterSpacing: 2 }}>ONLINE</span>
           </div>
-          <button onClick={onClose} style={{ color: 'rgba(255,255,255,0.4)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>
+          <button 
+            onClick={onClose} 
+            style={{ 
+              color: '#8b949e', 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              fontSize: '1.1rem',
+              transition: 'color 0.2s',
+              padding: 4
+            }}
+            onMouseEnter={(e) => e.target.style.color = '#e6edf3'}
+            onMouseLeave={(e) => e.target.style.color = '#8b949e'}
+          >
             <FaTimes />
           </button>
         </div>
 
-        <div style={{ padding: '24px 20px' }}>
-          <p style={{ color: 'rgba(0,255,159,0.5)', fontSize: '0.7rem', letterSpacing: 3, marginBottom: 16 }}>// IDENTITY_VERIFICATION</p>
-          <form onSubmit={handleNameSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ padding: '28px 24px', position: 'relative', zIndex: 1 }}>
+          <div style={{ 
+            background: '#0d1117',
+            border: '1px solid #30363d',
+            borderRadius: 8,
+            padding: '20px',
+            marginBottom: 20
+          }}>
+            <p style={{ 
+              color: '#8b949e', 
+              fontSize: '0.875rem', 
+              marginBottom: 8,
+              fontWeight: 500
+            }}>
+              Welcome to Alice AI
+            </p>
+            <p style={{ color: '#6e7681', fontSize: '0.8rem', lineHeight: 1.5 }}>
+              Please enter your name to begin the conversation
+            </p>
+          </div>
+          
+          <form onSubmit={handleNameSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label style={{ color: 'rgba(0,255,159,0.6)', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, letterSpacing: 1 }}>
-                <FaUser style={{ fontSize: '0.7rem' }} /> ENTER_NAME_
+              <label style={{ 
+                color: '#e6edf3', 
+                fontSize: '0.875rem', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 8, 
+                marginBottom: 10,
+                fontWeight: 500
+              }}>
+                <FaUser style={{ fontSize: '0.75rem', color: '#8b949e' }} /> Your Name
               </label>
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                placeholder="your_name"
+                placeholder="Enter your name"
                 autoFocus
                 style={{
-                  width: '100%', background: 'rgba(0,255,159,0.04)', border: '1px solid rgba(0,255,159,0.25)',
-                  borderRadius: 6, padding: '10px 14px', color: '#fff', fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box'
+                  width: '100%',
+                  background: '#0d1117',
+                  border: '1px solid #30363d',
+                  borderRadius: 6,
+                  padding: '10px 12px',
+                  color: '#e6edf3',
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif",
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#2ea043'}
+                onBlur={(e) => e.target.style.borderColor = '#30363d'}
               />
             </div>
-            <button type="submit" style={{
-              background: 'transparent', border: '1.5px solid #00ff9f', color: '#00ff9f',
-              padding: '10px', borderRadius: 6, cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              textShadow: '0 0 8px rgba(0,255,159,0.5)', boxShadow: '0 0 12px rgba(0,255,159,0.15)',
-              transition: 'all 0.2s'
-            }}>
-              Initialize Session <FaPaperPlane style={{ fontSize: '0.75rem' }} />
+            <button 
+              type="submit" 
+              style={{
+                background: '#2ea043',
+                border: 'none',
+                color: '#ffffff',
+                padding: '10px 16px',
+                borderRadius: 6,
+                cursor: 'pointer',
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif",
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                transition: 'all 0.2s',
+                boxShadow: '0 0 0 0 rgba(46,160,67,0.4)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#2c974b'
+                e.target.style.transform = 'translateY(-1px)'
+                e.target.style.boxShadow = '0 4px 12px rgba(46,160,67,0.3)'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#2ea043'
+                e.target.style.transform = 'translateY(0)'
+                e.target.style.boxShadow = '0 0 0 0 rgba(46,160,67,0.4)'
+              }}
+            >
+              Start Chat <FaPaperPlane style={{ fontSize: '0.75rem' }} />
             </button>
           </form>
         </div>
@@ -128,45 +268,120 @@ const AliceAIChat = ({ onClose }) => {
   }
 
   return (
-    <div style={{ ...containerStyle, height: '500px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ ...containerStyle, height: '550px', display: 'flex', flexDirection: 'column' }}>
+      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }} />
+      
       {/* Header */}
-      <div style={headerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ ...headerStyle, position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ color: '#00ff9f', fontSize: '1rem', fontWeight: 700, textShadow: '0 0 10px rgba(0,255,159,0.6)' }}>
-                {'>'} Alice AI
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ 
+                color: '#e6edf3', 
+                fontSize: '1rem', 
+                fontWeight: 600
+              }}>
+                Alice AI
               </span>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00ff9f', boxShadow: '0 0 6px #00ff9f', display: 'inline-block', animation: 'pulse 2s infinite' }} />
+              <span style={{ 
+                background: '#2ea043', 
+                color: '#ffffff',
+                fontSize: '0.7rem',
+                padding: '2px 8px',
+                borderRadius: 12,
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4
+              }}>
+                <span style={{ 
+                  width: 6, 
+                  height: 6, 
+                  borderRadius: '50%', 
+                  background: '#ffffff',
+                  display: 'inline-block',
+                  animation: 'pulse 2s ease-in-out infinite'
+                }} />
+                Online
+              </span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.65rem', letterSpacing: 1, marginTop: 2 }}>
-              {userName ? `user: ${userName}` : 'assistant_mode'}
-            </p>
+            {userName && (
+              <p style={{ 
+                color: '#8b949e', 
+                fontSize: '0.75rem', 
+                marginTop: 4 
+              }}>
+                Chatting with {userName}
+              </p>
+            )}
           </div>
         </div>
-        <button onClick={onClose} style={{ color: 'rgba(255,255,255,0.4)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>
+        <button 
+          onClick={onClose} 
+          style={{ 
+            color: '#8b949e', 
+            background: 'none', 
+            border: 'none', 
+            cursor: 'pointer', 
+            fontSize: '1.1rem',
+            transition: 'color 0.2s',
+            padding: 4
+          }}
+          onMouseEnter={(e) => e.target.style.color = '#e6edf3'}
+          onMouseLeave={(e) => e.target.style.color = '#8b949e'}
+        >
           <FaTimes />
         </button>
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto', 
+        padding: '20px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: 14,
+        position: 'relative',
+        zIndex: 1
+      }}>
         {messages.map((msg, index) => (
-          <div key={index} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+          <div key={index} style={{ 
+            display: 'flex', 
+            justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' 
+          }}>
             <div style={{
-              maxWidth: '80%',
-              padding: '10px 14px',
+              maxWidth: '85%',
+              padding: '12px 16px',
               borderRadius: 8,
-              fontSize: '0.82rem',
+              fontSize: '0.875rem',
               lineHeight: 1.6,
               whiteSpace: 'pre-wrap',
+              transition: 'transform 0.2s',
               ...(msg.role === 'user'
-                ? { background: 'rgba(0,255,159,0.12)', border: '1px solid rgba(0,255,159,0.3)', color: '#e6edf3' }
-                : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.8)' }
+                ? { 
+                    background: '#2ea043', 
+                    color: '#ffffff',
+                    borderBottomRightRadius: 4
+                  }
+                : { 
+                    background: '#161b22', 
+                    border: '1px solid #30363d', 
+                    color: '#e6edf3',
+                    borderBottomLeftRadius: 4
+                  }
               )
             }}>
               {msg.role === 'assistant' && (
-                <span style={{ color: 'rgba(0,255,159,0.5)', fontSize: '0.65rem', display: 'block', marginBottom: 4 }}>alice@proctor ~</span>
+                <span style={{ 
+                  color: '#8b949e', 
+                  fontSize: '0.75rem', 
+                  display: 'block', 
+                  marginBottom: 6,
+                  fontWeight: 600
+                }}>
+                  Alice AI
+                </span>
               )}
               {msg.content}
             </div>
@@ -175,8 +390,21 @@ const AliceAIChat = ({ onClose }) => {
 
         {loading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: 8 }}>
-              <span style={{ color: '#00ff9f', fontSize: '0.85rem', animation: 'blink 1s step-end infinite' }}>█ █ █</span>
+            <div style={{ 
+              background: '#161b22', 
+              border: '1px solid #30363d', 
+              padding: '12px 16px', 
+              borderRadius: 8,
+              borderBottomLeftRadius: 4
+            }}>
+              <span style={{ 
+                color: '#8b949e', 
+                fontSize: '0.875rem'
+              }}>
+                <span style={{ animation: 'blink 1.4s infinite', animationDelay: '0s' }}>●</span>
+                <span style={{ animation: 'blink 1.4s infinite', animationDelay: '0.2s' }}> ●</span>
+                <span style={{ animation: 'blink 1.4s infinite', animationDelay: '0.4s' }}> ●</span>
+              </span>
             </div>
           </div>
         )}
@@ -184,39 +412,80 @@ const AliceAIChat = ({ onClose }) => {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} style={{ padding: '12px 16px', borderTop: '1px solid rgba(0,255,159,0.15)', display: 'flex', gap: 8 }}>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(0,255,159,0.04)', border: '1px solid rgba(0,255,159,0.2)', borderRadius: 6, padding: '0 12px' }}>
-          <span style={{ color: 'rgba(0,255,159,0.4)', fontSize: '0.8rem', marginRight: 6 }}>{'>'}</span>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="type_message..."
-            disabled={loading}
-            style={{
-              flex: 1, background: 'none', border: 'none', outline: 'none',
-              color: '#fff', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.82rem', padding: '10px 0'
-            }}
-          />
-        </div>
+      <form 
+        onSubmit={handleSend} 
+        style={{ 
+          padding: '16px 20px', 
+          borderTop: '1px solid #30363d', 
+          display: 'flex', 
+          gap: 10,
+          position: 'relative',
+          zIndex: 1,
+          background: '#161b22'
+        }}
+      >
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          disabled={loading}
+          style={{
+            flex: 1,
+            background: '#0d1117',
+            border: '1px solid #30363d',
+            borderRadius: 6,
+            padding: '10px 14px',
+            color: '#e6edf3',
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif",
+            fontSize: '0.875rem',
+            outline: 'none',
+            transition: 'border-color 0.2s'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#2ea043'}
+          onBlur={(e) => e.target.style.borderColor = '#30363d'}
+        />
         <button
           type="submit"
           disabled={loading || !input.trim()}
           style={{
-            background: input.trim() && !loading ? 'rgba(0,255,159,0.1)' : 'transparent',
-            border: '1px solid rgba(0,255,159,0.3)', color: '#00ff9f',
-            borderRadius: 6, padding: '0 14px', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-            opacity: input.trim() && !loading ? 1 : 0.4, transition: 'all 0.2s'
+            background: input.trim() && !loading ? '#2ea043' : '#0d1117',
+            border: '1px solid #30363d',
+            color: input.trim() && !loading ? '#ffffff' : '#6e7681',
+            borderRadius: 6,
+            padding: '0 16px',
+            cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onMouseEnter={(e) => {
+            if (input.trim() && !loading) {
+              e.target.style.background = '#2c974b'
+              e.target.style.transform = 'translateY(-1px)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (input.trim() && !loading) {
+              e.target.style.background = '#2ea043'
+              e.target.style.transform = 'translateY(0)'
+            }
           }}
         >
-          <FaPaperPlane style={{ fontSize: '0.8rem' }} />
+          <FaPaperPlane style={{ fontSize: '0.875rem' }} />
         </button>
       </form>
 
       <style>{`
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        @keyframes blink { 
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+        @keyframes pulse { 
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(0.9); }
+        }
       `}</style>
     </div>
   )
