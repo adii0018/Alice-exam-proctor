@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../../contexts/AuthContext'
+import { authAPI } from '../../utils/api'
 import toast from 'react-hot-toast'
 
 const S = {
@@ -30,6 +31,11 @@ const LoginForm = ({ onToggle }) => {
   const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [showForgotModal, setShowForgotModal] = useState(false)
+  const [showRoleModal, setShowRoleModal] = useState(false)
+  const [selectedRole, setSelectedRole] = useState('student')
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -38,17 +44,27 @@ const LoginForm = ({ onToggle }) => {
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const user = await googleLogin(tokenResponse.access_token, 'student')
+        const user = await googleLogin(tokenResponse.access_token, selectedRole)
         toast.success(`Welcome, ${user.name}`)
         if (user.role === 'admin') navigate('/admin')
         else if (user.role === 'student') navigate('/student')
         else navigate('/teacher')
+        setShowRoleModal(false)
       } catch {
         toast.error('Google sign in failed')
       }
     },
     onError: () => toast.error('Google sign in failed'),
   })
+
+  const initiateGoogleLogin = () => {
+    setShowRoleModal(true)
+  }
+
+  const confirmGoogleLogin = () => {
+    setShowRoleModal(false)
+    handleGoogleLogin()
+  }
 
   const validate = () => {
     const e = {}
@@ -83,6 +99,24 @@ const LoginForm = ({ onToggle }) => {
     setEmail(role === 'student' ? 'student1@example.com' : 'teacher1@example.com')
     setPassword('password123')
     setErrors({})
+  }
+
+  const handleForgotPassword = async () => {
+    if (!resetEmail || !/\S+@\S+\.\S+/.test(resetEmail)) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+    setResetLoading(true)
+    try {
+      await authAPI.forgotPassword(resetEmail)
+      toast.success('Password reset instructions sent to your email')
+      setShowForgotModal(false)
+      setResetEmail('')
+    } catch (err) {
+      toast.error('Failed to send reset email. Please try again.')
+    } finally {
+      setResetLoading(false)
+    }
   }
 
   const focusStyle = (e) => { e.target.style.borderColor = '#2ea043'; e.target.style.boxShadow = '0 0 0 3px rgba(46,160,67,0.15)' }
@@ -139,7 +173,7 @@ const LoginForm = ({ onToggle }) => {
             style={{ width: 14, height: 14, accentColor: '#2ea043', cursor: 'pointer' }} />
           <span style={{ color: '#8b949e', fontSize: '0.8rem' }}>Remember me</span>
         </label>
-        <button type="button" style={{ background: 'none', border: 'none', color: '#2ea043', fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <button type="button" onClick={() => setShowForgotModal(true)} style={{ background: 'none', border: 'none', color: '#2ea043', fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>
           Forgot password?
         </button>
       </div>
@@ -162,8 +196,15 @@ const LoginForm = ({ onToggle }) => {
         {loading ? 'Signing in...' : 'Sign in'}
       </button>
 
+      {/* OR divider */}
+      <div style={S.divider}>
+        <div style={S.dividerLine} />
+        <span style={S.dividerText}>or continue with</span>
+        <div style={S.dividerLine} />
+      </div>
+
       {/* Google Sign In */}
-      <button type="button" onClick={() => handleGoogleLogin()}
+      <button type="button" onClick={initiateGoogleLogin}
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b949e'; e.currentTarget.style.background = '#161b22' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.background = '#0d1117' }}
@@ -203,6 +244,155 @@ const LoginForm = ({ onToggle }) => {
           Create account
         </button>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}
+          onClick={() => setShowForgotModal(false)}>
+          <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 12, padding: 28, maxWidth: 420, width: '100%', boxShadow: '0 16px 48px rgba(0,0,0,0.5)' }}
+            onClick={e => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h3 style={{ color: '#e6edf3', fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Reset your password</h3>
+              <button onClick={() => setShowForgotModal(false)}
+                style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#e6edf3'}
+                onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <p style={{ color: '#8b949e', fontSize: '0.875rem', marginBottom: 20, lineHeight: 1.6 }}>
+              Enter your email address and we'll send you instructions to reset your password.
+            </p>
+
+            {/* Email input */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={S.label}>Email address</label>
+              <div style={S.inputWrap}>
+                <InputIcon>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </InputIcon>
+                <input
+                  type="email" value={resetEmail} placeholder="you@example.com"
+                  style={S.input(false)}
+                  onChange={e => setResetEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleForgotPassword()}
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={() => setShowForgotModal(false)}
+                style={{ flex: 1, padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b949e'; e.currentTarget.style.background = '#161b22' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.background = '#0d1117' }}>
+                Cancel
+              </button>
+              <button type="button" onClick={handleForgotPassword} disabled={resetLoading}
+                style={{ flex: 1, padding: '10px', background: resetLoading ? '#238636' : '#2ea043', border: '1px solid rgba(240,246,252,0.1)', borderRadius: 6, color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: resetLoading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: resetLoading ? 0.8 : 1 }}
+                onMouseEnter={e => { if (!resetLoading) e.currentTarget.style.background = '#3fb950' }}
+                onMouseLeave={e => { if (!resetLoading) e.currentTarget.style.background = '#2ea043' }}>
+                {resetLoading && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 0.8s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>}
+                {resetLoading ? 'Sending...' : 'Send reset link'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Role Selection Modal for Google Login */}
+      {showRoleModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}
+          onClick={() => setShowRoleModal(false)}>
+          <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 12, padding: 28, maxWidth: 420, width: '100%', boxShadow: '0 16px 48px rgba(0,0,0,0.5)' }}
+            onClick={e => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h3 style={{ color: '#e6edf3', fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Select your role</h3>
+              <button onClick={() => setShowRoleModal(false)}
+                style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#e6edf3'}
+                onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <p style={{ color: '#8b949e', fontSize: '0.875rem', marginBottom: 20, lineHeight: 1.6 }}>
+              Choose how you want to use Alice Exam Proctor
+            </p>
+
+            {/* Role options */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+              {[
+                { 
+                  val: 'student', 
+                  label: 'Student', 
+                  desc: 'Take exams and view results',
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> 
+                },
+                { 
+                  val: 'teacher', 
+                  label: 'Teacher', 
+                  desc: 'Create exams and monitor students',
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> 
+                },
+              ].map(r => {
+                const active = selectedRole === r.val
+                return (
+                  <button key={r.val} type="button" onClick={() => setSelectedRole(r.val)}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 14, 
+                      padding: '14px 16px', 
+                      borderRadius: 8, 
+                      border: `2px solid ${active ? '#2ea043' : '#30363d'}`, 
+                      background: active ? 'rgba(46,160,67,0.1)' : '#0d1117', 
+                      color: active ? '#3fb950' : '#8b949e', 
+                      cursor: 'pointer', 
+                      fontFamily: 'inherit', 
+                      transition: 'all 0.15s',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = '#484f58'; e.currentTarget.style.background = '#161b22' } }}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.background = '#0d1117' } }}>
+                    <div style={{ flexShrink: 0 }}>{r.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 2, color: active ? '#3fb950' : '#e6edf3' }}>{r.label}</div>
+                      <div style={{ fontSize: '0.78rem', color: '#8b949e' }}>{r.desc}</div>
+                    </div>
+                    {active && (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={() => setShowRoleModal(false)}
+                style={{ flex: 1, padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b949e'; e.currentTarget.style.background = '#161b22' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.background = '#0d1117' }}>
+                Cancel
+              </button>
+              <button type="button" onClick={confirmGoogleLogin}
+                style={{ flex: 1, padding: '10px', background: '#2ea043', border: '1px solid rgba(240,246,252,0.1)', borderRadius: 6, color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                onMouseEnter={e => e.currentTarget.style.background = '#3fb950'}
+                onMouseLeave={e => e.currentTarget.style.background = '#2ea043'}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   )
 }

@@ -14,6 +14,9 @@ const S = {
     padding: '9px 12px 9px 38px', outline: 'none', transition: 'border-color 0.15s, box-shadow 0.15s',
   }),
   errText: { color: '#f85149', fontSize: '0.75rem', marginTop: 5 },
+  divider: { display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' },
+  dividerLine: { flex: 1, height: 1, background: '#21262d' },
+  dividerText: { color: '#484f58', fontSize: '0.75rem', whiteSpace: 'nowrap' },
 }
 
 function InputIcon({ children }) {
@@ -40,21 +43,33 @@ const RegisterForm = ({ onToggle }) => {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [showRoleModal, setShowRoleModal] = useState(false)
+  const [selectedGoogleRole, setSelectedGoogleRole] = useState('student')
   const { register, googleLogin } = useAuth()
   const navigate = useNavigate()
 
   const handleGoogleRegister = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const user = await googleLogin(tokenResponse.access_token, form.role)
+        const user = await googleLogin(tokenResponse.access_token, selectedGoogleRole)
         toast.success(`Welcome, ${user.name}`)
         navigate(user.role === 'student' ? '/student' : '/teacher')
+        setShowRoleModal(false)
       } catch {
         toast.error('Google sign up failed')
       }
     },
     onError: () => toast.error('Google sign up failed'),
   })
+
+  const initiateGoogleRegister = () => {
+    setShowRoleModal(true)
+  }
+
+  const confirmGoogleRegister = () => {
+    setShowRoleModal(false)
+    handleGoogleRegister()
+  }
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: '' })) }
 
@@ -229,8 +244,15 @@ const RegisterForm = ({ onToggle }) => {
         {loading ? 'Creating account...' : 'Create account'}
       </button>
 
+      {/* OR divider */}
+      <div style={S.divider}>
+        <div style={S.dividerLine} />
+        <span style={S.dividerText}>or continue with</span>
+        <div style={S.dividerLine} />
+      </div>
+
       {/* Google Sign Up */}
-      <button type="button" onClick={() => handleGoogleRegister()}
+      <button type="button" onClick={initiateGoogleRegister}
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b949e'; e.currentTarget.style.background = '#161b22' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.background = '#0d1117' }}
@@ -247,6 +269,96 @@ const RegisterForm = ({ onToggle }) => {
           Sign in
         </button>
       </div>
+
+      {/* Role Selection Modal for Google Sign Up */}
+      {showRoleModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}
+          onClick={() => setShowRoleModal(false)}>
+          <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 12, padding: 28, maxWidth: 420, width: '100%', boxShadow: '0 16px 48px rgba(0,0,0,0.5)' }}
+            onClick={e => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h3 style={{ color: '#e6edf3', fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Select your role</h3>
+              <button onClick={() => setShowRoleModal(false)}
+                style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#e6edf3'}
+                onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <p style={{ color: '#8b949e', fontSize: '0.875rem', marginBottom: 20, lineHeight: 1.6 }}>
+              Choose how you want to use Alice Exam Proctor
+            </p>
+
+            {/* Role options */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+              {[
+                { 
+                  val: 'student', 
+                  label: 'Student', 
+                  desc: 'Take exams and view results',
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> 
+                },
+                { 
+                  val: 'teacher', 
+                  label: 'Teacher', 
+                  desc: 'Create exams and monitor students',
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> 
+                },
+              ].map(r => {
+                const active = selectedGoogleRole === r.val
+                return (
+                  <button key={r.val} type="button" onClick={() => setSelectedGoogleRole(r.val)}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 14, 
+                      padding: '14px 16px', 
+                      borderRadius: 8, 
+                      border: `2px solid ${active ? '#2ea043' : '#30363d'}`, 
+                      background: active ? 'rgba(46,160,67,0.1)' : '#0d1117', 
+                      color: active ? '#3fb950' : '#8b949e', 
+                      cursor: 'pointer', 
+                      fontFamily: 'inherit', 
+                      transition: 'all 0.15s',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = '#484f58'; e.currentTarget.style.background = '#161b22' } }}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.background = '#0d1117' } }}>
+                    <div style={{ flexShrink: 0 }}>{r.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 2, color: active ? '#3fb950' : '#e6edf3' }}>{r.label}</div>
+                      <div style={{ fontSize: '0.78rem', color: '#8b949e' }}>{r.desc}</div>
+                    </div>
+                    {active && (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={() => setShowRoleModal(false)}
+                style={{ flex: 1, padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b949e'; e.currentTarget.style.background = '#161b22' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.background = '#0d1117' }}>
+                Cancel
+              </button>
+              <button type="button" onClick={confirmGoogleRegister}
+                style={{ flex: 1, padding: '10px', background: '#2ea043', border: '1px solid rgba(240,246,252,0.1)', borderRadius: 6, color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                onMouseEnter={e => e.currentTarget.style.background = '#3fb950'}
+                onMouseLeave={e => e.currentTarget.style.background = '#2ea043'}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   )
 }

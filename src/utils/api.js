@@ -46,4 +46,10 @@ export const userAPI = {
   updateProfile: (data) => api.put('/auth/profile/', data)
 }
 
+// Auth APIs
+export const authAPI = {
+  forgotPassword: (email) => api.post('/auth/forgot-password/', { email }),
+  resetPassword: (token, password) => api.post('/auth/reset-password/', { token, password })
+}
+
 export default api
