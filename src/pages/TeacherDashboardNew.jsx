@@ -234,12 +234,12 @@ export default function TeacherDashboardNew() {
             width: 8,
             height: 8,
             borderRadius: '50%',
-            background: isConnected ? '#10b981' : '#ef4444',
+            background: isConnected ? '#10b981' : '#f59e0b',
             animation: isConnected ? 'pulse 2s infinite' : 'none',
           }} />
           <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#6b7280' }}>
-            Live Monitoring: <span style={{ fontWeight: 600, color: isConnected ? (darkMode ? '#3fb950' : '#059669') : (darkMode ? '#f85149' : '#dc2626') }}>
-              {isConnected ? 'Connected' : 'Disconnected'}
+            Live Monitoring: <span style={{ fontWeight: 600, color: isConnected ? (darkMode ? '#3fb950' : '#059669') : (darkMode ? '#f0883e' : '#ea580c') }}>
+              {isConnected ? 'Connected' : 'Polling Mode'}
             </span>
           </p>
         </div>
