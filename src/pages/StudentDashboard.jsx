@@ -4,7 +4,7 @@ import DashboardSidebar from '../components/student/DashboardSidebar'
 import DashboardNavbar from '../components/student/DashboardNavbar'
 import MobileBottomNav from '../components/student/MobileBottomNav'
 import WelcomeCard from '../components/student/WelcomeCard'
-import UpcomingExams from '../components/student/UpcomingExams'
+import ExamSchedule from '../components/student/ExamSchedule'
 import QuickStats from '../components/student/QuickStats'
 import RecentViolations from '../components/student/RecentViolations'
 import PerformanceSummary from '../components/student/PerformanceSummary'
@@ -152,7 +152,7 @@ const StudentDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <UpcomingExams />
+                  <ExamSchedule />
                 </motion.div>
 
                 <motion.div

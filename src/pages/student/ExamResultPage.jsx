@@ -31,12 +31,56 @@ const ExamResultPage = () => {
       // Try localStorage first (freshly submitted result)
       const stored = localStorage.getItem(`exam_result_${examId}`);
       if (stored) {
-        setResult(JSON.parse(stored));
+        const storedResult = JSON.parse(stored);
+        console.log('📊 Loaded result from localStorage:', storedResult);
+        setResult(storedResult);
         setLoading(false);
         return;
       }
 
-      // Fallback: fetch violations from backend to reconstruct result
+      // Fallback: Try to fetch submission from backend
+      try {
+        const submissionRes = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/submissions/?quiz_id=${examId}&student_id=${studentId}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        
+        if (submissionRes.ok) {
+          const submissionData = await submissionRes.json();
+          console.log('📊 Fetched submission from backend:', submissionData);
+          
+          if (submissionData && submissionData.length > 0) {
+            const submission = submissionData[0];
+            
+            // Fetch violations
+            const violationsRes = await fetch(
+              `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/violations/?quiz_id=${examId}&student_id=${studentId}`,
+              { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+            const violationsData = violationsRes.ok ? await violationsRes.json() : { violations: [] };
+
+            setResult({
+              score: submission.score || 0,
+              totalQuestions: quizData.questions?.length || 0,
+              correctAnswers: submission.correct_answers || 0,
+              wrongAnswers: submission.wrong_answers || 0,
+              timeTaken: submission.time_taken || 'N/A',
+              percentage: submission.percentage || 0,
+              violations: (violationsData.violations || []).map(v => ({
+                type: v.violation_type,
+                timestamp: new Date(v.timestamp).toLocaleTimeString(),
+                severity: v.severity,
+              })),
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch submission:', err);
+      }
+
+      // Last fallback: fetch violations only
       const violationsRes = await fetch(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/violations/?quiz_id=${examId}&student_id=${studentId}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -58,6 +102,7 @@ const ExamResultPage = () => {
       });
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching result:', err);
       setError(err.message);
       setLoading(false);
     }
