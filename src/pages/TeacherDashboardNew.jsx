@@ -13,6 +13,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import AliceAIChat from '../components/ai/AliceAIChat';
 import { FaRobot } from 'react-icons/fa';
 import useViolationWebSocket from '../hooks/useViolationWebSocket';
+import FullPageLoader from '../components/loaders/FullPageLoader';
 
 export default function TeacherDashboardNew() {
   const [loading, setLoading] = useState(true);
@@ -197,16 +198,7 @@ export default function TeacherDashboardNew() {
   };
 
   if (loading) {
-    return (
-      <TeacherLayout title="Dashboard">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-          <div className="text-center">
-            <div style={{ width: 56, height: 56, border: `3px solid ${darkMode ? '#2ea043' : '#3b82f6'}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
-            <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>Loading dashboard...</p>
-          </div>
-        </div>
-      </TeacherLayout>
-    );
+    return <FullPageLoader />;
   }
 
   return (

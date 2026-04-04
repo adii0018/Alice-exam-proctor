@@ -6,6 +6,7 @@ import PerformanceChart from '../../components/teacher/PerformanceChart';
 import { TrendingUp, Award, Users, Target } from 'lucide-react';
 import TeacherLayout from '../../components/teacher/TeacherLayout';
 import { useTheme } from '../../contexts/ThemeContext';
+import FullPageLoader from '../../components/loaders/FullPageLoader';
 
 export default function Results() {
   const [quizzes, setQuizzes] = useState([]);
@@ -39,11 +40,7 @@ export default function Results() {
   ];
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
-        <div style={{ width: 48, height: 48, border: '3px solid #2ea043', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      </div>
-    );
+    return <FullPageLoader />;
   }
 
   const { darkMode } = useTheme();
