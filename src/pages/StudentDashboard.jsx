@@ -7,7 +7,6 @@ import WelcomeCard from '../components/student/WelcomeCard'
 import UpcomingExams from '../components/student/UpcomingExams'
 import QuickStats from '../components/student/QuickStats'
 import RecentViolations from '../components/student/RecentViolations'
-import JoinExamCard from '../components/student/JoinExamCard'
 import PerformanceSummary from '../components/student/PerformanceSummary'
 import QuizCodeEntry from '../components/student/QuizCodeEntry'
 import QuizInterface from '../components/student/QuizInterface'
@@ -59,11 +58,6 @@ const StudentDashboard = () => {
   // Handle quiz exit
   const handleQuizExit = () => {
     setActiveQuiz(null)
-  }
-
-  // Handle join exam button click
-  const handleJoinExam = () => {
-    setShowCodeEntry(true)
   }
 
   // If quiz is active, show quiz interface
@@ -147,15 +141,6 @@ const StudentDashboard = () => {
               transition={{ duration: 0.5 }}
             >
               <WelcomeCard />
-            </motion.div>
-
-            {/* Join Exam Card - Prominent */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <JoinExamCard onJoinExam={handleJoinExam} />
             </motion.div>
 
             {/* Two Column Layout */}

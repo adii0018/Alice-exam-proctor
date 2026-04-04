@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, Users, MonitorPlay,
   BarChart3, AlertTriangle, Settings, UserCircle,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
+import UserAvatar from '../common/UserAvatar';
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -50,6 +52,7 @@ export default function TeacherSidebar({ collapsed, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { darkMode } = useTheme();
+  const { user } = useAuth();
 
   const gh = {
     bg: darkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.98)',
@@ -211,20 +214,48 @@ export default function TeacherSidebar({ collapsed, onToggle }) {
         </div>
       </nav>
 
-      {/* Footer */}
+      {/* Footer - User Profile */}
       <div style={{ padding: 16, borderTop: `1px solid ${gh.border}` }}>
-        <AnimatePresence mode="wait">
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{ fontSize: '11px', color: gh.footerText, textAlign: 'center' }}
-            >
-              v2.0.1 • 2026
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <Link to="/teacher/profile" style={{ textDecoration: 'none' }}>
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 10,
+              backgroundColor: gh.bottomBg,
+              border: `1px solid ${gh.bottomBorder}`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            <UserAvatar
+              user={user}
+              size={32}
+              showBorder={true}
+              borderColor={gh.bottomBorder}
+              fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #2da44e, #2c974b)'}
+            />
+            <AnimatePresence mode="wait">
+              {!collapsed && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: gh.text, margin: 0 }}>
+                    {user?.name || user?.username || 'Teacher'}
+                  </p>
+                  <p style={{ fontSize: '11px', color: gh.subText, margin: 0 }}>View Profile</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </Link>
       </div>
     </motion.aside>
   );
