@@ -103,9 +103,17 @@ def list_violations(request):
         elif student_id:
             violations = Violation.find_by_student(student_id)
         else:
-            # Teachers can see all recent violations
+            # Teachers can see violations only from their own quizzes
             if request.user.get('role') == 'teacher':
-                violations = Violation.find_recent(limit=100)
+                # Get all quizzes created by this teacher
+                teacher_quizzes = Quiz.find_by_teacher(request.user['_id'])
+                teacher_quiz_ids = [str(quiz['_id']) for quiz in teacher_quizzes]
+                
+                # Get violations only from teacher's quizzes
+                from ..models import violations_collection
+                violations = list(violations_collection.find({
+                    'quiz_id': {'$in': [ObjectId(qid) for qid in teacher_quiz_ids]}
+                }).sort('timestamp', -1).limit(100))
             else:
                 # Students can only see their own
                 violations = Violation.find_by_student(request.user['_id'])

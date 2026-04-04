@@ -12,6 +12,7 @@ import PerformanceChart from '../components/teacher/PerformanceChart';
 import { useTheme } from '../contexts/ThemeContext';
 import AliceAIChat from '../components/ai/AliceAIChat';
 import { FaRobot } from 'react-icons/fa';
+import useViolationWebSocket from '../hooks/useViolationWebSocket';
 
 export default function TeacherDashboardNew() {
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,16 @@ export default function TeacherDashboardNew() {
     activeExams: 0,
     totalStudents: 0,
     flaggedViolations: 0
+  });
+
+  // WebSocket for live violations
+  const { isConnected, liveViolations } = useViolationWebSocket({
+    enabled: true,
+    onViolation: (violation) => {
+      console.log('Live violation received:', violation);
+      // Refresh flags to show new violation
+      fetchFlags();
+    }
   });
 
   useEffect(() => {
@@ -55,6 +66,19 @@ export default function TeacherDashboardNew() {
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFlags = async () => {
+    try {
+      const flagsRes = await flagAPI.getAll();
+      setFlags(flagsRes.data);
+      setStats(prev => ({
+        ...prev,
+        flaggedViolations: flagsRes.data.filter(f => f.status !== 'resolved').length
+      }));
+    } catch (error) {
+      console.error('Failed to refresh flags:', error);
     }
   };
 
@@ -192,6 +216,34 @@ export default function TeacherDashboardNew() {
         animate={{ opacity: 1 }}
         className="space-y-6"
       >
+        {/* WebSocket Connection Status */}
+        <div style={{
+          background: isConnected 
+            ? (darkMode ? 'rgba(46,160,67,0.08)' : '#ecfdf5') 
+            : (darkMode ? 'rgba(248,81,73,0.08)' : '#fef2f2'),
+          border: `1px solid ${isConnected 
+            ? (darkMode ? 'rgba(46,160,67,0.25)' : '#a7f3d0') 
+            : (darkMode ? 'rgba(248,81,73,0.25)' : '#fecaca')}`,
+          borderRadius: 8,
+          padding: '8px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <div style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: isConnected ? '#10b981' : '#ef4444',
+            animation: isConnected ? 'pulse 2s infinite' : 'none',
+          }} />
+          <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#6b7280' }}>
+            Live Monitoring: <span style={{ fontWeight: 600, color: isConnected ? (darkMode ? '#3fb950' : '#059669') : (darkMode ? '#f85149' : '#dc2626') }}>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </span>
+          </p>
+        </div>
+
         {/* Search Results Info */}
         {searchQuery && (
           <div style={{

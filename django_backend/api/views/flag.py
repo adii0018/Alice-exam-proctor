@@ -20,7 +20,23 @@ def serialize_flag(flag):
 @require_auth
 def list_flags(request):
     try:
-        flags = Flag.find_all()
+        # Teachers can see flags only from their own quizzes
+        if request.user.get('role') == 'teacher':
+            # Get all quizzes created by this teacher
+            from ..models import Quiz
+            teacher_quizzes = Quiz.find_by_teacher(request.user['_id'])
+            teacher_quiz_ids = [quiz['_id'] for quiz in teacher_quizzes]
+            
+            # Get flags only from teacher's quizzes
+            from ..models import flags_collection
+            flags = list(flags_collection.find({
+                'quiz_id': {'$in': teacher_quiz_ids}
+            }).sort('timestamp', -1))
+        else:
+            # Students can see their own flags
+            flags = list(flags_collection.find({
+                'student_id': request.user['_id']
+            }).sort('timestamp', -1))
 
         # Enrich with student names and quiz titles
         student_ids = list({ObjectId(f['student_id']) for f in flags if f.get('student_id')})
@@ -64,6 +80,39 @@ def create_flag(request):
             severity,
             timestamp
         )
+        
+        # Broadcast violation to WebSocket for live monitoring
+        try:
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            
+            # Get student and quiz info
+            student = users_collection.find_one({'_id': request.user['_id']})
+            quiz = quizzes_collection.find_one({'_id': ObjectId(quiz_id)})
+            
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                # Broadcast to quiz-specific room
+                room_group_name = f'proctor_{quiz_id}'
+                async_to_sync(channel_layer.group_send)(
+                    room_group_name,
+                    {
+                        'type': 'violation_broadcast',
+                        'violation': {
+                            'id': str(flag_id),
+                            'quiz_id': quiz_id,
+                            'student_id': str(request.user['_id']),
+                            'student_name': student.get('name', 'Unknown') if student else 'Unknown',
+                            'quiz_title': quiz.get('title', 'Unknown') if quiz else 'Unknown',
+                            'violation_type': flag_type,
+                            'severity': severity,
+                            'timestamp': timestamp,
+                        }
+                    }
+                )
+        except Exception as ws_error:
+            # Don't fail the request if WebSocket broadcast fails
+            print(f'WebSocket broadcast error: {ws_error}')
         
         return JsonResponse({'flag_id': str(flag_id)})
     except Exception as e:

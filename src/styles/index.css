@@ -258,6 +258,16 @@
   animation: pulse-slow 8s ease-in-out infinite;
 }
 
+/* Pulse Animation for Status Indicator */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 /* Footer Fade In */
 @keyframes footer-fade-in {
   from {
