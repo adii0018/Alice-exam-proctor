@@ -6,6 +6,7 @@ import MobileBottomNav from './MobileBottomNav';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import UserAvatar from '../common/UserAvatar';
+import LightweightBackground from '../common/LightweightBackground';
 
 // Alice logo — same as student dashboard
 const AliceLogo = ({ size = 36, dark }) => (
@@ -123,22 +124,27 @@ export default function TeacherLayout({ children, title }) {
   };
 
   const gh = {
-    mobileBg: darkMode ? 'rgba(13,17,23,0.85)' : 'rgba(255,255,255,0.8)',
-    mobileBorder: darkMode ? '#21262d' : 'rgba(229,231,235,0.5)',
-    titleColor: darkMode ? '#e6edf3' : '#111827',
-    subColor: darkMode ? '#8b949e' : '#6b7280',
+    mobileBg: darkMode ? 'rgba(13,17,23,0.85)' : 'rgba(255,255,255,0.9)',
+    mobileBorder: darkMode ? '#21262d' : '#d0d7de',
+    titleColor: darkMode ? '#e6edf3' : '#1f2328',
+    subColor: darkMode ? '#8b949e' : '#57606a',
     avatarBg: darkMode ? '#21262d' : undefined,
-    avatarBorder: darkMode ? '#30363d' : undefined,
+    avatarBorder: darkMode ? '#30363d' : '#d0d7de',
   };
 
   return (
     <div
       style={darkMode
         ? { minHeight: '100vh', backgroundColor: '#0d1117', position: 'relative' }
-        : { minHeight: '100vh', backgroundColor: '#f9fafb' }
+        : { 
+            minHeight: '100vh', 
+            backgroundColor: '#f6f8fa',
+            position: 'relative',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif'
+          }
       }
     >
-      <StarField active={darkMode} />
+      {darkMode ? <StarField active={true} /> : <LightweightBackground />}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Desktop Sidebar */}
@@ -170,6 +176,7 @@ export default function TeacherLayout({ children, title }) {
             style={{
               backgroundColor: gh.mobileBg,
               borderBottom: `1px solid ${gh.mobileBorder}`,
+              boxShadow: darkMode ? 'none' : '0 1px 3px rgba(31,35,40,0.04)',
             }}
           >
             <div className="flex items-center justify-between">
@@ -180,7 +187,7 @@ export default function TeacherLayout({ children, title }) {
                     className="text-lg font-bold"
                     style={darkMode 
                       ? { color: '#e6edf3' } 
-                      : { background: 'linear-gradient(to right, #2563eb, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                      : { color: '#1f2328', fontWeight: 600 }
                     }
                   >
                     {getTitle()}
@@ -191,9 +198,9 @@ export default function TeacherLayout({ children, title }) {
               <UserAvatar
                 user={user}
                 size={40}
-                showBorder={darkMode}
+                showBorder={true}
                 borderColor={gh.avatarBorder}
-                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #2da44e, #2c974b)'}
               />
             </div>
           </div>

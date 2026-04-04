@@ -335,7 +335,7 @@ const JoinExamCard = ({ onJoinExam }) => {
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent" />
                     <div>
                       <p style={{ fontSize: '13px', fontWeight: 500, color: darkMode ? '#388bfd' : '#1e40af' }}>Running system checks...</p>
-                      <p style={{ fontSize: '12px', color: darkMode ? '#8b949e' : '#3b82f6', marginTop: '2px' }}>Please wait</p>
+                      <p style={{ fontSize: '12px', color: darkMode ? '#8b949e' : '#57606a', marginTop: '2px' }}>Please wait</p>
                     </div>
                   </div>
                 </div>

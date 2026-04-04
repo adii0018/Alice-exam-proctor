@@ -39,24 +39,24 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
   };
 
   const gh = {
-    navBg: darkMode ? 'rgba(13,17,23,0.9)' : 'rgba(255,255,255,0.85)',
-    navBorder: darkMode ? '#21262d' : 'rgba(229,231,235,0.8)',
-    titleColor: darkMode ? '#e6edf3' : '#111827',
-    subColor: darkMode ? '#8b949e' : '#6b7280',
-    iconColor: darkMode ? '#8b949e' : '#4b5563',
-    hoverBg: darkMode ? '#21262d' : '#f3f4f6',
-    inputBg: darkMode ? '#161b22' : '#f9fafb',
-    inputBorder: darkMode ? '#30363d' : '#e5e7eb',
-    inputText: darkMode ? '#e6edf3' : '#111827',
-    inputPlaceholder: darkMode ? '#6e7681' : '#9ca3af',
+    navBg: darkMode ? 'rgba(13,17,23,0.9)' : 'rgba(255,255,255,0.95)',
+    navBorder: darkMode ? '#21262d' : '#d0d7de',
+    titleColor: darkMode ? '#e6edf3' : '#1f2328',
+    subColor: darkMode ? '#8b949e' : '#57606a',
+    iconColor: darkMode ? '#8b949e' : '#57606a',
+    hoverBg: darkMode ? '#21262d' : '#f6f8fa',
+    inputBg: darkMode ? '#161b22' : '#ffffff',
+    inputBorder: darkMode ? '#30363d' : '#d0d7de',
+    inputText: darkMode ? '#e6edf3' : '#1f2328',
+    inputPlaceholder: darkMode ? '#6e7681' : '#57606a',
     dropdownBg: darkMode ? '#161b22' : '#ffffff',
-    dropdownBorder: darkMode ? '#30363d' : 'rgba(229,231,235,0.8)',
-    itemHover: darkMode ? '#21262d' : '#f9fafb',
-    itemText: darkMode ? '#e6edf3' : '#111827',
-    divider: darkMode ? '#21262d' : '#f3f4f6',
+    dropdownBorder: darkMode ? '#30363d' : '#d0d7de',
+    itemHover: darkMode ? '#21262d' : '#f6f8fa',
+    itemText: darkMode ? '#e6edf3' : '#1f2328',
+    divider: darkMode ? '#21262d' : '#d0d7de',
     avatarBg: darkMode ? '#21262d' : undefined,
-    avatarBorder: darkMode ? '#30363d' : undefined,
-    avatarColor: darkMode ? '#3fb950' : 'white',
+    avatarBorder: darkMode ? '#30363d' : '#d0d7de',
+    avatarColor: darkMode ? '#3fb950' : '#2da44e',
   }
 
   return (
@@ -68,8 +68,10 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
         backgroundColor: gh.navBg,
         borderBottom: `1px solid ${gh.navBorder}`,
         backdropFilter: 'blur(16px)',
+        boxShadow: darkMode ? 'none' : '0 1px 3px rgba(31,35,40,0.04)',
         zIndex: 30,
         transition: 'all 0.3s',
+        fontFamily: darkMode ? undefined : '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif',
       }}
     >
       <div style={{ height: '100%', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -98,7 +100,7 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
                 outline: 'none',
                 transition: 'all 0.2s',
               }}
-              onFocus={e => { e.target.style.borderColor = darkMode ? '#3fb950' : '#3b82f6'; e.target.style.boxShadow = darkMode ? '0 0 0 3px rgba(46,160,67,0.1)' : '0 0 0 3px rgba(59,130,246,0.1)' }}
+              onFocus={e => { e.target.style.borderColor = darkMode ? '#3fb950' : '#2da44e'; e.target.style.boxShadow = darkMode ? '0 0 0 3px rgba(46,160,67,0.1)' : '0 0 0 3px rgba(45,164,78,0.12)' }}
               onBlur={e => { e.target.style.borderColor = gh.inputBorder; e.target.style.boxShadow = 'none' }}
             />
             {searchQuery && (
@@ -161,9 +163,9 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
               <UserAvatar
                 user={user}
                 size={32}
-                showBorder={darkMode}
+                showBorder={true}
                 borderColor={gh.avatarBorder}
-                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #2da44e, #2c974b)'}
               />
               <span className="hidden lg:block" style={{ fontSize: 13, fontWeight: 500, color: gh.titleColor }}>
                 {user?.username || 'Teacher'}
@@ -183,7 +185,7 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
                     backgroundColor: gh.dropdownBg,
                     border: `1px solid ${gh.dropdownBorder}`,
                     borderRadius: 12,
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                    boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.2)' : '0 8px 24px rgba(31,35,40,0.12)',
                     overflow: 'hidden',
                     zIndex: 50,
                   }}

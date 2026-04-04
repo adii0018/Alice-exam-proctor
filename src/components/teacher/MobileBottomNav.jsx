@@ -21,11 +21,11 @@ const MobileBottomNav = () => {
   const isActive = (path) => location.pathname === path;
 
   const gh = {
-    bg: darkMode ? 'rgba(13,17,23,0.85)' : 'rgba(255,255,255,0.85)',
-    border: darkMode ? '#21262d' : 'rgba(229,231,235,0.5)',
-    activeText: darkMode ? '#3fb950' : '#2563eb',
-    activeBg: darkMode ? 'rgba(46,160,67,0.15)' : 'rgba(59,130,246,0.1)',
-    inactiveText: darkMode ? '#8b949e' : '#6b7280',
+    bg: darkMode ? 'rgba(13,17,23,0.85)' : 'rgba(255,255,255,0.9)',
+    border: darkMode ? '#21262d' : '#d0d7de',
+    activeText: darkMode ? '#3fb950' : '#2da44e',
+    activeBg: darkMode ? 'rgba(46,160,67,0.15)' : 'rgba(45,164,78,0.1)',
+    inactiveText: darkMode ? '#8b949e' : '#57606a',
   };
 
   return (
@@ -37,6 +37,8 @@ const MobileBottomNav = () => {
         backgroundColor: gh.bg,
         backdropFilter: 'blur(16px)',
         borderTop: `1px solid ${gh.border}`,
+        boxShadow: darkMode ? 'none' : '0 -1px 3px rgba(31,35,40,0.04)',
+        fontFamily: darkMode ? undefined : '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif',
       }}
     >
       <div className="flex items-center justify-around px-4 py-3">

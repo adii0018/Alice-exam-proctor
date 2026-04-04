@@ -82,7 +82,7 @@ const QuickStats = () => {
             className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
             style={darkMode
               ? { backgroundColor: 'rgba(46,160,67,0.1)', border: '1px solid rgba(46,160,67,0.3)' }
-              : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }
+              : { background: 'linear-gradient(135deg, #2da44e, #2c974b)' }
             }
           >
             <span style={{ fontSize: '18px' }}>🎯</span>

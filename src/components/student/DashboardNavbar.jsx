@@ -39,22 +39,22 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
   const handleProfileClick = () => { setShowProfileMenu(false); navigate('/student/profile') }
   const handleSettingsClick = () => { setShowProfileMenu(false); navigate('/student/settings') }
 
-  // GitHub dark theme colors
+  // GitHub-inspired theme colors
   const gh = {
-    navBg: darkMode ? 'rgba(13,17,23,0.9)' : 'rgba(255,255,255,0.8)',
-    navBorder: darkMode ? '#21262d' : 'rgba(229,231,235,0.5)',
-    titleColor: darkMode ? '#e6edf3' : '#111827',
-    subColor: darkMode ? '#8b949e' : '#6b7280',
-    iconColor: darkMode ? '#8b949e' : '#4b5563',
-    hoverBg: darkMode ? '#21262d' : '#f3f4f6',
+    navBg: darkMode ? 'rgba(13,17,23,0.9)' : 'rgba(255,255,255,0.95)',
+    navBorder: darkMode ? '#21262d' : '#d0d7de',
+    titleColor: darkMode ? '#e6edf3' : '#1f2328',
+    subColor: darkMode ? '#8b949e' : '#57606a',
+    iconColor: darkMode ? '#8b949e' : '#57606a',
+    hoverBg: darkMode ? '#21262d' : '#f6f8fa',
     dropdownBg: darkMode ? '#161b22' : '#ffffff',
-    dropdownBorder: darkMode ? '#30363d' : 'rgba(229,231,235,0.5)',
-    itemHover: darkMode ? '#21262d' : '#f9fafb',
-    itemText: darkMode ? '#e6edf3' : '#111827',
-    divider: darkMode ? '#21262d' : '#f3f4f6',
+    dropdownBorder: darkMode ? '#30363d' : '#d0d7de',
+    itemHover: darkMode ? '#21262d' : '#f6f8fa',
+    itemText: darkMode ? '#e6edf3' : '#1f2328',
+    divider: darkMode ? '#21262d' : '#d0d7de',
     avatarBg: darkMode ? '#21262d' : undefined,
-    avatarBorder: darkMode ? '#30363d' : undefined,
-    avatarColor: darkMode ? '#3fb950' : 'white',
+    avatarBorder: darkMode ? '#30363d' : '#d0d7de',
+    avatarColor: darkMode ? '#3fb950' : '#2da44e',
   }
 
   return (
@@ -70,7 +70,9 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
         height: '80px',
         zIndex: 30,
         backdropFilter: 'blur(16px)',
+        boxShadow: darkMode ? 'none' : '0 1px 3px rgba(31,35,40,0.04)',
         transition: 'all 0.3s',
+        fontFamily: darkMode ? undefined : '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif',
       }}
     >
       <div className="h-full px-8 flex items-center justify-between">
@@ -158,9 +160,9 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
               <UserAvatar
                 user={user}
                 size={40}
-                showBorder={darkMode}
+                showBorder={true}
                 borderColor={gh.avatarBorder}
-                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #2da44e, #2c974b)'}
               />
               <div className="text-left hidden md:block">
                 <p className="text-sm font-medium" style={{ color: gh.titleColor }}>{user?.name || 'Student'}</p>

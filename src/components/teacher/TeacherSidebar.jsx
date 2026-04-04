@@ -23,13 +23,13 @@ const AliceLogo = ({ size = 36, dark }) => (
       <rect width="100" height="100" rx="22" fill="url(#lgTeacher)"/>
       <defs>
         <linearGradient id="lgTeacher" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#3b82f6"/>
-          <stop offset="100%" stopColor="#9333ea"/>
+          <stop offset="0%" stopColor="#2da44e"/>
+          <stop offset="100%" stopColor="#2c974b"/>
         </linearGradient>
       </defs>
       <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.95"/>
       <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.65"/>
-      <line x1="50" y1="22" x2="50" y2="78" stroke="#6366f1" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#1f6f3a" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
       <path d="M50 82 Q48 89 44 93" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   )
@@ -52,19 +52,19 @@ export default function TeacherSidebar({ collapsed, onToggle }) {
   const { darkMode } = useTheme();
 
   const gh = {
-    bg: darkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.95)',
-    border: darkMode ? '#21262d' : 'rgba(229,231,235,0.8)',
-    text: darkMode ? '#e6edf3' : '#374151',
-    subText: darkMode ? '#8b949e' : '#6b7280',
-    hoverBg: darkMode ? '#21262d' : '#f9fafb',
-    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(59,130,246,0.06)',
-    activeText: darkMode ? '#3fb950' : '#2563eb',
-    activeBar: darkMode ? '#2ea043' : '#2563eb',
-    iconColor: darkMode ? '#8b949e' : '#6b7280',
-    chevronColor: darkMode ? '#8b949e' : '#6b7280',
-    footerText: darkMode ? '#6e7681' : '#9ca3af',
-    bottomBg: darkMode ? '#161b22' : '#f9fafb',
-    bottomBorder: darkMode ? '#30363d' : '#e5e7eb',
+    bg: darkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.98)',
+    border: darkMode ? '#21262d' : '#d0d7de',
+    text: darkMode ? '#e6edf3' : '#1f2328',
+    subText: darkMode ? '#8b949e' : '#57606a',
+    hoverBg: darkMode ? '#21262d' : '#f6f8fa',
+    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(45,164,78,0.08)',
+    activeText: darkMode ? '#3fb950' : '#2da44e',
+    activeBar: darkMode ? '#2ea043' : '#2da44e',
+    iconColor: darkMode ? '#8b949e' : '#57606a',
+    chevronColor: darkMode ? '#8b949e' : '#57606a',
+    footerText: darkMode ? '#6e7681' : '#57606a',
+    bottomBg: darkMode ? '#161b22' : '#f6f8fa',
+    bottomBorder: darkMode ? '#30363d' : '#d0d7de',
   }
 
   return (
@@ -78,9 +78,11 @@ export default function TeacherSidebar({ collapsed, onToggle }) {
         backgroundColor: gh.bg,
         borderRight: `1px solid ${gh.border}`,
         backdropFilter: 'blur(16px)',
+        boxShadow: darkMode ? 'none' : '0 0 0 1px rgba(31,35,40,0.04)',
         zIndex: 40,
         display: 'flex',
         flexDirection: 'column',
+        fontFamily: darkMode ? undefined : '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif',
       }}
     >
       {/* Logo */}
