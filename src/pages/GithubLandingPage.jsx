@@ -190,6 +190,7 @@ function AnimatedTicker() {
 // ── Trusted By Section ───────────────────────────────────────────────────────
 function TrustedBySection() {
   const [hoveredIndex, setHoveredIndex] = useState(null)
+  const [ref, visible] = useReveal(0.15)
   
   const badges = [
     { label: '99.9%', sublabel: 'Uptime', color: '#3fb950' },
@@ -199,22 +200,82 @@ function TrustedBySection() {
   ]
 
   return (
-    <section style={{ 
-      padding: '60px 24px',
-      background: 'linear-gradient(180deg, #0d1117 0%, #161b22 50%, #0d1117 100%)',
-      borderTop: '1px solid #21262d',
-      borderBottom: '1px solid #21262d',
-    }}>
+    <section 
+      ref={ref}
+      style={{ 
+        padding: '60px 24px',
+        background: 'rgba(22, 27, 34, 0.4)',
+        borderTop: '1px solid #21262d',
+        borderBottom: '1px solid #21262d',
+      }}
+    >
       <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ 
-          color: '#8b949e', 
-          fontSize: '0.75rem', 
-          fontWeight: 600, 
-          letterSpacing: 2,
-          textTransform: 'uppercase',
-          marginBottom: 32
-        }}>
-          Trusted by educators worldwide
+        <div 
+          className={`reveal ${visible ? 'reveal-visible' : 'reveal-hidden'}`}
+          style={{ marginBottom: 48 }}
+        >
+          {/* Decorative line with icon */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            gap: 16,
+            marginBottom: 20
+          }}>
+            <div style={{ 
+              width: 60, 
+              height: 1, 
+              background: 'linear-gradient(90deg, transparent, #3fb950)' 
+            }} />
+            <div style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #3fb950, #2ea043)',
+              boxShadow: '0 0 20px rgba(63, 185, 80, 0.5)',
+              animation: 'gh-pulse 2s infinite'
+            }} />
+            <div style={{ 
+              width: 60, 
+              height: 1, 
+              background: 'linear-gradient(90deg, #3fb950, transparent)' 
+            }} />
+          </div>
+
+          {/* Main heading */}
+          <h2 style={{ 
+            fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
+            fontWeight: 800,
+            background: 'linear-gradient(135deg, #e6edf3 0%, #8b949e 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            letterSpacing: -1,
+            marginBottom: 12,
+            lineHeight: 1.2
+          }}>
+            Trusted by educators
+            <br />
+            <span style={{
+              background: 'linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              worldwide
+            </span>
+          </h2>
+
+          {/* Subtitle */}
+          <p style={{
+            color: '#8b949e',
+            fontSize: '1rem',
+            maxWidth: 500,
+            margin: '0 auto',
+            lineHeight: 1.6
+          }}>
+            Join thousands of institutions using Alice for secure, AI-powered exam proctoring
+          </p>
         </div>
         
         <div style={{ 
@@ -227,6 +288,7 @@ function TrustedBySection() {
           {badges.map((badge, i) => (
             <div
               key={i}
+              className={`reveal ${visible ? 'reveal-visible' : 'reveal-hidden'}`}
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
               style={{
@@ -242,6 +304,7 @@ function TrustedBySection() {
                   ? `0 8px 24px ${badge.color}20, 0 0 0 1px ${badge.color}30`
                   : '0 2px 8px rgba(0,0,0,0.2)',
                 cursor: 'pointer',
+                transitionDelay: `${i * 0.1}s`,
               }}
             >
               <div style={{ 
@@ -518,7 +581,14 @@ export default function GithubLandingPage() {
   }
 
   return (
-    <div style={{ background: '#0d1117', minHeight: '100vh', color: '#e6edf3', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif', overflowX: 'hidden', position: 'relative' }}>
+    <div style={{ 
+      background: 'linear-gradient(180deg, #0d1117 0%, #161b22 25%, #161b22 75%, #0d1117 100%)', 
+      minHeight: '100vh', 
+      color: '#e6edf3', 
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif', 
+      overflowX: 'hidden', 
+      position: 'relative' 
+    }}>
       <StarField />
       {/* all content above the stars */}
       <div style={{ position: 'relative', zIndex: 1 }}>
@@ -675,9 +745,9 @@ export default function GithubLandingPage() {
         .gh-divider { border: none; border-top: 1px solid #21262d; }
 
         /* reveal */
-        .reveal { transition: opacity 0.6s ease, transform 0.6s ease; }
-        .reveal-hidden { opacity: 0; transform: translateY(24px); }
-        .reveal-visible { opacity: 1; transform: translateY(0); }
+        .reveal { transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-hidden { opacity: 0; transform: translateY(40px) scale(0.95); }
+        .reveal-visible { opacity: 1; transform: translateY(0) scale(1); }
 
         /* mobile */
         @media (max-width: 768px) {
@@ -918,7 +988,7 @@ export default function GithubLandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ───────────────────────────────────────────────────── */}
-      <section id="how-it-works" style={{ background: '#161b22', borderTop: '1px solid #21262d', borderBottom: '1px solid #21262d', padding: '96px 24px' }}>
+      <section id="how-it-works" style={{ background: 'rgba(22, 27, 34, 0.3)', borderTop: '1px solid #21262d', borderBottom: '1px solid #21262d', padding: '96px 24px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div ref={stepsRef} className={`reveal ${stepsVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ textAlign: 'center', marginBottom: 56 }}>
             <div className="gh-label" style={{ justifyContent: 'center' }}>How it Works</div>
@@ -995,7 +1065,7 @@ export default function GithubLandingPage() {
       </section>
 
       {/* ── CONTACT ────────────────────────────────────────────────────────── */}
-      <section id="contact" style={{ background: '#161b22', borderTop: '1px solid #21262d', padding: '96px 24px' }}>
+      <section id="contact" style={{ background: 'rgba(22, 27, 34, 0.3)', borderTop: '1px solid #21262d', padding: '96px 24px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div ref={contactRef} className={`reveal ${contactVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ textAlign: 'center', marginBottom: 52 }}>
             <div className="gh-label" style={{ justifyContent: 'center' }}>Contact</div>
