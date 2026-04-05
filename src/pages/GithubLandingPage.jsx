@@ -3,6 +3,272 @@ import { Link } from 'react-router-dom'
 import TestimonialsSection from '../components/common/TestimonialsSection'
 import PremiumFooter from '../components/common/PremiumFooter'
 
+// ── Typing Animation Hook ────────────────────────────────────────────────────
+function useTypingEffect(text, speed = 100) {
+  const [displayText, setDisplayText] = useState('')
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isComplete, setIsComplete] = useState(false)
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayText(prev => prev + text[currentIndex])
+        setCurrentIndex(prev => prev + 1)
+      }, speed)
+      return () => clearTimeout(timeout)
+    } else {
+      setIsComplete(true)
+    }
+  }, [currentIndex, text, speed])
+
+  return { displayText, isComplete }
+}
+
+// ── Counter Animation Hook ───────────────────────────────────────────────────
+function useCountUp(end, duration = 2000, isVisible = false) {
+  const [count, setCount] = useState(0)
+  const [hasStarted, setHasStarted] = useState(false)
+
+  useEffect(() => {
+    if (!isVisible || hasStarted) return
+    
+    setHasStarted(true)
+    const startTime = Date.now()
+    const endValue = typeof end === 'string' ? parseFloat(end) : end
+
+    const timer = setInterval(() => {
+      const now = Date.now()
+      const progress = Math.min((now - startTime) / duration, 1)
+      
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4)
+      const current = easeOutQuart * endValue
+
+      setCount(current)
+
+      if (progress === 1) {
+        clearInterval(timer)
+        setCount(endValue)
+      }
+    }, 16) // ~60fps
+
+    return () => clearInterval(timer)
+  }, [end, duration, isVisible, hasStarted])
+
+  return count
+}
+
+// ── Stat Counter Component ──────────────────────────────────────────────────
+function StatCounter({ stat, index, isVisible }) {
+  const count = useCountUp(parseFloat(stat.val), 2000, isVisible)
+  const displayValue = stat.decimals > 0 ? count.toFixed(stat.decimals) : Math.floor(count)
+  
+  return (
+    <div style={{
+      textAlign: 'center',
+      padding: '16px 24px',
+      borderRight: index < 3 ? '1px solid #21262d' : 'none',
+      transitionDelay: `${index * 0.08}s`,
+    }}>
+      <div style={{ fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: -1 }}>
+        {stat.prefix || ''}{displayValue}{stat.suffix || ''}
+      </div>
+      <div style={{ color: '#8b949e', fontSize: '0.82rem', marginTop: 4 }}>{stat.label}</div>
+    </div>
+  )
+}
+
+// ── Animated Ticker Component ────────────────────────────────────────────────
+function AnimatedTicker() {
+  const features = [
+    { icon: '🎯', text: 'Real-time Face Detection' },
+    { icon: '👁️', text: 'Advanced Gaze Tracking' },
+    { icon: '🔒', text: 'End-to-End Encryption' },
+    { icon: '⚡', text: 'Lightning Fast Response' },
+    { icon: '🤖', text: 'AI-Powered Analysis' },
+    { icon: '📊', text: 'Detailed Reports' },
+    { icon: '🌐', text: 'Multi-Platform Support' },
+    { icon: '✅', text: 'GDPR Compliant' },
+  ]
+
+  return (
+    <div style={{ 
+      borderTop: '1px solid #21262d', 
+      borderBottom: '1px solid #21262d', 
+      padding: '32px 0',
+      overflow: 'hidden',
+      background: 'linear-gradient(90deg, #0d1117 0%, #161b22 50%, #0d1117 100%)',
+      position: 'relative'
+    }}>
+      <style>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-content {
+          display: flex;
+          animation: scroll 30s linear infinite;
+          width: fit-content;
+        }
+        .ticker-content:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+      
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        gap: 12,
+        marginBottom: 8,
+        justifyContent: 'center'
+      }}>
+        <div style={{ 
+          width: 40, 
+          height: 2, 
+          background: 'linear-gradient(90deg, transparent, #3fb950, transparent)' 
+        }} />
+        <span style={{ 
+          color: '#8b949e', 
+          fontSize: '0.75rem', 
+          fontWeight: 600, 
+          letterSpacing: 2,
+          textTransform: 'uppercase'
+        }}>
+          Powered by Advanced AI Technology
+        </span>
+        <div style={{ 
+          width: 40, 
+          height: 2, 
+          background: 'linear-gradient(90deg, transparent, #3fb950, transparent)' 
+        }} />
+      </div>
+
+      <div className="ticker-content">
+        {/* Duplicate the array twice for seamless loop */}
+        {[...features, ...features].map((feature, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '12px 28px',
+              background: 'rgba(22, 27, 34, 0.6)',
+              border: '1px solid #30363d',
+              borderRadius: 8,
+              marginRight: 16,
+              whiteSpace: 'nowrap',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(46, 160, 67, 0.1)'
+              e.currentTarget.style.borderColor = '#3fb950'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(22, 27, 34, 0.6)'
+              e.currentTarget.style.borderColor = '#30363d'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>{feature.icon}</span>
+            <span style={{ 
+              color: '#e6edf3', 
+              fontSize: '0.875rem', 
+              fontWeight: 500 
+            }}>
+              {feature.text}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Trusted By Section ───────────────────────────────────────────────────────
+function TrustedBySection() {
+  const [hoveredIndex, setHoveredIndex] = useState(null)
+  
+  const badges = [
+    { label: '99.9%', sublabel: 'Uptime', color: '#3fb950' },
+    { label: '50K+', sublabel: 'Active Users', color: '#58a6ff' },
+    { label: '500+', sublabel: 'Institutions', color: '#f778ba' },
+    { label: '<25ms', sublabel: 'Response Time', color: '#ffa657' },
+  ]
+
+  return (
+    <section style={{ 
+      padding: '60px 24px',
+      background: 'linear-gradient(180deg, #0d1117 0%, #161b22 50%, #0d1117 100%)',
+      borderTop: '1px solid #21262d',
+      borderBottom: '1px solid #21262d',
+    }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ 
+          color: '#8b949e', 
+          fontSize: '0.75rem', 
+          fontWeight: 600, 
+          letterSpacing: 2,
+          textTransform: 'uppercase',
+          marginBottom: 32
+        }}>
+          Trusted by educators worldwide
+        </div>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: 20,
+          maxWidth: 900,
+          margin: '0 auto'
+        }}>
+          {badges.map((badge, i) => (
+            <div
+              key={i}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              style={{
+                background: hoveredIndex === i 
+                  ? `linear-gradient(135deg, ${badge.color}15 0%, ${badge.color}05 100%)`
+                  : 'rgba(22, 27, 34, 0.4)',
+                border: `1px solid ${hoveredIndex === i ? badge.color + '40' : '#30363d'}`,
+                borderRadius: 12,
+                padding: '28px 20px',
+                transition: 'all 0.3s ease',
+                transform: hoveredIndex === i ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
+                boxShadow: hoveredIndex === i 
+                  ? `0 8px 24px ${badge.color}20, 0 0 0 1px ${badge.color}30`
+                  : '0 2px 8px rgba(0,0,0,0.2)',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ 
+                fontSize: '2.2rem', 
+                fontWeight: 800, 
+                color: hoveredIndex === i ? badge.color : '#e6edf3',
+                marginBottom: 8,
+                transition: 'color 0.3s ease',
+                letterSpacing: -1
+              }}>
+                {badge.label}
+              </div>
+              <div style={{ 
+                color: '#8b949e', 
+                fontSize: '0.85rem',
+                fontWeight: 500
+              }}>
+                {badge.sublabel}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // ── Alice logo — leaf, GitHub dark theme ─────────────────────────────────────
 function AliceLogo({ size = 32 }) {
   return (
@@ -179,10 +445,10 @@ const STEPS = [
 ]
 
 const STATS = [
-  { val: '99.9%', label: 'Detection Accuracy' },
-  { val: '10K+', label: 'Exams Proctored' },
-  { val: '200+', label: 'Institutions' },
-  { val: '<50ms', label: 'Response Time' },
+  { val: '99.9', label: 'Detection Accuracy', suffix: '%', decimals: 1 },
+  { val: '10', label: 'Exams Proctored', suffix: 'K+', decimals: 0 },
+  { val: '200', label: 'Institutions', suffix: '+', decimals: 0 },
+  { val: '50', label: 'Response Time', prefix: '<', suffix: 'ms', decimals: 0 },
 ]
 
 const CODE_SNIPPET = `// Alice Proctor — violation event
@@ -207,6 +473,9 @@ export default function GithubLandingPage() {
   const heroLabels = ['AI-Powered Proctoring', 'Real-time Monitoring', 'Zero Compromise Integrity', 'Behavioral Analysis']
   const [labelIndex, setLabelIndex] = useState(0)
   const [labelFade, setLabelFade] = useState(true)
+  
+  // Typing animation for main title
+  const { displayText: typedText, isComplete } = useTypingEffect('Exam Proctor !!', 120)
   useEffect(() => {
     const interval = setInterval(() => {
       setLabelFade(false)
@@ -254,9 +523,17 @@ export default function GithubLandingPage() {
       {/* all content above the stars */}
       <div style={{ position: 'relative', zIndex: 1 }}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@700&family=Satisfy&family=Great+Vibes&display=swap');
+        
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         body { background: #0d1117; }
+
+        /* blinking cursor animation */
+        @keyframes blink {
+          0%, 49% { opacity: 1; }
+          50%, 100% { opacity: 0; }
+        }
 
         /* scrollbar */
         ::-webkit-scrollbar { width: 6px; }
@@ -517,15 +794,45 @@ export default function GithubLandingPage() {
               </span>
             </div>
             <h1 style={{
-              fontSize: 'clamp(2.2rem, 5vw, 3.6rem)',
-              fontWeight: 800,
+              fontSize: 'clamp(2.4rem, 5vw, 4rem)',
+              fontWeight: 700,
               color: '#e6edf3',
-              lineHeight: 1.15,
-              letterSpacing: -1,
+              lineHeight: 1.3,
+              letterSpacing: 0,
               marginBottom: 20,
+              fontFamily: "'Pacifico', cursive",
             }}>
-              Alice 🍃<br />
-              <span style={{ color: '#3fb950' }}> Exam Proctor !!</span>
+              <span style={{ 
+                background: 'linear-gradient(135deg, #e6edf3 0%, #c9d1d9 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>
+                Alice 🌿
+              </span>
+              <br />
+              <span style={{ 
+                color: '#3fb950',
+                background: 'linear-gradient(135deg, #3fb950 0%, #2ea043 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textShadow: '0 0 30px rgba(63, 185, 80, 0.3)',
+              }}>
+                {typedText}
+                {!isComplete && (
+                  <span style={{
+                    display: 'inline-block',
+                    width: '4px',
+                    height: '1em',
+                    background: 'linear-gradient(180deg, #3fb950 0%, #2ea043 100%)',
+                    marginLeft: '6px',
+                    animation: 'blink 1s infinite',
+                    verticalAlign: 'middle',
+                    boxShadow: '0 0 10px rgba(63, 185, 80, 0.5)',
+                  }} />
+                )}
+              </span>
             </h1>
             <p style={{ color: '#8b949e', fontSize: '1.05rem', lineHeight: 1.75, maxWidth: 480, marginBottom: 36 }}>
               Alice monitors students in real-time using computer vision and behavioral analysis — keeping every online exam honest and secure.
@@ -576,26 +883,8 @@ export default function GithubLandingPage() {
         </div>
       </section>
 
-      {/* ── STATS ──────────────────────────────────────────────────────────── */}
-      <section style={{ borderTop: '1px solid #21262d', borderBottom: '1px solid #21262d', padding: '48px 24px' }}>
-        <div
-          ref={statsRef}
-          className={`gh-stats-grid reveal ${statsVisible ? 'reveal-visible' : 'reveal-hidden'}`}
-          style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0 }}
-        >
-          {STATS.map((s, i) => (
-            <div key={s.label} style={{
-              textAlign: 'center',
-              padding: '16px 24px',
-              borderRight: i < STATS.length - 1 ? '1px solid #21262d' : 'none',
-              transitionDelay: `${i * 0.08}s`,
-            }}>
-              <div style={{ fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: -1 }}>{s.val}</div>
-              <div style={{ color: '#8b949e', fontSize: '0.82rem', marginTop: 4 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ── TRUSTED BY ─────────────────────────────────────────────────────── */}
+      <TrustedBySection />
 
       {/* ── FEATURES ───────────────────────────────────────────────────────── */}
       <section id="features" style={{ padding: '96px 24px', maxWidth: 1280, margin: '0 auto' }}>
