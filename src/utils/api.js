@@ -53,4 +53,18 @@ export const authAPI = {
   resetPassword: (token, password) => api.post('/auth/reset-password/', { token, password })
 }
 
+// Students APIs
+export const studentsAPI = {
+  getAll: () => api.get('/students/'),
+  getById: (id) => api.get(`/students/${id}/`),
+  getCount: () => api.get('/students/count/')
+}
+
+// Statistics APIs
+export const statsAPI = {
+  getPerformance: () => api.get('/stats/performance/'),
+  getDashboard: () => api.get('/stats/dashboard/'),
+  getQuizStats: (quizId) => api.get(`/stats/quiz/${quizId}/`)
+}
+
 export default api
