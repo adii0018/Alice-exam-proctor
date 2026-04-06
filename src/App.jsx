@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import PremiumLandingPage from './pages/GithubLandingPage'
 import AuthPage from './pages/AuthPage'
 import StudentDashboard from './pages/StudentDashboard'
 import TeacherDashboardNew from './pages/TeacherDashboardNew'
@@ -36,7 +35,7 @@ function App() {
         <Router>
         <Toaster position="top-right" />
         <Routes>
-          <Route path="/" element={<PremiumLandingPage />} />
+          <Route path="/" element={<AuthPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/avatar-test" element={<AvatarTest />} />
           <Route 
