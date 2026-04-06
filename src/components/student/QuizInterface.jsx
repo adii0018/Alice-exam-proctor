@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { quizAPI, flagAPI } from '../../utils/api'
+import { quizAPI, violationAPI } from '../../utils/api'
 import toast from 'react-hot-toast'
 import { FaClock } from 'react-icons/fa'
 import ProctorSidebar from '../exam/ProctorSidebar'
 import QuizResult from './QuizResult'
 import useProctoring, { Decision } from '../../hooks/useProctoring'
+import useWebcamScreenshot from '../../hooks/useWebcamScreenshot'
 
 const QuizInterface = ({ quiz, onExit }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0)
@@ -13,6 +14,7 @@ const QuizInterface = ({ quiz, onExit }) => {
   const [submitting, setSubmitting] = useState(false)
   const [quizResult, setQuizResult] = useState(null)
   const [startTime] = useState(Date.now())
+  const [screenshots, setScreenshots] = useState([])
 
   const videoRef = useRef(null)
 
@@ -24,17 +26,38 @@ const QuizInterface = ({ quiz, onExit }) => {
     videoRef,
     enabled: true,
     onViolation: async (entry) => {
-      // Persist every confirmed violation to the backend
+      // Capture screenshot on violation
+      const screenshot = captureScreenshot()
+      if (screenshot) {
+        setScreenshots(prev => [...prev, {
+          ...screenshot,
+          violationType: entry.type,
+          severity: entry.severity,
+        }])
+        console.log('[Screenshot] Captured on violation:', entry.type)
+      }
+
+      // Persist violation to backend with screenshot
       try {
-        await flagAPI.create({
-          quiz_id:   quiz._id,
-          type:      entry.type,
-          severity:  entry.severity,
-          timestamp: entry.timestamp,
-          metadata:  entry,
+        await violationAPI.create({
+          quiz_id: quiz._id,
+          violation_type: entry.type,
+          severity: entry.severity,
+          metadata: entry,
+          screenshot: screenshot?.data || null, // Send base64 image
         })
-      } catch { /* non-blocking */ }
+      } catch (error) {
+        console.error('[Violation] Failed to save:', error)
+      }
     },
+  })
+
+  // ── Webcam Screenshots (manual capture only) ────────────────────────────
+  const { captureScreenshot } = useWebcamScreenshot({
+    videoRef,
+    enabled: false, // Disable periodic capture
+    onScreenshot: null, // No callback needed
+    quality: 0.7,
   })
 
   // Warn student when risk score crosses thresholds
@@ -46,21 +69,28 @@ const QuizInterface = ({ quiz, onExit }) => {
     }
   }, [decision])
 
+  // Auto-submit when timer expires
+  useEffect(() => {
+    if (timeLeft === 0 && !submitting && !quizResult) {
+      toast.info('⏱️ Time expired! Auto-submitting your quiz...')
+      handleSubmit()
+    } else if (timeLeft === 60) {
+      toast.warning('⏰ Only 1 minute remaining!', { duration: 4000 })
+    } else if (timeLeft === 300) {
+      toast('⏰ 5 minutes remaining', { icon: '⏱️', duration: 3000 })
+    }
+  }, [timeLeft])
+
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleSubmit()
-          return 0
-        }
-        return prev - 1
-      })
+      setTimeLeft((prev) => Math.max(0, prev - 1))
     }, 1000)
 
     return () => clearInterval(timer)
   }, [])
 
   const handleSubmit = async () => {
+    if (submitting || quizResult) return // Prevent double submission
     setSubmitting(true)
 
     try {
@@ -68,17 +98,51 @@ const QuizInterface = ({ quiz, onExit }) => {
       const timeString = `${Math.floor(timeTaken / 60)}m ${timeTaken % 60}s`
 
       let correctAnswers = 0, wrongAnswers = 0
+      
+      console.log('[Quiz Debug] Checking answers...')
       quiz.questions.forEach((q) => {
-        if (answers[q._id] === q.correctAnswer) correctAnswers++
-        else if (answers[q._id]) wrongAnswers++
+        const questionId = q._id
+        const userAnswer = answers[questionId]
+        const correctAnswer = q.correctAnswer
+        
+        console.log(`Q: "${q.text}"`)
+        console.log(`  Question ID: ${questionId}`)
+        console.log(`  User Answer: "${userAnswer}"`)
+        console.log(`  Correct Answer: "${correctAnswer}"`)
+        console.log(`  Match: ${userAnswer === correctAnswer}`)
+        
+        if (userAnswer === correctAnswer) {
+          correctAnswers++
+          console.log('  ✓ CORRECT')
+        } else if (userAnswer) {
+          wrongAnswers++
+          console.log('  ✗ WRONG')
+        } else {
+          console.log('  - SKIPPED')
+        }
       })
 
       const totalQuestions = quiz.questions.length
       const percentage = Math.round((correctAnswers / totalQuestions) * 100)
+      
+      console.log(`[Quiz Result] ${correctAnswers}/${totalQuestions} = ${percentage}%`)
 
       // Attach proctoring report to submission
       const proctoringReport = getReport()
-      const response = await quizAPI.submit(quiz._id, { answers, proctoringReport })
+      const response = await quizAPI.submit(quiz._id, { 
+        answers, 
+        proctoringReport: {
+          ...proctoringReport,
+          screenshots: screenshots.map(s => ({
+            timestamp: s.timestamp,
+            violationType: s.violationType,
+            severity: s.severity,
+            // Store full base64 image data
+            imageData: s.data,
+          })),
+          screenshotCount: screenshots.length,
+        }
+      })
 
       setQuizResult({
         score: correctAnswers,
@@ -111,6 +175,55 @@ const QuizInterface = ({ quiz, onExit }) => {
     return () => stream?.getTracks().forEach(t => t.stop())
   }, [])
 
+  // ── Block copy-paste and right-click ────────────────────────────────────
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      e.preventDefault()
+      toast.error('Right-click is disabled during exam', { id: 'right-click' })
+    }
+
+    const handleCopy = (e) => {
+      e.preventDefault()
+      toast.error('Copy is disabled during exam', { id: 'copy' })
+    }
+
+    const handlePaste = (e) => {
+      e.preventDefault()
+      toast.error('Paste is disabled during exam', { id: 'paste' })
+    }
+
+    const handleCut = (e) => {
+      e.preventDefault()
+      toast.error('Cut is disabled during exam', { id: 'cut' })
+    }
+
+    const handleKeyDown = (e) => {
+      // Block Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, Ctrl+P, F12, Ctrl+Shift+I
+      if (
+        (e.ctrlKey && ['c', 'v', 'x', 'a', 'p'].includes(e.key.toLowerCase())) ||
+        (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) ||
+        e.key === 'F12'
+      ) {
+        e.preventDefault()
+        toast.error('This action is disabled during exam', { id: 'keyboard-block' })
+      }
+    }
+
+    document.addEventListener('contextmenu', handleContextMenu)
+    document.addEventListener('copy', handleCopy)
+    document.addEventListener('paste', handlePaste)
+    document.addEventListener('cut', handleCut)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu)
+      document.removeEventListener('copy', handleCopy)
+      document.removeEventListener('paste', handlePaste)
+      document.removeEventListener('cut', handleCut)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -124,7 +237,7 @@ const QuizInterface = ({ quiz, onExit }) => {
   }
 
   return (
-    <div className="grid lg:grid-cols-4 gap-6">
+    <div className="grid lg:grid-cols-4 gap-6 select-none" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
       <div className="lg:col-span-3">
         <div className="card">
           <div className="flex justify-between items-center mb-6">

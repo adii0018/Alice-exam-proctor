@@ -778,7 +778,7 @@ export default function GithubLandingPage() {
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <AliceLogo size={34} />
-            <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', letterSpacing: -0.3 }}>Alice Exam Proctor</span>
+            <span style={{ color: '#e6edf3', fontWeight: 400, fontSize: '1rem', letterSpacing: 0 }}>Alice Exam Proctor</span>
           </div>
 
           {/* Desktop nav */}

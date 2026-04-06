@@ -201,7 +201,7 @@ export default function PremiumFooter() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
               <AliceLogo size={32} />
-              <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>Alice Exam Proctor</span>
+              <span style={{ color: '#e6edf3', fontWeight: 400, fontSize: '1.05rem', letterSpacing: 0 }}>Alice Exam Proctor</span>
             </div>
 
             <p style={{ color: '#8b949e', fontSize: '0.85rem', lineHeight: 1.8, maxWidth: 380, marginBottom: 20 }}>

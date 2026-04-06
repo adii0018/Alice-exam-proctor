@@ -19,7 +19,8 @@ def serialize_violation(violation):
         'severity': violation['severity'],
         'timestamp': violation['timestamp'].isoformat() if isinstance(violation['timestamp'], datetime) else violation['timestamp'],
         'metadata': violation.get('metadata', {}),
-        'status': violation.get('status', 'active')
+        'status': violation.get('status', 'active'),
+        'screenshot': violation.get('screenshot')  # Include screenshot data
     }
 
 
@@ -35,7 +36,8 @@ def create_violation(request):
         "violation_type": "MULTIPLE_FACES",
         "face_count": 2,
         "severity": "medium",
-        "metadata": {}
+        "metadata": {},
+        "screenshot": "data:image/jpeg;base64,..."
     }
     """
     try:
@@ -45,6 +47,7 @@ def create_violation(request):
         face_count = data.get('face_count')
         severity = data.get('severity', 'medium')
         metadata = data.get('metadata', {})
+        screenshot = data.get('screenshot')  # Base64 image data
         
         if not all([quiz_id, violation_type]):
             return JsonResponse({
@@ -72,7 +75,8 @@ def create_violation(request):
             violation_type=violation_type,
             face_count=face_count,
             severity=severity,
-            metadata=metadata
+            metadata=metadata,
+            screenshot=screenshot
         )
         
         return JsonResponse({

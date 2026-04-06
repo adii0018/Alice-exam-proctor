@@ -437,7 +437,7 @@ const QuizResult = ({ result, quiz, onBackToDashboard }) => {
         {/* Footer */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }} style={{ marginTop: 56, textAlign: 'center' }}>
           <p style={{ color: '#57606a', fontSize: '0.8rem', fontWeight: 500 }}>
-            Proctored by Alice AI Exam Proctor v2.0
+            Proctored by Alice Exam Proctor v2.0
           </p>
         </motion.div>
       </div>

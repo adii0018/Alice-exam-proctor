@@ -38,6 +38,7 @@ export const flagAPI = {
 export const violationAPI = {
   getAll: (params) => api.get('/violations/', { params }),
   getByQuizStudents: (quizId) => api.get(`/violations/quiz/${quizId}/students/`),
+  create: (data) => api.post('/violations/', data),
 }
 
 // User/Profile APIs
