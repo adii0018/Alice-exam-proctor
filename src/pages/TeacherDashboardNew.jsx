@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, FileText, Users, MonitorPlay, AlertTriangle } from 'lucide-react';
-import { quizAPI, flagAPI } from '../utils/api';
+import { quizAPI, flagAPI, statsAPI } from '../utils/api';
 import toast from 'react-hot-toast';
 import TeacherLayout from '../components/teacher/TeacherLayout';
 import StatCard from '../components/teacher/StatCard';
@@ -48,23 +48,25 @@ export default function TeacherDashboardNew() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [quizzesRes, flagsRes] = await Promise.all([
+      const [quizzesRes, flagsRes, statsRes] = await Promise.all([
         quizAPI.getAll(),
-        flagAPI.getAll()
+        flagAPI.getAll(),
+        statsAPI.getDashboard()
       ]);
       
       setQuizzes(quizzesRes.data);
       setFlags(flagsRes.data);
       
-      // Calculate stats
+      // Use real stats from backend
       setStats({
-        totalExams: quizzesRes.data.length,
-        activeExams: quizzesRes.data.filter(q => q.status === 'active').length,
-        totalStudents: 156, // This would come from backend
-        flaggedViolations: flagsRes.data.filter(f => f.status !== 'resolved').length
+        totalExams: statsRes.data.total_exams,
+        activeExams: statsRes.data.active_exams,
+        totalStudents: statsRes.data.total_students,
+        flaggedViolations: statsRes.data.flagged_violations
       });
     } catch (error) {
       toast.error('Failed to load dashboard data');
+      console.error('Dashboard fetch error:', error);
     } finally {
       setLoading(false);
     }

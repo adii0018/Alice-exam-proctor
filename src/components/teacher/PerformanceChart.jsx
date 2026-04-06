@@ -2,60 +2,146 @@ import { motion } from 'framer-motion';
 import { TrendingUp, Award, CheckCircle, BarChart3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { statsAPI } from '../../utils/api';
+import toast from 'react-hot-toast';
 
 export default function PerformanceChart() {
   const { darkMode } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [performanceData, setPerformanceData] = useState({
+    average_score: 0,
+    pass_rate: 0,
+    completion_rate: 0,
+    trends: {
+      average_score: 0,
+      pass_rate: 0,
+      completion_rate: 0,
+    }
+  });
   const [animatedValues, setAnimatedValues] = useState({
     score: 0,
     pass: 0,
     completion: 0
   });
 
-  const metrics = [
-    { 
-      label: 'Average Score', value: '78.5%', targetValue: 78.5, animatedKey: 'score',
-      icon: TrendingUp, gradient: 'from-blue-500 to-cyan-500', shadowColor: 'shadow-blue-500/50',
-      trend: '+5.2%',
-      darkColor: '#388bfd', darkBg: 'rgba(56,139,253,0.08)', darkBorder: 'rgba(56,139,253,0.2)',
-    },
-    { 
-      label: 'Pass Rate', value: '85.2%', targetValue: 85.2, animatedKey: 'pass',
-      icon: CheckCircle, gradient: 'from-green-500 to-emerald-500', shadowColor: 'shadow-green-500/50',
-      trend: '+3.8%',
-      darkColor: '#3fb950', darkBg: 'rgba(46,160,67,0.08)', darkBorder: 'rgba(46,160,67,0.2)',
-    },
-    { 
-      label: 'Completion Rate', value: '92.8%', targetValue: 92.8, animatedKey: 'completion',
-      icon: Award, gradient: 'from-purple-500 to-pink-500', shadowColor: 'shadow-purple-500/50',
-      trend: '+7.1%',
-      darkColor: '#a371f7', darkBg: 'rgba(163,113,247,0.08)', darkBorder: 'rgba(163,113,247,0.2)',
-    },
-  ];
-
-  // Animate numbers on mount
   useEffect(() => {
+    fetchPerformanceData();
+  }, []);
+
+  const fetchPerformanceData = async () => {
+    try {
+      const response = await statsAPI.getPerformance();
+      setPerformanceData(response.data);
+      
+      // Start animation after data is loaded
+      animateValues(response.data);
+    } catch (error) {
+      console.error('Failed to fetch performance data:', error);
+      toast.error('Failed to load performance data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const animateValues = (data) => {
     const duration = 2000;
     const steps = 60;
     const interval = duration / steps;
 
-    metrics.forEach(metric => {
-      let current = 0;
-      const increment = metric.targetValue / steps;
-      
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= metric.targetValue) {
-          current = metric.targetValue;
-          clearInterval(timer);
-        }
-        setAnimatedValues(prev => ({
-          ...prev,
-          [metric.animatedKey]: current.toFixed(1)
-        }));
-      }, interval);
-    });
-  }, []);
+    const targets = {
+      score: data.average_score,
+      pass: data.pass_rate,
+      completion: data.completion_rate
+    };
+
+    let current = { score: 0, pass: 0, completion: 0 };
+    const increments = {
+      score: targets.score / steps,
+      pass: targets.pass / steps,
+      completion: targets.completion / steps
+    };
+
+    const timer = setInterval(() => {
+      current.score += increments.score;
+      current.pass += increments.pass;
+      current.completion += increments.completion;
+
+      if (current.score >= targets.score && current.pass >= targets.pass && current.completion >= targets.completion) {
+        current = targets;
+        clearInterval(timer);
+      }
+
+      setAnimatedValues({
+        score: current.score.toFixed(1),
+        pass: current.pass.toFixed(1),
+        completion: current.completion.toFixed(1)
+      });
+    }, interval);
+  };
+
+  const getTrendDisplay = (value) => {
+    if (value > 0) return `+${value.toFixed(1)}%`;
+    if (value < 0) return `${value.toFixed(1)}%`;
+    return '0%';
+  };
+
+  const metrics = [
+    { 
+      label: 'Average Score', 
+      value: `${animatedValues.score}%`, 
+      targetValue: performanceData.average_score, 
+      animatedKey: 'score',
+      icon: TrendingUp, 
+      gradient: 'from-blue-500 to-cyan-500', 
+      shadowColor: 'shadow-blue-500/50',
+      trend: getTrendDisplay(performanceData.trends.average_score),
+      darkColor: '#388bfd', 
+      darkBg: 'rgba(56,139,253,0.08)', 
+      darkBorder: 'rgba(56,139,253,0.2)',
+    },
+    { 
+      label: 'Pass Rate', 
+      value: `${animatedValues.pass}%`, 
+      targetValue: performanceData.pass_rate, 
+      animatedKey: 'pass',
+      icon: CheckCircle, 
+      gradient: 'from-green-500 to-emerald-500', 
+      shadowColor: 'shadow-green-500/50',
+      trend: getTrendDisplay(performanceData.trends.pass_rate),
+      darkColor: '#3fb950', 
+      darkBg: 'rgba(46,160,67,0.08)', 
+      darkBorder: 'rgba(46,160,67,0.2)',
+    },
+    { 
+      label: 'Completion Rate', 
+      value: `${animatedValues.completion}%`, 
+      targetValue: performanceData.completion_rate, 
+      animatedKey: 'completion',
+      icon: Award, 
+      gradient: 'from-purple-500 to-pink-500', 
+      shadowColor: 'shadow-purple-500/50',
+      trend: getTrendDisplay(performanceData.trends.completion_rate),
+      darkColor: '#a371f7', 
+      darkBg: 'rgba(163,113,247,0.08)', 
+      darkBorder: 'rgba(163,113,247,0.2)',
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div style={{
+        backgroundColor: darkMode ? '#161b22' : '#fff',
+        border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
+        borderRadius: 12,
+        padding: 48,
+        textAlign: 'center',
+        color: darkMode ? '#8b949e' : '#6b7280'
+      }}>
+        Loading performance data...
+      </div>
+    );
+  }
 
   return (
     <div
