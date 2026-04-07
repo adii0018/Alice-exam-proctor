@@ -168,14 +168,13 @@ class ProctoringConsumer(AsyncWebsocketConsumer):
 class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer for teacher's live monitoring dashboard
-    Subscribes to all active quizzes created by the teacher
+    Subscribes to all active quizzes
     """
     
     async def connect(self):
         """Handle WebSocket connection"""
         self.teacher_id = self.scope['url_route']['kwargs'].get('teacher_id')
         self.room_group_name = f'teacher_monitor_{self.teacher_id}'
-        self.subscribed_quizzes = set()
         
         # Join room group
         await self.channel_layer.group_add(
@@ -185,25 +184,13 @@ class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
         
         await self.accept()
         
-        # Auto-subscribe to all teacher's active quizzes
-        await self.auto_subscribe_teacher_quizzes()
-        
         await self.send(text_data=json.dumps({
             'type': 'connection_established',
-            'message': 'Connected to teacher monitoring channel',
-            'subscribed_quizzes': list(self.subscribed_quizzes)
+            'message': 'Connected to teacher monitoring channel'
         }))
     
     async def disconnect(self, close_code):
         """Handle WebSocket disconnection"""
-        # Unsubscribe from all quiz groups
-        for quiz_id in self.subscribed_quizzes:
-            quiz_group = f'proctor_{quiz_id}'
-            await self.channel_layer.group_discard(
-                quiz_group,
-                self.channel_name
-            )
-        
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -227,28 +214,13 @@ class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
                 'message': str(e)
             }))
     
-    async def auto_subscribe_teacher_quizzes(self):
-        """Automatically subscribe to all teacher's quizzes"""
-        try:
-            quizzes = await self.get_teacher_quizzes()
-            for quiz in quizzes:
-                quiz_id = str(quiz['_id'])
-                await self.subscribe_to_quiz(quiz_id)
-        except Exception as e:
-            print(f'Error auto-subscribing to quizzes: {e}')
-    
     async def subscribe_to_quiz(self, quiz_id):
         """Subscribe to a specific quiz's proctoring events"""
-        if quiz_id in self.subscribed_quizzes:
-            return
-        
         quiz_group = f'proctor_{quiz_id}'
         await self.channel_layer.group_add(
             quiz_group,
             self.channel_name
         )
-        
-        self.subscribed_quizzes.add(quiz_id)
         
         await self.send(text_data=json.dumps({
             'type': 'subscribed',
@@ -262,8 +234,3 @@ class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
             'type': 'VIOLATION_ALERT',
             'violation': event['violation']
         }))
-    
-    @database_sync_to_async
-    def get_teacher_quizzes(self):
-        """Get all quizzes created by this teacher"""
-        return Quiz.find_by_teacher(self.teacher_id))

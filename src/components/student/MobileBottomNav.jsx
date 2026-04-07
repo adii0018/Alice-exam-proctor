@@ -1,11 +1,9 @@
 import { motion } from 'framer-motion'
 import { FiHome, FiFileText, FiLogIn, FiAlertTriangle, FiUser } from 'react-icons/fi'
 import { Link, useLocation } from 'react-router-dom'
-import { useTheme } from '../../contexts/ThemeContext'
 
 const MobileBottomNav = () => {
   const location = useLocation()
-  const { darkMode } = useTheme()
   
   const navItems = [
     { icon: FiHome, label: 'Home', path: '/student' },
@@ -17,26 +15,11 @@ const MobileBottomNav = () => {
 
   const isActive = (path) => location.pathname === path
 
-  const gh = {
-    bg: darkMode ? 'rgba(13,17,23,0.85)' : 'rgba(255,255,255,0.9)',
-    border: darkMode ? '#21262d' : '#d0d7de',
-    activeText: darkMode ? '#3fb950' : '#2da44e',
-    activeBg: darkMode ? 'rgba(46,160,67,0.15)' : 'rgba(45,164,78,0.1)',
-    inactiveText: darkMode ? '#8b949e' : '#57606a',
-  }
-
   return (
     <motion.nav
       initial={{ y: 100 }}
       animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
-      style={{
-        backgroundColor: gh.bg,
-        backdropFilter: 'blur(16px)',
-        borderTop: `1px solid ${gh.border}`,
-        boxShadow: darkMode ? 'none' : '0 -1px 3px rgba(31,35,40,0.04)',
-        fontFamily: darkMode ? undefined : '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif',
-      }}
+      className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 z-50 md:hidden"
     >
       <div className="flex items-center justify-around px-4 py-3">
         {navItems.map((item) => {
@@ -51,31 +34,21 @@ const MobileBottomNav = () => {
             >
               <motion.div
                 whileTap={{ scale: 0.9 }}
-                className="p-2 rounded-xl transition-colors"
-                style={{
-                  backgroundColor: active ? gh.activeBg : 'transparent',
-                }}
+                className={`
+                  p-2 rounded-xl transition-colors
+                  ${active ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
+                `}
               >
-                <Icon 
-                  style={{ 
-                    width: 22, 
-                    height: 22, 
-                    color: active ? gh.activeText : gh.inactiveText 
-                  }} 
-                />
+                <Icon className={`w-6 h-6 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
               </motion.div>
-              <span 
-                className="text-xs font-medium"
-                style={{ color: active ? gh.activeText : gh.inactiveText }}
-              >
+              <span className={`text-xs font-medium ${active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}>
                 {item.label}
               </span>
               
               {active && (
                 <motion.div
-                  layoutId="studentMobileActiveIndicator"
-                  className="absolute -top-1 w-1 h-1 rounded-full"
-                  style={{ backgroundColor: gh.activeText }}
+                  layoutId="mobileActiveIndicator"
+                  className="absolute -top-1 w-1 h-1 bg-blue-600 rounded-full"
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}

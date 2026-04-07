@@ -82,18 +82,18 @@ const SoundSettings = () => {
   const VolumeIcon = getVolumeIcon();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sound Effects</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <h3 className="text-lg font-semibold text-gray-900">Sound Effects</h3>
+          <p className="text-sm text-gray-600 mt-1">
             Configure audio alerts and notifications
           </p>
         </div>
         <button
           onClick={handleToggleSound}
           className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-            soundEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+            soundEnabled ? 'bg-blue-600' : 'bg-gray-300'
           }`}
         >
           <span
@@ -109,11 +109,11 @@ const SoundSettings = () => {
           {/* Volume Control */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <VolumeIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <VolumeIcon className="w-5 h-5 text-gray-600" />
                 Volume
               </label>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+              <span className="text-sm font-semibold text-gray-900">
                 {Math.round(volume * 100)}%
               </span>
             </div>
@@ -124,37 +124,37 @@ const SoundSettings = () => {
               step="0.1"
               value={volume}
               onChange={handleVolumeChange}
-              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
             />
           </div>
 
           {/* Test Sounds */}
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
+            <label className="text-sm font-medium text-gray-700 mb-3 block">
               Test Sounds
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => testSound('notification')}
-                className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
               >
                 🔔 Notification
               </button>
               <button
                 onClick={() => testSound('warning')}
-                className="px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors text-sm font-medium"
               >
                 ⚠️ Warning
               </button>
               <button
                 onClick={() => testSound('violation')}
-                className="px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
               >
                 🚨 Violation
               </button>
               <button
                 onClick={() => testSound('success')}
-                className="px-4 py-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium"
               >
                 ✅ Success
               </button>
@@ -162,11 +162,11 @@ const SoundSettings = () => {
           </div>
 
           {/* Sound Info */}
-          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-blue-900 mb-2">
               When sounds play:
             </h4>
-            <ul className="text-xs text-blue-800 dark:text-blue-400 space-y-1">
+            <ul className="text-xs text-blue-800 space-y-1">
               <li>• Violation alerts when cheating is detected</li>
               <li>• Warning sounds for multiple faces or tab switches</li>
               <li>• Timer ticks in the last 10 seconds</li>
@@ -178,9 +178,9 @@ const SoundSettings = () => {
       )}
 
       {!soundEnabled && (
-        <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg p-4 text-center">
-          <VolumeX className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+          <VolumeX className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-sm text-gray-600">
             Sound effects are currently disabled
           </p>
         </div>

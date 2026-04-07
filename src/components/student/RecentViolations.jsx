@@ -33,7 +33,7 @@ const RecentViolations = () => {
           <h3 className="text-xl font-bold" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>Recent Violations</h3>
           <p style={{ fontSize: '13px', color: darkMode ? '#8b949e' : '#6b7280', marginTop: '4px' }}>AI-detected behavioral alerts</p>
         </div>
-        <button style={{ fontSize: '13px', color: darkMode ? '#3fb950' : '#2da44e', fontWeight: 500 }}>
+        <button style={{ fontSize: '13px', color: darkMode ? '#3fb950' : '#2563eb', fontWeight: 500 }}>
           View All
         </button>
       </div>

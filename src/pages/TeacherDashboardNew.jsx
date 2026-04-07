@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, FileText, Users, MonitorPlay, AlertTriangle } from 'lucide-react';
-import { quizAPI, flagAPI, statsAPI } from '../utils/api';
+import { quizAPI, flagAPI } from '../utils/api';
 import toast from 'react-hot-toast';
 import TeacherLayout from '../components/teacher/TeacherLayout';
 import StatCard from '../components/teacher/StatCard';
@@ -11,9 +11,7 @@ import ViolationsTable from '../components/teacher/ViolationsTable';
 import PerformanceChart from '../components/teacher/PerformanceChart';
 import { useTheme } from '../contexts/ThemeContext';
 import AliceAIChat from '../components/ai/AliceAIChat';
-import { FaRobot } from 'react-icons/fa';
-import useViolationWebSocket from '../hooks/useViolationWebSocket';
-import FullPageLoader from '../components/loaders/FullPageLoader';
+import { FaLeaf } from 'react-icons/fa';
 
 export default function TeacherDashboardNew() {
   const [loading, setLoading] = useState(true);
@@ -31,16 +29,6 @@ export default function TeacherDashboardNew() {
     flaggedViolations: 0
   });
 
-  // WebSocket for live violations
-  const { isConnected, liveViolations } = useViolationWebSocket({
-    enabled: true,
-    onViolation: (violation) => {
-      console.log('Live violation received:', violation);
-      // Refresh flags to show new violation
-      fetchFlags();
-    }
-  });
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -48,40 +36,25 @@ export default function TeacherDashboardNew() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [quizzesRes, flagsRes, statsRes] = await Promise.all([
+      const [quizzesRes, flagsRes] = await Promise.all([
         quizAPI.getAll(),
-        flagAPI.getAll(),
-        statsAPI.getDashboard()
+        flagAPI.getAll()
       ]);
       
       setQuizzes(quizzesRes.data);
       setFlags(flagsRes.data);
       
-      // Use real stats from backend
+      // Calculate stats
       setStats({
-        totalExams: statsRes.data.total_exams,
-        activeExams: statsRes.data.active_exams,
-        totalStudents: statsRes.data.total_students,
-        flaggedViolations: statsRes.data.flagged_violations
+        totalExams: quizzesRes.data.length,
+        activeExams: quizzesRes.data.filter(q => q.status === 'active').length,
+        totalStudents: 156, // This would come from backend
+        flaggedViolations: flagsRes.data.filter(f => f.status !== 'resolved').length
       });
     } catch (error) {
       toast.error('Failed to load dashboard data');
-      console.error('Dashboard fetch error:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchFlags = async () => {
-    try {
-      const flagsRes = await flagAPI.getAll();
-      setFlags(flagsRes.data);
-      setStats(prev => ({
-        ...prev,
-        flaggedViolations: flagsRes.data.filter(f => f.status !== 'resolved').length
-      }));
-    } catch (error) {
-      console.error('Failed to refresh flags:', error);
     }
   };
 
@@ -200,7 +173,16 @@ export default function TeacherDashboardNew() {
   };
 
   if (loading) {
-    return <FullPageLoader />;
+    return (
+      <TeacherLayout title="Dashboard">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+          <div className="text-center">
+            <div style={{ width: 56, height: 56, border: `3px solid ${darkMode ? '#2ea043' : '#3b82f6'}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+            <p style={{ color: darkMode ? '#8b949e' : '#6b7280' }}>Loading dashboard...</p>
+          </div>
+        </div>
+      </TeacherLayout>
+    );
   }
 
   return (
@@ -210,34 +192,6 @@ export default function TeacherDashboardNew() {
         animate={{ opacity: 1 }}
         className="space-y-6"
       >
-        {/* WebSocket Connection Status */}
-        <div style={{
-          background: isConnected 
-            ? (darkMode ? 'rgba(46,160,67,0.08)' : '#ecfdf5') 
-            : (darkMode ? 'rgba(248,81,73,0.08)' : '#fef2f2'),
-          border: `1px solid ${isConnected 
-            ? (darkMode ? 'rgba(46,160,67,0.25)' : '#a7f3d0') 
-            : (darkMode ? 'rgba(248,81,73,0.25)' : '#fecaca')}`,
-          borderRadius: 8,
-          padding: '8px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-        }}>
-          <div style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: isConnected ? '#10b981' : '#f59e0b',
-            animation: isConnected ? 'pulse 2s infinite' : 'none',
-          }} />
-          <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#6b7280' }}>
-            Live Monitoring: <span style={{ fontWeight: 600, color: isConnected ? (darkMode ? '#3fb950' : '#059669') : (darkMode ? '#f0883e' : '#ea580c') }}>
-              {isConnected ? 'Connected' : 'Polling Mode'}
-            </span>
-          </p>
-        </div>
-
         {/* Search Results Info */}
         {searchQuery && (
           <div style={{
@@ -322,23 +276,11 @@ export default function TeacherDashboardNew() {
       {showAliceChat && <AliceAIChat onClose={() => setShowAliceChat(false)} />}
       <button
         onClick={() => setShowAliceChat(prev => !prev)}
-        className="fixed bottom-20 md:bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-40 transition-all duration-300 hover:scale-110"
-        style={{ 
-          background: '#2ea043',
-          border: '2px solid #30363d',
-          boxShadow: '0 4px 12px rgba(46, 160, 67, 0.3), 0 0 0 1px rgba(48, 54, 61, 0.5)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#2c974b'
-          e.currentTarget.style.boxShadow = '0 6px 20px rgba(46, 160, 67, 0.5), 0 0 0 2px #2ea043'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = '#2ea043'
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 160, 67, 0.3), 0 0 0 1px rgba(48, 54, 61, 0.5)'
-        }}
+        className="fixed bottom-20 md:bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-40"
+        style={{ background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }}
         title="Chat with Alice AI"
       >
-        <FaRobot className="text-white text-xl" />
+        <FaLeaf className="text-white text-xl" />
       </button>
     </TeacherLayout>
   );

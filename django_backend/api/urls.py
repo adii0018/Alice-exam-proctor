@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import auth, quiz, flag, ai, violation, admin_api, contact, stats, students
+from .views import auth, quiz, flag, ai, violation, admin_api, contact
 
 urlpatterns = [
     # Auth
@@ -8,8 +8,6 @@ urlpatterns = [
     path('auth/google/', auth.google_auth, name='google_auth'),
     path('auth/me/', auth.get_current_user, name='current_user'),
     path('auth/profile/', auth.update_profile, name='update_profile'),
-    path('auth/forgot-password/', auth.forgot_password, name='forgot_password'),
-    path('auth/reset-password/', auth.reset_password, name='reset_password'),
     
     # Quizzes
     path('quizzes/', quiz.quizzes_handler, name='quizzes'),
@@ -30,16 +28,6 @@ urlpatterns = [
     path('violations/create/', violation.create_violation, name='create_violation'),
     path('violations/stats/<str:quiz_id>/', violation.get_violation_stats, name='violation_stats'),
     path('violations/quiz/<str:quiz_id>/students/', violation.get_quiz_violations_by_student, name='quiz_violations_by_student'),
-    
-    # Students
-    path('students/', students.list_students, name='list_students'),
-    path('students/<str:student_id>/', students.get_student_details, name='student_details'),
-    path('students/count/', students.get_students_count, name='students_count'),
-    
-    # Statistics
-    path('stats/performance/', stats.get_performance_stats, name='performance_stats'),
-    path('stats/dashboard/', stats.get_dashboard_stats, name='dashboard_stats'),
-    path('stats/quiz/<str:quiz_id>/', stats.get_quiz_stats, name='quiz_stats'),
     
     # AI
     path('ai/chat/', ai.chat, name='ai_chat'),

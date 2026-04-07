@@ -38,33 +38,12 @@ export const flagAPI = {
 export const violationAPI = {
   getAll: (params) => api.get('/violations/', { params }),
   getByQuizStudents: (quizId) => api.get(`/violations/quiz/${quizId}/students/`),
-  create: (data) => api.post('/violations/', data),
 }
 
 // User/Profile APIs
 export const userAPI = {
   getCurrentUser: () => api.get('/auth/me/'),
   updateProfile: (data) => api.put('/auth/profile/', data)
-}
-
-// Auth APIs
-export const authAPI = {
-  forgotPassword: (email) => api.post('/auth/forgot-password/', { email }),
-  resetPassword: (token, password) => api.post('/auth/reset-password/', { token, password })
-}
-
-// Students APIs
-export const studentsAPI = {
-  getAll: () => api.get('/students/'),
-  getById: (id) => api.get(`/students/${id}/`),
-  getCount: () => api.get('/students/count/')
-}
-
-// Statistics APIs
-export const statsAPI = {
-  getPerformance: () => api.get('/stats/performance/'),
-  getDashboard: () => api.get('/stats/dashboard/'),
-  getQuizStats: (quizId) => api.get(`/stats/quiz/${quizId}/`)
 }
 
 export default api

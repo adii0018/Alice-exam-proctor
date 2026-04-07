@@ -32,7 +32,7 @@ const UpcomingExams = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>Upcoming Exams</h3>
-        <button style={{ fontSize: '13px', color: darkMode ? '#3fb950' : '#2da44e', fontWeight: 500 }}>View All</button>
+        <button style={{ fontSize: '13px', color: darkMode ? '#3fb950' : '#2563eb', fontWeight: 500 }}>View All</button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

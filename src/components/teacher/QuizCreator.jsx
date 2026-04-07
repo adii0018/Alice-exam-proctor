@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
 import { quizAPI } from '../../utils/api'
 import toast from 'react-hot-toast'
-import { FaTimes, FaPlus, FaCheck, FaSave, FaArrowLeft, FaArrowRight, FaTrash, FaEdit, FaFileImport } from 'react-icons/fa'
+import { FaTimes, FaPlus, FaCheck, FaSave, FaArrowLeft, FaArrowRight, FaTrash, FaEdit } from 'react-icons/fa'
 
 const QuizCreator = ({ onClose, editQuizId = null }) => {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null)
-  const [showBulkImport, setShowBulkImport] = useState(false)
-  const [bulkText, setBulkText] = useState('')
   const [quiz, setQuiz] = useState({
     title: '',
     description: '',
@@ -110,89 +108,6 @@ const QuizCreator = ({ onClose, editQuizId = null }) => {
     const newQuestions = quiz.questions.filter((_, i) => i !== index);
     setQuiz({ ...quiz, questions: newQuestions });
     toast.success('Question removed');
-  };
-
-  const parseBulkQuestions = (text) => {
-    const questions = [];
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-    
-    let currentQ = null;
-    let options = [];
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      // Question line (starts with Q: or just a number followed by .)
-      if (line.match(/^(Q:|Question:|^\d+[\.\)])/i)) {
-        if (currentQ && options.length === 4) {
-          questions.push({
-            text: currentQ,
-            options: options,
-            correctAnswer: 0
-          });
-        }
-        currentQ = line.replace(/^(Q:|Question:|\d+[\.\)])\s*/i, '').trim();
-        options = [];
-      }
-      // Option lines (A), B), C), D) or A. B. C. D.
-      else if (line.match(/^[A-D][\.\)]/i)) {
-        const optionText = line.replace(/^[A-D][\.\)]\s*/i, '').trim();
-        options.push(optionText);
-      }
-      // Correct answer line
-      else if (line.match(/^(Correct|Answer|Ans):/i)) {
-        const correctLetter = line.match(/[A-D]/i);
-        if (correctLetter && currentQ && options.length === 4) {
-          const correctIndex = correctLetter[0].toUpperCase().charCodeAt(0) - 65;
-          questions.push({
-            text: currentQ,
-            options: options,
-            correctAnswer: correctIndex
-          });
-          currentQ = null;
-          options = [];
-        }
-      }
-    }
-    
-    // Add last question if exists
-    if (currentQ && options.length === 4) {
-      questions.push({
-        text: currentQ,
-        options: options,
-        correctAnswer: 0
-      });
-    }
-    
-    return questions;
-  };
-
-  const handleBulkImport = () => {
-    if (!bulkText.trim()) {
-      toast.error('Please paste some questions');
-      return;
-    }
-
-    try {
-      const parsedQuestions = parseBulkQuestions(bulkText);
-      
-      if (parsedQuestions.length === 0) {
-        toast.error('No valid questions found. Please check the format.');
-        return;
-      }
-
-      setQuiz({
-        ...quiz,
-        questions: [...quiz.questions, ...parsedQuestions]
-      });
-      
-      toast.success(`${parsedQuestions.length} questions imported successfully!`);
-      setBulkText('');
-      setShowBulkImport(false);
-    } catch (error) {
-      toast.error('Failed to parse questions. Please check the format.');
-      console.error('Parse error:', error);
-    }
   };
 
   const handleSubmit = async () => {
@@ -317,77 +232,15 @@ const QuizCreator = ({ onClose, editQuizId = null }) => {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {editQuizId ? 'Edit Questions' : 'Add Questions'} ({quiz.questions.length} added)
-          </h2>
-          <button
-            onClick={() => setShowBulkImport(!showBulkImport)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all text-sm"
-          >
-            <FaFileImport />
-            {showBulkImport ? 'Manual Entry' : 'Bulk Import'}
-          </button>
-        </div>
+        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+          {editQuizId ? 'Edit Questions' : 'Add Questions'} ({quiz.questions.length} added)
+        </h2>
 
-        {/* Bulk Import Section */}
-        {showBulkImport && (
-          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Bulk Import Questions
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              Paste your questions in this format:
-            </p>
-            <div className="bg-gray-800 text-green-400 p-3 rounded-lg text-xs font-mono mb-3">
-              <div>Q: What is the capital of France?</div>
-              <div>A) London</div>
-              <div>B) Paris</div>
-              <div>C) Berlin</div>
-              <div>D) Madrid</div>
-              <div>Correct: B</div>
-              <div className="mt-2">Q: What is 2 + 2?</div>
-              <div>A) 3</div>
-              <div>B) 4</div>
-              <div>C) 5</div>
-              <div>D) 6</div>
-              <div>Correct: B</div>
-            </div>
-            <textarea
-              value={bulkText}
-              onChange={(e) => setBulkText(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-mono text-sm"
-              rows={12}
-              placeholder="Paste your questions here..."
-            />
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={handleBulkImport}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-teal-600 text-white px-4 py-2 rounded-lg hover:shadow-lg hover:scale-105 transition-all"
-              >
-                <FaFileImport />
-                Import Questions
-              </button>
-              <button
-                onClick={() => {
-                  setBulkText('');
-                  setShowBulkImport(false);
-                }}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-
-        {!showBulkImport && (
-          <>
-            {/* Show existing questions */}
-            {quiz.questions.length > 0 && (
-              <div className="mb-6 space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Existing Questions:</h3>
-                {quiz.questions.map((q, index) => (
+        {/* Show existing questions */}
+        {quiz.questions.length > 0 && (
+          <div className="mb-6 space-y-3">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Existing Questions:</h3>
+            {quiz.questions.map((q, index) => (
               <div 
                 key={index} 
                 className={`p-4 rounded-lg border transition-all ${
@@ -429,11 +282,11 @@ const QuizCreator = ({ onClose, editQuizId = null }) => {
                   </div>
                 </div>
               </div>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
+        )}
 
-          <div className="space-y-4 mb-6">
+        <div className="space-y-4 mb-6">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               {editingQuestionIndex !== null ? `Editing Question ${editingQuestionIndex + 1}:` : 'Add New Question:'}
@@ -488,29 +341,27 @@ const QuizCreator = ({ onClose, editQuizId = null }) => {
               </div>
             </div>
           ))}
-          </div>
+        </div>
 
-          <div className="flex gap-2 mb-6">
-            <button 
-              onClick={addQuestion} 
-              className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              disabled={!currentQuestion.text || currentQuestion.options.some(o => !o)}
-            >
-              {editingQuestionIndex !== null ? (
-                <>
-                  <FaCheck />
-                  Update Question
-                </>
-              ) : (
-                <>
-                  <FaPlus />
-                  Add Question
-                </>
-              )}
-            </button>
-          </div>
-          </>
-        )}
+        <div className="flex gap-2 mb-6">
+          <button 
+            onClick={addQuestion} 
+            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            disabled={!currentQuestion.text || currentQuestion.options.some(o => !o)}
+          >
+            {editingQuestionIndex !== null ? (
+              <>
+                <FaCheck />
+                Update Question
+              </>
+            ) : (
+              <>
+                <FaPlus />
+                Add Question
+              </>
+            )}
+          </button>
+        </div>
 
         <div className="flex gap-2">
           <button onClick={() => setStep(1)} className="flex-1 flex items-center justify-center gap-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">

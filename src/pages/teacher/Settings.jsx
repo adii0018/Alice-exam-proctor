@@ -271,6 +271,57 @@ export default function Settings() {
               checked={darkMode}
               onChange={toggleDarkMode}
             />
+            <div className="p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <div className="flex items-center gap-3 mb-2">
+                <Globe className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <p className="font-medium text-gray-900 dark:text-white">Language</p>
+              </div>
+              <select
+                value={settings.appearance.language}
+                onChange={(e) => {
+                  setSettings(prev => ({
+                    ...prev,
+                    appearance: { ...prev.appearance, language: e.target.value }
+                  }));
+                  toast.success('Language updated');
+                }}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+              </select>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Security */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/30 flex items-center justify-center">
+              <Lock className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Security</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Manage your account security</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <button className="w-full py-3 px-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-left">
+              Change Password
+            </button>
+            <button className="w-full py-3 px-4 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors text-left">
+              Enable Two-Factor Authentication
+            </button>
+            <button className="w-full py-3 px-4 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-left">
+              View Login History
+            </button>
           </div>
         </motion.div>
       </motion.div>

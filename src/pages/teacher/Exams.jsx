@@ -7,7 +7,6 @@ import ExamTable from '../../components/teacher/ExamTable';
 import QuizCreator from '../../components/teacher/QuizCreator';
 import TeacherLayout from '../../components/teacher/TeacherLayout';
 import { useTheme } from '../../contexts/ThemeContext';
-import FullPageLoader from '../../components/loaders/FullPageLoader';
 
 export default function Exams() {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -39,47 +38,16 @@ export default function Exams() {
     }
   };
 
-  const exams = quizzes.map(quiz => {
-    // Format date properly
-    let formattedDate = 'Not scheduled';
-    try {
-      if (quiz.scheduled_date) {
-        const date = new Date(quiz.scheduled_date);
-        if (!isNaN(date.getTime())) {
-          formattedDate = date.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-        }
-      } else if (quiz.createdAt) {
-        const date = new Date(quiz.createdAt);
-        if (!isNaN(date.getTime())) {
-          formattedDate = date.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric'
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Date formatting error:', error);
-    }
-
-    return {
-      id: quiz._id,
-      name: quiz.title,
-      code: quiz.code,
-      status: quiz.is_active ? 'Live' : quiz.status === 'completed' ? 'Completed' : 'Draft',
-      date: formattedDate,
-      duration: `${quiz.duration || 30} min`,
-      students: quiz.submissions?.length || 0,
-      is_active: quiz.is_active || false,
-      totalQuestions: quiz.questions?.length || 0
-    };
-  });
+  const exams = quizzes.map(quiz => ({
+    id: quiz._id,
+    name: quiz.title,
+    code: quiz.code,
+    status: quiz.status === 'active' ? 'Live' : 'Draft',
+    date: new Date(quiz.createdAt).toLocaleString(),
+    duration: `${quiz.duration} min`,
+    students: quiz.submissions?.length || 0,
+    is_active: quiz.is_active || false
+  }));
 
   const handleExamAction = async (action, exam) => {
     if (action === 'delete') {
@@ -145,7 +113,11 @@ export default function Exams() {
   };
 
   if (loading) {
-    return <FullPageLoader />;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+        <div style={{ width: 48, height: 48, border: '3px solid #2ea043', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      </div>
+    );
   }
 
   const { darkMode } = useTheme();
@@ -157,86 +129,19 @@ export default function Exams() {
         <QuizCreator onClose={handleCloseCreator} editQuizId={editingQuizId} />
       ) : (
         <>
-          {/* Header Section */}
-          <div className={`${darkMode ? 'bg-[#0d1117]' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'} rounded-2xl p-8 border ${darkMode ? 'border-[#30363d]' : 'border-blue-100'}`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className={`text-3xl font-bold ${darkMode ? 'text-[#e6edf3]' : 'text-gray-900'} mb-2`}>
-                  Exam Management
-                </h2>
-                <p className={`${darkMode ? 'text-[#8b949e]' : 'text-gray-600'} text-sm`}>
-                  Create, manage, and monitor your exams
-                </p>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleCreateExam}
-                className={`flex items-center gap-2 px-6 py-3 ${darkMode ? 'bg-[#2ea043] hover:bg-[#2c974b]' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'} text-white rounded-xl font-semibold shadow-lg transition-all`}
-              >
-                <Plus size={20} />
-                Create New Exam
-              </motion.button>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>Exam Management</h2>
+              <p style={{ color: darkMode ? '#8b949e' : '#6b7280', marginTop: 4 }}>Create and manage your exams</p>
             </div>
-
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-              <div className={`${darkMode ? 'bg-[#161b22]' : 'bg-white'} rounded-xl p-4 border ${darkMode ? 'border-[#30363d]' : 'border-gray-200'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-xs ${darkMode ? 'text-[#8b949e]' : 'text-gray-500'} font-medium mb-1`}>Total Exams</p>
-                    <p className={`text-2xl font-bold ${darkMode ? 'text-[#e6edf3]' : 'text-gray-900'}`}>{exams.length}</p>
-                  </div>
-                  <div className={`w-12 h-12 rounded-xl ${darkMode ? 'bg-[#388bfd]/10' : 'bg-blue-100'} flex items-center justify-center`}>
-                    <span className="text-2xl">📚</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${darkMode ? 'bg-[#161b22]' : 'bg-white'} rounded-xl p-4 border ${darkMode ? 'border-[#30363d]' : 'border-gray-200'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-xs ${darkMode ? 'text-[#8b949e]' : 'text-gray-500'} font-medium mb-1`}>Live Now</p>
-                    <p className={`text-2xl font-bold ${darkMode ? 'text-[#3fb950]' : 'text-green-600'}`}>
-                      {exams.filter(e => e.status === 'Live').length}
-                    </p>
-                  </div>
-                  <div className={`w-12 h-12 rounded-xl ${darkMode ? 'bg-[#3fb950]/10' : 'bg-green-100'} flex items-center justify-center`}>
-                    <span className="text-2xl">🔴</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${darkMode ? 'bg-[#161b22]' : 'bg-white'} rounded-xl p-4 border ${darkMode ? 'border-[#30363d]' : 'border-gray-200'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-xs ${darkMode ? 'text-[#8b949e]' : 'text-gray-500'} font-medium mb-1`}>Completed</p>
-                    <p className={`text-2xl font-bold ${darkMode ? 'text-[#58a6ff]' : 'text-blue-600'}`}>
-                      {exams.filter(e => e.status === 'Completed').length}
-                    </p>
-                  </div>
-                  <div className={`w-12 h-12 rounded-xl ${darkMode ? 'bg-[#58a6ff]/10' : 'bg-blue-100'} flex items-center justify-center`}>
-                    <span className="text-2xl">✅</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${darkMode ? 'bg-[#161b22]' : 'bg-white'} rounded-xl p-4 border ${darkMode ? 'border-[#30363d]' : 'border-gray-200'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-xs ${darkMode ? 'text-[#8b949e]' : 'text-gray-500'} font-medium mb-1`}>Total Students</p>
-                    <p className={`text-2xl font-bold ${darkMode ? 'text-[#bc8cff]' : 'text-purple-600'}`}>
-                      {exams.reduce((sum, e) => sum + e.students, 0)}
-                    </p>
-                  </div>
-                  <div className={`w-12 h-12 rounded-xl ${darkMode ? 'bg-[#bc8cff]/10' : 'bg-purple-100'} flex items-center justify-center`}>
-                    <span className="text-2xl">👥</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={handleCreateExam}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: darkMode ? '#2ea043' : 'linear-gradient(135deg,#3b82f6,#7c3aed)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+            >
+              <Plus size={18} />
+              Create Exam
+            </button>
           </div>
-
           <ExamTable exams={exams} onAction={handleExamAction} />
         </>
       )}

@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import { AlertCircle, AlertTriangle, AlertOctagon, Camera } from 'lucide-react';
+import { AlertCircle, AlertTriangle, AlertOctagon } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useState } from 'react';
 
 const severityConfig = {
   Low:    { light: 'text-yellow-600 bg-yellow-50', icon: AlertCircle,   dark: { color: '#d2a21a', bg: 'rgba(210,162,26,0.1)', border: 'rgba(210,162,26,0.3)' } },
@@ -11,122 +10,68 @@ const severityConfig = {
 
 export default function ViolationsTable({ violations }) {
   const { darkMode } = useTheme();
-  const [selectedScreenshot, setSelectedScreenshot] = useState(null);
 
   if (darkMode) {
     return (
-      <>
-        <div style={{ backgroundColor: '#161b22', border: '1px solid #30363d', borderRadius: 12, overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#0d1117', borderBottom: '1px solid #21262d' }}>
-                  {['Student', 'Exam', 'Violation Type', 'Severity', 'Time', 'Proof'].map(h => (
-                    <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {violations.map((v, index) => {
-                  const sc = severityConfig[v.severity] || severityConfig.Low;
-                  const SeverityIcon = sc.icon;
-                  return (
-                    <motion.tr
-                      key={v.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      style={{ borderBottom: '1px solid #21262d', transition: 'background 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1c2128'}
-                      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <td style={{ padding: '14px 20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{
-                            width: 30, height: 30, borderRadius: '50%',
-                            backgroundColor: '#21262d', border: '1px solid #30363d',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 12, fontWeight: 600, color: '#3fb950',
-                          }}>
-                            {v.student[0]}
-                          </div>
-                          <span style={{ fontSize: 13, fontWeight: 500, color: '#e6edf3' }}>{v.student}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#8b949e' }}>{v.exam}</td>
-                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#8b949e' }}>{v.type}</td>
-                      <td style={{ padding: '14px 20px' }}>
+      <div style={{ backgroundColor: '#161b22', border: '1px solid #30363d', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#0d1117', borderBottom: '1px solid #21262d' }}>
+                {['Student', 'Exam', 'Violation Type', 'Severity', 'Time'].map(h => (
+                  <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {violations.map((v, index) => {
+                const sc = severityConfig[v.severity] || severityConfig.Low;
+                const SeverityIcon = sc.icon;
+                return (
+                  <motion.tr
+                    key={v.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    style={{ borderBottom: '1px solid #21262d', transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1c2128'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <td style={{ padding: '14px 20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 6,
-                          padding: '3px 10px', borderRadius: 9999,
-                          backgroundColor: sc.dark.bg, border: `1px solid ${sc.dark.border}`,
+                          width: 30, height: 30, borderRadius: '50%',
+                          backgroundColor: '#21262d', border: '1px solid #30363d',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 12, fontWeight: 600, color: '#3fb950',
                         }}>
-                          <SeverityIcon style={{ width: 12, height: 12, color: sc.dark.color }} />
-                          <span style={{ fontSize: 11, fontWeight: 500, color: sc.dark.color }}>{v.severity}</span>
+                          {v.student[0]}
                         </div>
-                      </td>
-                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#6e7681' }}>{v.time}</td>
-                      <td style={{ padding: '14px 20px' }}>
-                        {v.screenshot ? (
-                          <button
-                            onClick={() => setSelectedScreenshot(v.screenshot)}
-                            style={{
-                              display: 'inline-flex', alignItems: 'center', gap: 6,
-                              padding: '6px 12px', borderRadius: 6,
-                              backgroundColor: '#238636', border: '1px solid #2ea043',
-                              color: '#fff', fontSize: 12, fontWeight: 500,
-                              cursor: 'pointer', transition: 'all 0.15s'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#2ea043'}
-                            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#238636'}
-                          >
-                            <Camera style={{ width: 14, height: 14 }} />
-                            View
-                          </button>
-                        ) : (
-                          <span style={{ fontSize: 12, color: '#6e7681' }}>No photo</span>
-                        )}
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: '#e6edf3' }}>{v.student}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#8b949e' }}>{v.exam}</td>
+                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#8b949e' }}>{v.type}</td>
+                    <td style={{ padding: '14px 20px' }}>
+                      <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '3px 10px', borderRadius: 9999,
+                        backgroundColor: sc.dark.bg, border: `1px solid ${sc.dark.border}`,
+                      }}>
+                        <SeverityIcon style={{ width: 12, height: 12, color: sc.dark.color }} />
+                        <span style={{ fontSize: 11, fontWeight: 500, color: sc.dark.color }}>{v.severity}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#6e7681' }}>{v.time}</td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-
-        {/* Screenshot Modal - Dark Mode */}
-        {selectedScreenshot && (
-          <div
-            style={{
-              position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.9)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              zIndex: 50, padding: 16
-            }}
-            onClick={() => setSelectedScreenshot(null)}
-          >
-            <div style={{ position: 'relative', maxWidth: 896, width: '100%' }} onClick={e => e.stopPropagation()}>
-              <button
-                onClick={() => setSelectedScreenshot(null)}
-                style={{
-                  position: 'absolute', top: -48, right: 0,
-                  color: '#fff', fontSize: 14, fontWeight: 500,
-                  cursor: 'pointer', background: 'none', border: 'none'
-                }}
-              >
-                Close ✕
-              </button>
-              <img
-                src={selectedScreenshot}
-                alt="Violation Screenshot"
-                style={{ width: '100%', height: 'auto', borderRadius: 8, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
-              />
-            </div>
-          </div>
-        )}
-      </>
+      </div>
     )
   }
 
@@ -136,7 +81,7 @@ export default function ViolationsTable({ violations }) {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              {['Student', 'Exam', 'Violation Type', 'Severity', 'Time', 'Proof'].map(h => (
+              {['Student', 'Exam', 'Violation Type', 'Severity', 'Time'].map(h => (
                 <th key={h} className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
@@ -170,47 +115,12 @@ export default function ViolationsTable({ violations }) {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{v.time}</td>
-                  <td className="px-6 py-4">
-                    {v.screenshot ? (
-                      <button
-                        onClick={() => setSelectedScreenshot(v.screenshot)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
-                      >
-                        <Camera className="w-4 h-4" />
-                        View
-                      </button>
-                    ) : (
-                      <span className="text-xs text-gray-400">No photo</span>
-                    )}
-                  </td>
                 </motion.tr>
               );
             })}
           </tbody>
         </table>
       </div>
-
-      {/* Screenshot Modal */}
-      {selectedScreenshot && (
-        <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedScreenshot(null)}
-        >
-          <div className="relative max-w-4xl w-full" onClick={e => e.stopPropagation()}>
-            <button
-              onClick={() => setSelectedScreenshot(null)}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 text-sm font-medium"
-            >
-              Close ✕
-            </button>
-            <img
-              src={selectedScreenshot}
-              alt="Violation Screenshot"
-              className="w-full h-auto rounded-lg shadow-2xl"
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

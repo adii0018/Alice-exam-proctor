@@ -1,56 +1,68 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FiCalendar, FiClock, FiCheckCircle, FiPlay, FiFileText } from 'react-icons/fi'
-import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../../components/student/DashboardLayout'
-import toast from 'react-hot-toast'
 
 const MyExams = () => {
-  const navigate = useNavigate()
   const [filter, setFilter] = useState('all') // all, upcoming, completed
-  const [exams, setExams] = useState([])
-  const [loading, setLoading] = useState(true)
 
-  // Fetch exams from API
-  useEffect(() => {
-    const fetchExams = async () => {
-      try {
-        const token = localStorage.getItem('token')
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/student/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        
-        if (!response.ok) throw new Error('Failed to fetch exams')
-        
-        const data = await response.json()
-        
-        // Transform API data to match our format
-        const transformedExams = data.map(quiz => ({
-          id: quiz.id,
-          title: quiz.title,
-          subject: quiz.subject || 'General',
-          date: quiz.scheduled_date || new Date().toISOString().split('T')[0],
-          time: quiz.scheduled_time || '10:00 AM',
-          duration: `${quiz.duration || 60} minutes`,
-          status: quiz.is_active ? 'live' : quiz.is_completed ? 'completed' : 'upcoming',
-          score: quiz.score || null,
-          totalQuestions: quiz.questions?.length || 0
-        }))
-        
-        setExams(transformedExams)
-      } catch (error) {
-        console.error('Error fetching exams:', error)
-        toast.error('Failed to load exams')
-        setExams([]) // Set empty array on error
-      } finally {
-        setLoading(false)
-      }
+  const exams = [
+    {
+      id: 1,
+      title: 'Advanced Mathematics Final',
+      subject: 'Mathematics',
+      date: '2026-02-20',
+      time: '10:00 AM',
+      duration: '2 hours',
+      status: 'upcoming',
+      score: null,
+      totalQuestions: 50
+    },
+    {
+      id: 2,
+      title: 'Computer Science Fundamentals',
+      subject: 'Computer Science',
+      date: '2026-02-19',
+      time: '2:00 PM',
+      duration: '1.5 hours',
+      status: 'live',
+      score: null,
+      totalQuestions: 40
+    },
+    {
+      id: 3,
+      title: 'Physics Quantum Mechanics',
+      subject: 'Physics',
+      date: '2026-02-22',
+      time: '11:30 AM',
+      duration: '3 hours',
+      status: 'upcoming',
+      score: null,
+      totalQuestions: 60
+    },
+    {
+      id: 4,
+      title: 'English Literature Midterm',
+      subject: 'English',
+      date: '2026-02-18',
+      time: '9:00 AM',
+      duration: '2 hours',
+      status: 'completed',
+      score: 42,
+      totalQuestions: 45
+    },
+    {
+      id: 5,
+      title: 'Chemistry Organic Compounds',
+      subject: 'Chemistry',
+      date: '2026-02-15',
+      time: '1:00 PM',
+      duration: '2 hours',
+      status: 'completed',
+      score: 38,
+      totalQuestions: 40
     }
-
-    fetchExams()
-  }, [])
+  ]
 
   const filteredExams = filter === 'all' 
     ? exams 
@@ -113,17 +125,8 @@ const MyExams = () => {
           </button>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent" />
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading exams...</p>
-          </div>
-        )}
-
         {/* Exams Grid */}
-        {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredExams.map((exam, index) => (
             <motion.div
               key={exam.id}
@@ -177,10 +180,7 @@ const MyExams = () => {
               )}
 
               {exam.status === 'live' ? (
-                <button 
-                  onClick={() => navigate(`/student/exam/${exam.id}`)}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                >
+                <button className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2">
                   <FiPlay className="w-4 h-4" />
                   Join Now
                 </button>
@@ -189,10 +189,7 @@ const MyExams = () => {
                   Not Available Yet
                 </button>
               ) : (
-                <button 
-                  onClick={() => navigate(`/student/exam/${exam.id}/result`)}
-                  className="w-full py-3 px-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex items-center justify-center gap-2"
-                >
+                <button className="w-full py-3 px-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex items-center justify-center gap-2">
                   <FiCheckCircle className="w-4 h-4" />
                   View Results
                 </button>
@@ -200,9 +197,8 @@ const MyExams = () => {
             </motion.div>
           ))}
         </div>
-        )}
 
-        {!loading && filteredExams.length === 0 && (
+        {filteredExams.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
               <FiFileText className="w-8 h-8 text-gray-400 dark:text-gray-500" />

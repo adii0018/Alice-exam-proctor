@@ -19,8 +19,7 @@ def serialize_violation(violation):
         'severity': violation['severity'],
         'timestamp': violation['timestamp'].isoformat() if isinstance(violation['timestamp'], datetime) else violation['timestamp'],
         'metadata': violation.get('metadata', {}),
-        'status': violation.get('status', 'active'),
-        'screenshot': violation.get('screenshot')  # Include screenshot data
+        'status': violation.get('status', 'active')
     }
 
 
@@ -36,8 +35,7 @@ def create_violation(request):
         "violation_type": "MULTIPLE_FACES",
         "face_count": 2,
         "severity": "medium",
-        "metadata": {},
-        "screenshot": "data:image/jpeg;base64,..."
+        "metadata": {}
     }
     """
     try:
@@ -47,7 +45,6 @@ def create_violation(request):
         face_count = data.get('face_count')
         severity = data.get('severity', 'medium')
         metadata = data.get('metadata', {})
-        screenshot = data.get('screenshot')  # Base64 image data
         
         if not all([quiz_id, violation_type]):
             return JsonResponse({
@@ -75,8 +72,7 @@ def create_violation(request):
             violation_type=violation_type,
             face_count=face_count,
             severity=severity,
-            metadata=metadata,
-            screenshot=screenshot
+            metadata=metadata
         )
         
         return JsonResponse({
@@ -107,17 +103,9 @@ def list_violations(request):
         elif student_id:
             violations = Violation.find_by_student(student_id)
         else:
-            # Teachers can see violations only from their own quizzes
+            # Teachers can see all recent violations
             if request.user.get('role') == 'teacher':
-                # Get all quizzes created by this teacher
-                teacher_quizzes = Quiz.find_by_teacher(request.user['_id'])
-                teacher_quiz_ids = [str(quiz['_id']) for quiz in teacher_quizzes]
-                
-                # Get violations only from teacher's quizzes
-                from ..models import violations_collection
-                violations = list(violations_collection.find({
-                    'quiz_id': {'$in': [ObjectId(qid) for qid in teacher_quiz_ids]}
-                }).sort('timestamp', -1).limit(100))
+                violations = Violation.find_recent(limit=100)
             else:
                 # Students can only see their own
                 violations = Violation.find_by_student(request.user['_id'])

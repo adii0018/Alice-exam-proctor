@@ -4,15 +4,16 @@ import DashboardSidebar from '../components/student/DashboardSidebar'
 import DashboardNavbar from '../components/student/DashboardNavbar'
 import MobileBottomNav from '../components/student/MobileBottomNav'
 import WelcomeCard from '../components/student/WelcomeCard'
-import ExamSchedule from '../components/student/ExamSchedule'
+import UpcomingExams from '../components/student/UpcomingExams'
 import QuickStats from '../components/student/QuickStats'
 import RecentViolations from '../components/student/RecentViolations'
+import JoinExamCard from '../components/student/JoinExamCard'
 import PerformanceSummary from '../components/student/PerformanceSummary'
 import QuizCodeEntry from '../components/student/QuizCodeEntry'
 import QuizInterface from '../components/student/QuizInterface'
 import { useTheme } from '../contexts/ThemeContext'
 import AliceAIChat from '../components/ai/AliceAIChat'
-import { FaRobot } from 'react-icons/fa'
+import { FaLeaf } from 'react-icons/fa'
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -58,6 +59,11 @@ const StudentDashboard = () => {
   // Handle quiz exit
   const handleQuizExit = () => {
     setActiveQuiz(null)
+  }
+
+  // Handle join exam button click
+  const handleJoinExam = () => {
+    setShowCodeEntry(true)
   }
 
   // If quiz is active, show quiz interface
@@ -143,6 +149,15 @@ const StudentDashboard = () => {
               <WelcomeCard />
             </motion.div>
 
+            {/* Join Exam Card - Prominent */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <JoinExamCard onJoinExam={handleJoinExam} />
+            </motion.div>
+
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
               {/* Left Column - Main Content */}
@@ -152,7 +167,7 @@ const StudentDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <ExamSchedule />
+                  <UpcomingExams />
                 </motion.div>
 
                 <motion.div
@@ -194,23 +209,11 @@ const StudentDashboard = () => {
       {showAliceChat && <AliceAIChat onClose={() => setShowAliceChat(false)} />}
       <button
         onClick={() => setShowAliceChat(prev => !prev)}
-        className="fixed bottom-20 right-6 md:bottom-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50 transition-all duration-300 hover:scale-110"
-        style={{ 
-          background: '#2ea043',
-          border: '2px solid #30363d',
-          boxShadow: '0 4px 12px rgba(46, 160, 67, 0.3), 0 0 0 1px rgba(48, 54, 61, 0.5)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#2c974b'
-          e.currentTarget.style.boxShadow = '0 6px 20px rgba(46, 160, 67, 0.5), 0 0 0 2px #2ea043'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = '#2ea043'
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 160, 67, 0.3), 0 0 0 1px rgba(48, 54, 61, 0.5)'
-        }}
+        className="fixed bottom-20 right-6 md:bottom-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50"
+        style={{ background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }}
         title="Chat with Alice AI"
       >
-        <FaRobot className="text-white text-xl" />
+        <FaLeaf className="text-white text-xl" />
       </button>
     </div>
   )

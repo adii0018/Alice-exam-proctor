@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import PremiumLandingPage from './pages/GithubLandingPage'
 import AuthPage from './pages/AuthPage'
 import StudentDashboard from './pages/StudentDashboard'
 import TeacherDashboardNew from './pages/TeacherDashboardNew'
 import MyExams from './pages/student/MyExams'
-import JoinExam from './pages/student/JoinExam'
 import Violations from './pages/student/Violations'
 import Profile from './pages/student/Profile'
 import Settings from './pages/student/Settings'
@@ -35,7 +35,7 @@ function App() {
         <Router>
         <Toaster position="top-right" />
         <Routes>
-          <Route path="/" element={<AuthPage />} />
+          <Route path="/" element={<PremiumLandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/avatar-test" element={<AvatarTest />} />
           <Route 
@@ -58,7 +58,7 @@ function App() {
             path="/student/join" 
             element={
               <ProtectedRoute role="student">
-                <JoinExam />
+                <StudentDashboard />
               </ProtectedRoute>
             } 
           />

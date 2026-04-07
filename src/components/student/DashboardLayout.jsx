@@ -3,7 +3,6 @@ import DashboardSidebar from './DashboardSidebar'
 import DashboardNavbar from './DashboardNavbar'
 import MobileBottomNav from './MobileBottomNav'
 import { useTheme } from '../../contexts/ThemeContext'
-import LightweightBackground from '../common/LightweightBackground'
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -21,13 +20,13 @@ const AliceLogo = ({ size = 36, dark }) => (
       <rect width="100" height="100" rx="22" fill="url(#lgLayout)"/>
       <defs>
         <linearGradient id="lgLayout" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#2da44e"/>
-          <stop offset="100%" stopColor="#2c974b"/>
+          <stop offset="0%" stopColor="#3b82f6"/>
+          <stop offset="100%" stopColor="#9333ea"/>
         </linearGradient>
       </defs>
       <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.95"/>
       <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.65"/>
-      <line x1="50" y1="22" x2="50" y2="78" stroke="#1f6f3a" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#6366f1" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
       <path d="M50 82 Q48 89 44 93" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   )
@@ -106,19 +105,16 @@ const DashboardLayout = ({ children, title = 'Dashboard' }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const { darkMode } = useTheme()
 
+  const bg = darkMode
+    ? { backgroundColor: '#0d1117' }
+    : {}
+
   return (
     <div
-      style={darkMode
-        ? { minHeight: '100vh', backgroundColor: '#0d1117', position: 'relative' }
-        : { 
-            minHeight: '100vh', 
-            backgroundColor: '#f6f8fa',
-            position: 'relative',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif'
-          }
-      }
+      className={darkMode ? '' : 'min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30'}
+      style={darkMode ? { minHeight: '100vh', backgroundColor: '#0d1117', position: 'relative' } : {}}
     >
-      {darkMode ? <StarField active={true} /> : <LightweightBackground />}
+      <StarField active={darkMode} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Desktop Sidebar */}
@@ -149,11 +145,7 @@ const DashboardLayout = ({ children, title = 'Dashboard' }) => {
             className="md:hidden sticky top-0 z-30 backdrop-blur-xl px-4 py-4"
             style={darkMode
               ? { backgroundColor: 'rgba(13,17,23,0.85)', borderBottom: '1px solid #21262d' }
-              : { 
-                  backgroundColor: 'rgba(255,255,255,0.9)', 
-                  borderBottom: '1px solid #d0d7de',
-                  boxShadow: '0 1px 3px rgba(31,35,40,0.04)'
-                }
+              : { backgroundColor: 'rgba(255,255,255,0.8)', borderBottom: '1px solid rgba(229,231,235,0.5)' }
             }
           >
             <div className="flex items-center justify-between">
@@ -162,24 +154,18 @@ const DashboardLayout = ({ children, title = 'Dashboard' }) => {
                 <div>
                   <h1
                     className="text-lg font-bold"
-                    style={darkMode 
-                      ? { color: '#e6edf3' } 
-                      : { color: '#1f2328', fontWeight: 600 }
-                    }
+                    style={darkMode ? { color: '#e6edf3' } : { background: 'linear-gradient(to right, #2563eb, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
                   >
                     {title}
                   </h1>
-                  <p style={{ fontSize: '11px', color: darkMode ? '#8b949e' : '#57606a' }}>Alice Exam Proctor</p>
+                  <p style={{ fontSize: '11px', color: darkMode ? '#8b949e' : '#6b7280' }}>Alice Exam Proctor</p>
                 </div>
               </div>
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
                 style={darkMode
                   ? { backgroundColor: '#21262d', border: '1px solid #30363d', color: '#3fb950' }
-                  : { 
-                      background: 'linear-gradient(135deg, #2da44e, #2c974b)',
-                      border: '1px solid #d0d7de'
-                    }
+                  : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }
                 }
               >
                 S

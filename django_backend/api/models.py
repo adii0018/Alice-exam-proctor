@@ -30,7 +30,6 @@ def generate_quiz_code():
 class User:
     @staticmethod
     def create(name, email, password_hash, role='student'):
-        from datetime import datetime
         user = {
             'name': name,
             'email': email,
@@ -42,7 +41,7 @@ class User:
             'date_of_birth': None,
             'department': None,
             'profile_picture': None,
-            'created_at': datetime.utcnow()
+            'created_at': None
         }
         result = users_collection.insert_one(user)
         user['_id'] = result.inserted_id
@@ -74,7 +73,6 @@ class User:
 class Quiz:
     @staticmethod
     def create(title, description, duration, questions, teacher_id):
-        from datetime import datetime
         quiz = {
             'title': title,
             'description': description,
@@ -83,7 +81,7 @@ class Quiz:
             'teacher_id': teacher_id,
             'code': generate_quiz_code(),
             'is_active': False,
-            'created_at': datetime.utcnow()
+            'created_at': None
         }
         result = quizzes_collection.insert_one(quiz)
         quiz['_id'] = result.inserted_id
@@ -159,7 +157,7 @@ class Flag:
 
 class Violation:
     @staticmethod
-    def create(quiz_id, student_id, violation_type, face_count=None, severity='medium', metadata=None, screenshot=None):
+    def create(quiz_id, student_id, violation_type, face_count=None, severity='medium', metadata=None):
         """Create a new violation record"""
         from datetime import datetime
         
@@ -171,7 +169,6 @@ class Violation:
             'severity': severity,
             'timestamp': datetime.utcnow(),
             'metadata': metadata or {},
-            'screenshot': screenshot,  # Base64 image data
             'status': 'active'
         }
         result = violations_collection.insert_one(violation)

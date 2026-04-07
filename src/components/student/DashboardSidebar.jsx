@@ -26,13 +26,13 @@ const AliceLogo = ({ size = 36, dark }) => (
       <rect width="100" height="100" rx="22" fill="url(#lgSide)"/>
       <defs>
         <linearGradient id="lgSide" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#2da44e"/>
-          <stop offset="100%" stopColor="#2c974b"/>
+          <stop offset="0%" stopColor="#3b82f6"/>
+          <stop offset="100%" stopColor="#9333ea"/>
         </linearGradient>
       </defs>
       <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.95"/>
       <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.65"/>
-      <line x1="50" y1="22" x2="50" y2="78" stroke="#1f6f3a" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#6366f1" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
       <path d="M50 82 Q48 89 44 93" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   )
@@ -54,23 +54,23 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
 
   const isActive = (path) => location.pathname === path
 
-  // GitHub-inspired theme colors
+  // GitHub dark theme colors
   const gh = {
-    bg: darkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.98)',
-    border: darkMode ? '#21262d' : '#d0d7de',
-    text: darkMode ? '#e6edf3' : '#1f2328',
-    subText: darkMode ? '#8b949e' : '#57606a',
-    hoverBg: darkMode ? '#21262d' : '#f6f8fa',
-    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(45,164,78,0.08)',
-    activeText: darkMode ? '#3fb950' : '#2da44e',
-    activeBar: darkMode ? '#2ea043' : '#2da44e',
-    iconColor: darkMode ? '#8b949e' : '#57606a',
-    bottomBg: darkMode ? '#161b22' : 'rgba(45,164,78,0.05)',
-    bottomBorder: darkMode ? '#30363d' : '#d0d7de',
+    bg: darkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.8)',
+    border: darkMode ? '#21262d' : 'rgba(229,231,235,0.5)',
+    text: darkMode ? '#e6edf3' : '#374151',
+    subText: darkMode ? '#8b949e' : '#6b7280',
+    hoverBg: darkMode ? '#21262d' : '#f9fafb',
+    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(59,130,246,0.05)',
+    activeText: darkMode ? '#3fb950' : '#2563eb',
+    activeBar: darkMode ? '#2ea043' : '#2563eb',
+    iconColor: darkMode ? '#8b949e' : '#6b7280',
+    bottomBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #eff6ff, #f5f3ff)',
+    bottomBorder: darkMode ? '#30363d' : '#dbeafe',
     avatarBg: darkMode ? '#21262d' : undefined,
-    avatarBorder: darkMode ? '#30363d' : '#d0d7de',
-    chevronColor: darkMode ? '#8b949e' : '#57606a',
-    logoBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #2da44e, #2c974b)',
+    avatarBorder: darkMode ? '#30363d' : undefined,
+    chevronColor: darkMode ? '#8b949e' : '#6b7280',
+    logoBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #3b82f6, #9333ea)',
     logoBorder: darkMode ? '#30363d' : 'none',
   }
 
@@ -85,11 +85,9 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
         backgroundColor: gh.bg,
         borderRight: `1px solid ${gh.border}`,
         backdropFilter: 'blur(16px)',
-        boxShadow: darkMode ? 'none' : '0 0 0 1px rgba(31,35,40,0.04)',
         zIndex: 40,
         display: 'flex',
         flexDirection: 'column',
-        fontFamily: darkMode ? undefined : '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif',
       }}
     >
       {/* Logo Section */}
@@ -109,7 +107,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
                 style={{
-                  background: darkMode ? 'transparent' : 'linear-gradient(135deg, #2da44e, #2c974b)',
+                  background: darkMode ? 'transparent' : 'linear-gradient(135deg, #3b82f6, #9333ea)',
                   border: darkMode ? 'none' : 'none',
                 }}
               >
@@ -120,7 +118,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                   className="text-lg font-bold"
                   style={darkMode
                     ? { color: '#e6edf3' }
-                    : { color: '#1f2328', fontWeight: 600 }
+                    : { background: 'linear-gradient(to right, #2563eb, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
                   }
                 >
                   Alice
@@ -194,7 +192,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                     className="ml-auto px-2 py-0.5 text-xs font-medium rounded-full"
                     style={darkMode
                       ? { backgroundColor: 'rgba(46,160,67,0.15)', color: '#3fb950', border: '1px solid rgba(46,160,67,0.3)' }
-                      : { backgroundColor: 'rgba(45,164,78,0.1)', color: '#2da44e', border: '1px solid rgba(45,164,78,0.2)' }
+                      : { backgroundColor: '#dcfce7', color: '#15803d' }
                     }
                   >
                     {item.badge}
@@ -213,7 +211,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
             className={`p-3 rounded-xl ${isCollapsed ? 'flex justify-center' : 'flex items-center gap-3'} cursor-pointer transition-all`}
             style={darkMode
               ? { backgroundColor: '#161b22', border: `1px solid ${gh.bottomBorder}` }
-              : { backgroundColor: gh.bottomBg, border: `1px solid ${gh.bottomBorder}` }
+              : { background: 'linear-gradient(135deg, #eff6ff, #f5f3ff)', border: '1px solid #dbeafe' }
             }
             onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
@@ -221,9 +219,9 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
             <UserAvatar
               user={user}
               size={32}
-              showBorder={true}
+              showBorder={darkMode}
               borderColor={gh.avatarBorder}
-              fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #2da44e, #2c974b)'}
+              fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
             />
             <AnimatePresence mode="wait">
               {!isCollapsed && (
@@ -232,7 +230,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <p className="text-sm font-medium" style={{ color: darkMode ? '#e6edf3' : '#1f2328' }}>
+                  <p className="text-sm font-medium" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>
                     {user?.name || user?.username || 'Student'}
                   </p>
                   <p style={{ fontSize: '11px', color: gh.subText }}>View Profile</p>
