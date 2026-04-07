@@ -82,9 +82,11 @@ export class CheatingScoreEngine {
 
   _applyDecay() {
     if (this._score <= 0) return;
-    const elapsed = (Date.now() - this._lastUpdateMs) / 1000;
+    const now = Date.now();
+    const elapsed = (now - this._lastUpdateMs) / 1000;
     const decay = elapsed * this._decayRate;
     this._score = Math.max(0, this._score - decay);
+    this._lastUpdateMs = now; // decay should be incremental per tick
     this._notify();
   }
 

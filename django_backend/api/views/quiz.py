@@ -123,9 +123,27 @@ def submit_quiz(request, quiz_id):
 
         # Calculate score
         correct = 0
-        for question in quiz['questions']:
-            q_id = str(question.get('_id', ''))
-            if answers.get(q_id) == question.get('correctAnswer'):
+        for idx, question in enumerate(quiz['questions']):
+            q_id = str(question.get('_id') or question.get('id') or idx)
+            submitted = answers.get(q_id)
+            expected = question.get('correctAnswer')
+
+            # Normalize numeric answers (common path: option index based checking)
+            try:
+                submitted_num = int(submitted)
+            except (TypeError, ValueError):
+                submitted_num = None
+            try:
+                expected_num = int(expected)
+            except (TypeError, ValueError):
+                expected_num = None
+
+            if submitted_num is not None and expected_num is not None and submitted_num == expected_num:
+                correct += 1
+                continue
+
+            # Fallback path for legacy text-based answers
+            if submitted == expected:
                 correct += 1
 
         score = (correct / len(quiz['questions'])) * 100 if quiz['questions'] else 0

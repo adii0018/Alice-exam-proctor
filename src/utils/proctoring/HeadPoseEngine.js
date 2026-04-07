@@ -54,14 +54,19 @@ export class HeadPoseEngine {
     this._pitchSmoother = new ExponentialSmoother(0.3);
     this._rollSmoother  = new ExponentialSmoother(0.3);
 
-    // Temporal filter: 60 % of frames in 2 s must agree before flagging
-    this._awayFilter = new TemporalFilter(2000, 0.60);
+    // Temporal filter: stricter confirmation for fewer false positives.
+    this._awayFilter = new TemporalFilter(2500, 0.70);
 
     this._faceMesh  = null;
     this._timer     = null;
     this._isAway    = false;
     this._awayStart = null;
     this._violationCooldown = false;
+    this._isBusy = false;
+    this._neutralBaseline = null;
+    this._calibrationFrames = [];
+    this._calibrationComplete = false;
+    this._lastDirection = 'center';
   }
 
   // ─── Init ──────────────────────────────────────────────────────────────────
@@ -98,8 +103,12 @@ export class HeadPoseEngine {
     if (!this._faceMesh) return false;
     this.stop();
     this._timer = setInterval(async () => {
-      if (videoEl.readyState >= 2) {
+      if (this._isBusy || videoEl.readyState < 2) return;
+      this._isBusy = true;
+      try {
         await this._faceMesh.send({ image: videoEl });
+      } finally {
+        this._isBusy = false;
       }
     }, this._intervalMs);
     return true;
@@ -113,6 +122,11 @@ export class HeadPoseEngine {
     this._awayFilter.reset();
     this._isAway    = false;
     this._awayStart = null;
+    this._isBusy = false;
+    this._neutralBaseline = null;
+    this._calibrationFrames = [];
+    this._calibrationComplete = false;
+    this._lastDirection = 'center';
   }
 
   destroy() {
@@ -130,10 +144,12 @@ export class HeadPoseEngine {
 
     const lm     = results.multiFaceLandmarks[0];
     const raw    = this._computeAngles(lm);
+    this._maybeBuildNeutralBaseline(raw);
+    const corrected = this._applyNeutralBaseline(raw);
     const angles = {
-      yaw:   this._yawSmoother.push(raw.yaw),
-      pitch: this._pitchSmoother.push(raw.pitch),
-      roll:  this._rollSmoother.push(raw.roll),
+      yaw:   this._yawSmoother.push(corrected.yaw),
+      pitch: this._pitchSmoother.push(corrected.pitch),
+      roll:  this._rollSmoother.push(corrected.roll),
     };
 
     const lookingAway = this._isLookingAway(angles);
@@ -210,6 +226,7 @@ export class HeadPoseEngine {
       this._isAway    = true;
       this._awayStart = now;
       this._onGazeChange?.({ isLookingAway: true, direction, angles });
+      this._lastDirection = direction;
     }
 
     if (!isAway && this._isAway) {
@@ -217,6 +234,10 @@ export class HeadPoseEngine {
       this._awayStart = null;
       this._violationCooldown = false;
       this._onGazeChange?.({ isLookingAway: false, direction: 'center', angles });
+      this._lastDirection = 'center';
+    } else if (direction !== this._lastDirection && this._isAway) {
+      this._onGazeChange?.({ isLookingAway: true, direction, angles });
+      this._lastDirection = direction;
     }
 
     // Violation: looking away for > 4 s
@@ -250,5 +271,42 @@ export class HeadPoseEngine {
       s.onload = res; s.onerror = rej;
       document.head.appendChild(s);
     });
+  }
+
+  _maybeBuildNeutralBaseline(rawAngles) {
+    if (this._calibrationComplete) return;
+    const stable =
+      Math.abs(rawAngles.yaw) < 18 &&
+      Math.abs(rawAngles.pitch) < 20 &&
+      Math.abs(rawAngles.roll) < 18;
+
+    if (!stable) return;
+    this._calibrationFrames.push(rawAngles);
+    if (this._calibrationFrames.length < 12) return;
+
+    const avg = this._calibrationFrames.reduce(
+      (acc, a) => ({
+        yaw: acc.yaw + a.yaw,
+        pitch: acc.pitch + a.pitch,
+        roll: acc.roll + a.roll,
+      }),
+      { yaw: 0, pitch: 0, roll: 0 }
+    );
+
+    this._neutralBaseline = {
+      yaw: avg.yaw / this._calibrationFrames.length,
+      pitch: avg.pitch / this._calibrationFrames.length,
+      roll: avg.roll / this._calibrationFrames.length,
+    };
+    this._calibrationComplete = true;
+  }
+
+  _applyNeutralBaseline(rawAngles) {
+    if (!this._neutralBaseline) return rawAngles;
+    return {
+      yaw: rawAngles.yaw - this._neutralBaseline.yaw,
+      pitch: rawAngles.pitch - this._neutralBaseline.pitch,
+      roll: rawAngles.roll - this._neutralBaseline.roll,
+    };
   }
 }

@@ -9,7 +9,10 @@ import ExitConfirmModal from '../../components/exam/ExitConfirmModal';
 import RulesModal from '../../components/exam/RulesModal';
 import MultiFaceWarning from '../../components/exam/MultiFaceWarning';
 import GazeWarning from '../../components/exam/GazeWarning';
+import AudioCalibrationModal from '../../components/exam/AudioCalibrationModal';
+import AudioRiskIndicator from '../../components/exam/AudioRiskIndicator';
 import useProctoring, { Decision } from '../../hooks/useProctoring';
+import { useSmartAudioDetection } from '../../hooks/useSmartAudioDetection';
 import soundManager from '../../utils/soundEffects';
 import { flagAPI } from '../../utils/api';
 
@@ -32,6 +35,11 @@ const ExamPage = () => {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
+
+  // ── Audio Calibration ──────────────────────────────────────────────────
+  const [showCalibrationModal, setShowCalibrationModal] = useState(false);
+  const [audioCalibrationDone, setAudioCalibrationDone] = useState(false);
+  const [audioViolations, setAudioViolations] = useState([]);
 
   const videoRef = useRef(null);
   const wsRef = useRef(null);
@@ -69,6 +77,63 @@ const ExamPage = () => {
     },
   });
 
+  // ── Smart Audio Detection ───────────────────────────────────────────────
+  const {
+    isCalibrating,
+    calibrationProgress,
+    isCalibrated,
+    isMonitoring,
+    riskScore:     audioRiskScore,
+    decayedRiskScore,
+    riskLevel:     audioRiskLevel,
+    startCalibration,
+    startMonitoring:  startAudioMonitoring,
+    stopMonitoring:   stopAudioMonitoring,
+    resetRiskScore,
+  } = useSmartAudioDetection({
+    enabled: !!exam,
+    autoStart: true,          // auto-starts monitoring once calibration done
+    onViolation: async (violation) => {
+      // Skip internal system events (recalibration notices)
+      if (violation._isSystemEvent) return;
+
+      setAudioViolations(prev => [
+        {
+          ...violation,
+          type: 'AUDIO_ANOMALY',
+          severity: String(violation.severity || '').toLowerCase(),
+        },
+        ...prev,
+      ].slice(0, 200));
+
+      soundManager.playViolationAlert();
+      showWarningToast('Background voice detected. Please remain silent.');
+
+      // Send audio violation to backend
+      try {
+        await flagAPI.create({
+          quiz_id: examId,
+          type:      'AUDIO_ANOMALY',
+          severity:  violation.severity,
+          timestamp: violation.timestamp,
+          metadata:  violation,
+        });
+      } catch { /* non-blocking */ }
+
+      // Real-time teacher alert via WebSocket
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        wsRef.current.send(JSON.stringify({
+          type:           'violation_alert',
+          student_id:     user._id || user.id,
+          violation_type: 'AUDIO_ANOMALY',
+          severity:       violation.severity,
+          metadata:       violation,
+        }));
+      }
+    },
+  });
+
   // React to proctoring decisions
   useEffect(() => {
     if (decision === Decision.CHEATING) {
@@ -94,6 +159,13 @@ const ExamPage = () => {
   useEffect(() => {
     setShowGazeWarning(isLookingAway);
   }, [isLookingAway]);
+
+  // ── Show calibration modal once exam data loads ────────────────────────
+  useEffect(() => {
+    if (exam && !loading && !audioCalibrationDone) {
+      setShowCalibrationModal(true);
+    }
+  }, [exam, loading]);
 
   // ── Load exam ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -125,10 +197,13 @@ const ExamPage = () => {
       if (!data.questions?.length) throw new Error('No questions found in this exam');
 
       const transformedQuestions = data.questions.map((q, i) => ({
-        id: i,
+        id: String(q._id || q.id || i),
         text: q.text,
         correctAnswer: q.correctAnswer,
-        options: q.options.map((opt, j) => ({ id: j, text: opt }))
+        options: (q.options || []).map((opt, j) => ({
+          id: j,
+          text: typeof opt === 'string' ? opt : (opt?.text ?? String(opt)),
+        })),
       }));
 
       setExam({ ...data, questions: transformedQuestions });
@@ -202,15 +277,26 @@ const ExamPage = () => {
   // ── Copy/paste prevention ──────────────────────────────────────────────
   useEffect(() => {
     const prevent = (e) => e.preventDefault();
+    const preventShortcuts = (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const key = e.key?.toLowerCase();
+      if (['c', 'x', 'v', 'a'].includes(key)) {
+        e.preventDefault();
+      }
+    };
     document.addEventListener('contextmenu', prevent);
     document.addEventListener('copy', prevent);
     document.addEventListener('cut', prevent);
     document.addEventListener('paste', prevent);
+    document.addEventListener('dragstart', prevent);
+    window.addEventListener('keydown', preventShortcuts);
     return () => {
       document.removeEventListener('contextmenu', prevent);
       document.removeEventListener('copy', prevent);
       document.removeEventListener('cut', prevent);
       document.removeEventListener('paste', prevent);
+      document.removeEventListener('dragstart', prevent);
+      window.removeEventListener('keydown', preventShortcuts);
     };
   }, []);
 
@@ -260,10 +346,22 @@ const ExamPage = () => {
       const transformedAnswers = {};
 
       Object.keys(answers).forEach(qId => {
-        const question = exam.questions[qId];
-        const selectedOption = question.options[answers[qId]];
-        transformedAnswers[qId] = selectedOption.text;
-        if (selectedOption.text === question.correctAnswer) correctCount++;
+        const question = exam.questions.find(q => String(q.id) === String(qId));
+        if (!question) return;
+
+        const selectedOptionId = Number(answers[qId]);
+        transformedAnswers[qId] = selectedOptionId;
+
+        const correctOptionId = Number(question.correctAnswer);
+        if (Number.isFinite(correctOptionId)) {
+          if (selectedOptionId === correctOptionId) correctCount++;
+          else wrongCount++;
+          return;
+        }
+
+        const selectedOption = question.options[selectedOptionId];
+        const selectedText = selectedOption?.text;
+        if (selectedText !== undefined && selectedText === question.correctAnswer) correctCount++;
         else wrongCount++;
       });
 
@@ -279,21 +377,38 @@ const ExamPage = () => {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers: transformedAnswers, proctoringReport, timeSpent: timeSpentSeconds })
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || err.message || 'Failed to submit exam');
+      }
+      const submitData = await res.json().catch(() => ({}));
+
+      const backendCorrect = submitData.correct ?? submitData.correct_answers ?? submitData.correctAnswers;
+      const backendTotal = submitData.total ?? submitData.total_questions ?? submitData.totalQuestions ?? totalQuestions;
+      const backendPercentage = submitData.score ?? submitData.percentage;
+
+      const finalCorrect = Number.isFinite(backendCorrect) ? backendCorrect : correctCount;
+      const finalTotal = Number.isFinite(backendTotal) ? backendTotal : totalQuestions;
+      const finalPercentage = Number.isFinite(backendPercentage)
+        ? Math.round(backendPercentage)
+        : (finalTotal > 0 ? Math.round((finalCorrect / finalTotal) * 100) : percentage);
 
       const resultData = {
-        score: correctCount,
-        totalQuestions,
-        correctAnswers: correctCount,
-        wrongAnswers: wrongCount,
+        score: finalCorrect,
+        totalQuestions: finalTotal,
+        correctAnswers: finalCorrect,
+        wrongAnswers: Math.max(0, finalTotal - finalCorrect),
         timeTaken,
-        percentage,
-        violations: violations.map(v => ({
+        percentage: finalPercentage,
+        violations: [...audioViolations, ...violations].map(v => ({
           type: v.type,
-          timestamp: new Date(v.timestamp).toLocaleTimeString(),
-          severity: v.severity,
+          timestamp: new Date(v.timestamp || Date.now()).toLocaleTimeString(),
+          severity: String(v.severity || '').toLowerCase(),
         })),
         proctoringScore: score,
         proctoringDecision: decision,
+        quizTitle: exam.title,
+        submittedAt: new Date().toISOString(),
       };
 
       // Persist result so ExamResultPage can read it after refresh
@@ -309,6 +424,7 @@ const ExamPage = () => {
   const handleAutoSubmit = () => handleConfirmSubmit();
 
   const cleanup = () => {
+    stopAudioMonitoring();
     wsRef.current?.close();
     videoRef.current?.srcObject?.getTracks().forEach(t => t.stop());
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -345,7 +461,7 @@ const ExamPage = () => {
   const currentQ = exam.questions[currentQuestion];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col select-none">
       <ExamTopBar
         examName={exam.title}
         timeRemaining={timeRemaining}
@@ -376,7 +492,7 @@ const ExamPage = () => {
           />
         </div>
 
-        <div className="hidden lg:block lg:w-[30%] border-l border-gray-200 bg-white">
+        <div className="hidden lg:block lg:w-[30%] border-l border-gray-200 bg-white overflow-y-auto">
           <ProctorPanel
             videoRef={videoRef}
             faceStatus={faceCount === 0 ? 'none' : faceCount > 1 ? 'multiple' : 'detected'}
@@ -384,6 +500,14 @@ const ExamPage = () => {
             tabSwitchCount={tabSwitchCount}
             faceCount={faceCount}
           />
+          {/* Audio Risk Indicator */}
+          <div className="px-4 pb-4">
+            <AudioRiskIndicator
+              isMonitoring={isMonitoring}
+              riskScore={decayedRiskScore}
+              riskLevel={audioRiskLevel}
+            />
+          </div>
         </div>
       </div>
 
@@ -404,6 +528,33 @@ const ExamPage = () => {
       )}
 
       {showRules && <RulesModal rules={exam.rules || []} onClose={() => setShowRules(false)} />}
+
+      {/* Audio Calibration Modal — shown before exam starts */}
+      <AudioCalibrationModal
+        isOpen={showCalibrationModal}
+        isCalibrating={isCalibrating}
+        calibrationProgress={calibrationProgress}
+        isCalibrated={isCalibrated}
+        onStartCalibration={async () => {
+          const ok = await startCalibration();
+          if (!ok) {
+            // Mic unavailable — close modal and proceed without audio
+            setAudioCalibrationDone(true);
+            setShowCalibrationModal(false);
+          }
+        }}
+        onClose={() => {
+          // Student skipped calibration — still start monitoring with defaults
+          setAudioCalibrationDone(true);
+          setShowCalibrationModal(false);
+          startAudioMonitoring();
+        }}
+        onContinue={() => {
+          setAudioCalibrationDone(true);
+          setShowCalibrationModal(false);
+          resetRiskScore();
+        }}
+      />
     </div>
   );
 };

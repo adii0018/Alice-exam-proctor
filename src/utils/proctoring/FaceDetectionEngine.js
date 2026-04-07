@@ -44,6 +44,10 @@ export class FaceDetectionEngine {
     this._timer      = null;
     this._lastCount  = -1;
     this._lowLight   = false;
+    this._missingActive = false;
+    this._multipleActive = false;
+    this._lastMissingLogMs = 0;
+    this._lastMultipleLogMs = 0;
     this._canvas     = document.createElement('canvas');
     this._ctx        = this._canvas.getContext('2d', { willReadFrequently: true });
   }
@@ -103,6 +107,8 @@ export class FaceDetectionEngine {
     this._missingFilter.reset();
     this._multipleFilter.reset();
     this._lastCount = -1;
+    this._missingActive = false;
+    this._multipleActive = false;
   }
 
   destroy() {
@@ -176,6 +182,7 @@ export class FaceDetectionEngine {
   _process(rawCount) {
     const isMissing  = this._missingFilter.push(rawCount === 0);
     const isMultiple = this._multipleFilter.push(rawCount > 1);
+    const now = Date.now();
 
     // Determine validated count for UI
     let validatedCount = rawCount;
@@ -187,14 +194,20 @@ export class FaceDetectionEngine {
       this._onFaceCountChange?.(validatedCount);
     }
 
-    if (isMissing) {
+    // Log only on state-entry (plus periodic reminder), not on every tick.
+    if (isMissing && (!this._missingActive || now - this._lastMissingLogMs > 8000)) {
       this._logger?.record(EventType.FACE_MISSING, Severity.HIGH, { rawCount });
       this._scorer?.ingest(EventType.FACE_MISSING, Severity.HIGH);
-    } else if (isMultiple) {
+      this._lastMissingLogMs = now;
+    } else if (isMultiple && (!this._multipleActive || now - this._lastMultipleLogMs > 8000)) {
       const sev = rawCount > 2 ? Severity.HIGH : Severity.MEDIUM;
       this._logger?.record(EventType.MULTIPLE_FACES, sev, { faceCount: rawCount });
       this._scorer?.ingest(EventType.MULTIPLE_FACES, sev);
+      this._lastMultipleLogMs = now;
     }
+
+    this._missingActive = isMissing;
+    this._multipleActive = isMultiple;
   }
 
   // ─── Brightness helper ─────────────────────────────────────────────────────

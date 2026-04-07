@@ -20,7 +20,15 @@ const ExamResultPage = () => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const studentId = user._id || user.id;
 
-      // Fetch quiz details
+      // Try localStorage first (freshly submitted result)
+      const stored = localStorage.getItem(`exam_result_${examId}`);
+      if (stored) {
+        const storedResult = JSON.parse(stored);
+        setResult(storedResult);
+        setQuiz({ _id: examId, title: storedResult.quizTitle || 'Exam Result', questions: [] });
+      }
+
+      // Fetch quiz details (needed for title + fallback reconstruction)
       const quizRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
@@ -28,10 +36,57 @@ const ExamResultPage = () => {
       const quizData = await quizRes.json();
       setQuiz(quizData);
 
-      // Try localStorage first (freshly submitted result)
-      const stored = localStorage.getItem(`exam_result_${examId}`);
-      if (stored) {
-        setResult(JSON.parse(stored));
+      // Try reconstructing from quiz submission list (if API includes it)
+      const submission = (quizData.submissions || []).find((s) =>
+        (s.student_id === studentId) || (s.studentId === studentId) || (s.student?._id === studentId)
+      );
+      if (submission) {
+        const totalQuestions = quizData.questions?.length || submission.totalQuestions || submission.total_questions || 0;
+        const submittedAnswers = submission.answers || {};
+        let correctCount = 0;
+
+        if (Array.isArray(quizData.questions) && quizData.questions.length > 0) {
+          for (const q of quizData.questions) {
+            const qId = String(q._id || q.id || '');
+            const submitted = submittedAnswers[qId];
+            const correct = q.correctAnswer;
+            const submittedNum = Number(submitted);
+            const correctNum = Number(correct);
+            const isIndexMatch = Number.isFinite(submittedNum) && Number.isFinite(correctNum) && submittedNum === correctNum;
+            const isTextMatch = typeof submitted === 'string' && submitted === correct;
+            if (qId && (isIndexMatch || isTextMatch)) {
+              correctCount += 1;
+            }
+          }
+        }
+
+        const submissionScore = Number.isFinite(Number(submission.score)) ? Number(submission.score) : null;
+        const score = Number.isFinite(Number(submission.correctAnswers))
+          ? Number(submission.correctAnswers)
+          : Number.isFinite(Number(submission.correct_answers))
+          ? Number(submission.correct_answers)
+          : correctCount;
+        const percentage = Number.isFinite(Number(submission.percentage))
+          ? Number(submission.percentage)
+          : (submissionScore !== null ? Math.round(submissionScore) : (totalQuestions ? Math.round((score / totalQuestions) * 100) : 0));
+        const timeSpentSeconds = submission.timeSpent ?? submission.time_spent ?? 0;
+        const timeTaken = timeSpentSeconds
+          ? `${Math.floor(timeSpentSeconds / 60)}:${String(timeSpentSeconds % 60).padStart(2, '0')}`
+          : 'N/A';
+
+        setResult({
+          score,
+          totalQuestions,
+          correctAnswers: score,
+          wrongAnswers: Math.max(0, totalQuestions - score),
+          timeTaken,
+          percentage,
+          violations: [],
+          proctoringScore: submission.proctoringReport?.score ?? 0,
+          proctoringDecision: submission.proctoringReport?.decision ?? 'CLEAN',
+          quizTitle: quizData.title,
+          submittedAt: submission.submittedAt || submission.created_at || null,
+        });
         setLoading(false);
         return;
       }
@@ -44,17 +99,19 @@ const ExamResultPage = () => {
       const violationsData = violationsRes.ok ? await violationsRes.json() : { violations: [] };
 
       setResult({
-        score: 0,
+        // If only violations exist, keep proctoring trail but avoid fake marks.
+        score: null,
         totalQuestions: quizData.questions?.length || 0,
-        correctAnswers: 0,
-        wrongAnswers: 0,
+        correctAnswers: null,
+        wrongAnswers: null,
         timeTaken: 'N/A',
-        percentage: 0,
+        percentage: null,
         violations: (violationsData.violations || []).map(v => ({
           type: v.violation_type,
           timestamp: new Date(v.timestamp).toLocaleTimeString(),
           severity: v.severity,
         })),
+        quizTitle: quizData.title,
       });
       setLoading(false);
     } catch (err) {
