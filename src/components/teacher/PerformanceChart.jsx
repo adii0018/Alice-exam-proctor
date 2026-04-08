@@ -3,7 +3,8 @@ import { TrendingUp, Award, CheckCircle, BarChart3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export default function PerformanceChart() {
+export default function PerformanceChart(props) {
+  const metrics = props?.metrics ?? null;
   const { darkMode } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
   const [animatedValues, setAnimatedValues] = useState({
@@ -12,23 +13,24 @@ export default function PerformanceChart() {
     completion: 0
   });
 
-  const metrics = [
+  const safe = metrics || {};
+  const metricCards = [
     { 
-      label: 'Average Score', value: '78.5%', targetValue: 78.5, animatedKey: 'score',
+      label: 'Average Score', value: `${Number(safe.average_score || 0).toFixed(1)}%`, targetValue: Number(safe.average_score || 0), animatedKey: 'score',
       icon: TrendingUp, gradient: 'from-blue-500 to-cyan-500', shadowColor: 'shadow-blue-500/50',
-      trend: '+5.2%',
+      trend: '', // trend text intentionally omitted
       darkColor: '#388bfd', darkBg: 'rgba(56,139,253,0.08)', darkBorder: 'rgba(56,139,253,0.2)',
     },
     { 
-      label: 'Pass Rate', value: '85.2%', targetValue: 85.2, animatedKey: 'pass',
+      label: 'Pass Rate', value: `${Number(safe.pass_rate || 0).toFixed(1)}%`, targetValue: Number(safe.pass_rate || 0), animatedKey: 'pass',
       icon: CheckCircle, gradient: 'from-green-500 to-emerald-500', shadowColor: 'shadow-green-500/50',
-      trend: '+3.8%',
+      trend: '',
       darkColor: '#3fb950', darkBg: 'rgba(46,160,67,0.08)', darkBorder: 'rgba(46,160,67,0.2)',
     },
     { 
-      label: 'Completion Rate', value: '92.8%', targetValue: 92.8, animatedKey: 'completion',
+      label: 'Completion Rate', value: `${Number(safe.completion_rate || 0).toFixed(1)}%`, targetValue: Number(safe.completion_rate || 0), animatedKey: 'completion',
       icon: Award, gradient: 'from-purple-500 to-pink-500', shadowColor: 'shadow-purple-500/50',
-      trend: '+7.1%',
+      trend: '',
       darkColor: '#a371f7', darkBg: 'rgba(163,113,247,0.08)', darkBorder: 'rgba(163,113,247,0.2)',
     },
   ];
@@ -39,7 +41,7 @@ export default function PerformanceChart() {
     const steps = 60;
     const interval = duration / steps;
 
-    metrics.forEach(metric => {
+    metricCards.forEach(metric => {
       let current = 0;
       const increment = metric.targetValue / steps;
       
@@ -55,7 +57,7 @@ export default function PerformanceChart() {
         }));
       }, interval);
     });
-  }, []);
+  }, [metricCards]);
 
   return (
     <div
@@ -82,7 +84,7 @@ export default function PerformanceChart() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {metrics.map((metric, index) => {
+        {metricCards.map((metric, index) => {
           const Icon = metric.icon;
           const displayValue = `${animatedValues[metric.animatedKey]}%`;
 
@@ -148,7 +150,7 @@ export default function PerformanceChart() {
                     backgroundColor: 'rgba(46,160,67,0.1)', color: '#3fb950',
                     border: '1px solid rgba(46,160,67,0.3)',
                   } : {}} className={darkMode ? '' : 'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700'}>
-                    ↑ {metric.trend}
+                    {metric.trend ? `↑ ${metric.trend}` : '—'}
                   </span>
                 </div>
               </div>
@@ -172,7 +174,7 @@ export default function PerformanceChart() {
           Detailed Breakdown <span>📈</span>
         </h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {metrics.map((metric, index) => (
+          {metricCards.map((metric, index) => (
             <motion.div
               key={metric.label}
               initial={{ opacity: 0, x: -20 }}

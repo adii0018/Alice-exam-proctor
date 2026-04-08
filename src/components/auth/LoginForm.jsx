@@ -28,6 +28,7 @@ const LoginForm = ({ onToggle }) => {
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [role, setRole] = useState('student')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const { login } = useAuth()
@@ -38,7 +39,7 @@ const LoginForm = ({ onToggle }) => {
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const user = await googleLogin(tokenResponse.access_token, 'student')
+        const user = await googleLogin(tokenResponse.access_token, role)
         toast.success(`Welcome, ${user.name}`)
         if (user.role === 'admin') navigate('/admin')
         else if (user.role === 'student') navigate('/student')
@@ -80,6 +81,7 @@ const LoginForm = ({ onToggle }) => {
   }
 
   const fillDemo = (role) => {
+    setRole(role)
     setEmail(role === 'student' ? 'student1@example.com' : 'teacher1@example.com')
     setPassword('password123')
     setErrors({})
@@ -163,6 +165,20 @@ const LoginForm = ({ onToggle }) => {
       </button>
 
       {/* Google Sign In */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {[
+          { val: 'student', label: 'Student', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> },
+          { val: 'teacher', label: 'Teacher', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
+        ].map(r => {
+          const active = role === r.val
+          return (
+            <button key={r.val} type="button" onClick={() => setRole(r.val)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '8px', background: active ? 'rgba(46,160,67,0.1)' : '#0d1117', border: `1px solid ${active ? '#2ea043' : '#30363d'}`, borderRadius: 6, color: active ? '#3fb950' : '#8b949e', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+              {r.icon} {r.label}
+            </button>
+          )
+        })}
+      </div>
       <button type="button" onClick={() => handleGoogleLogin()}
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b949e'; e.currentTarget.style.background = '#161b22' }}

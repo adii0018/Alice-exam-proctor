@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import auth, quiz, flag, ai, violation, admin_api, contact
+from .views import auth, quiz, flag, ai, violation, admin_api, contact, student_dashboard, stats, students
 
 urlpatterns = [
     # Auth
@@ -34,6 +34,9 @@ urlpatterns = [
     
     # Contact
     path('contact/', contact.send_contact_email, name='contact'),
+
+    # Student Dashboard
+    path('student/dashboard/', student_dashboard.student_dashboard, name='student_dashboard'),
     
     # Super Admin
     path('admin/dashboard-stats/', admin_api.dashboard_stats, name='admin_dashboard_stats'),
@@ -44,4 +47,14 @@ urlpatterns = [
     path('admin/settings/', admin_api.system_settings, name='admin_system_settings'),
     path('admin/exams/', admin_api.exams_list, name='admin_exams_list'),
     path('admin/exams/<str:exam_id>/<str:action>/', admin_api.exam_action, name='admin_exam_action'),
+
+    # Teacher stats
+    path('teacher/dashboard-stats/', stats.get_dashboard_stats, name='teacher_dashboard_stats'),
+    path('teacher/performance-stats/', stats.get_performance_stats, name='teacher_performance_stats'),
+    path('teacher/quizzes/<str:quiz_id>/stats/', stats.get_quiz_stats, name='teacher_quiz_stats'),
+
+    # Teacher students
+    path('teacher/students/', students.list_students, name='teacher_students'),
+    path('teacher/students/<str:student_id>/', students.get_student_details, name='teacher_student_details'),
+    path('teacher/students/count/', students.get_students_count, name='teacher_students_count'),
 ]

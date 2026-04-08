@@ -2,14 +2,53 @@ import { motion } from 'framer-motion'
 import { FiTrendingUp, FiAward, FiClock, FiTarget } from 'react-icons/fi'
 import { useTheme } from '../../contexts/ThemeContext'
 
-const QuickStats = () => {
+const QuickStats = ({ stats = null }) => {
   const { darkMode } = useTheme()
 
-  const stats = [
-    { icon: FiAward, label: 'Total Exams', value: '12', change: '+3 this month', color: '#3b82f6', darkBg: 'rgba(59,130,246,0.08)', darkBorder: 'rgba(59,130,246,0.2)' },
-    { icon: FiTrendingUp, label: 'Average Score', value: '87%', change: '+5% improvement', color: '#2ea043', darkBg: 'rgba(46,160,67,0.08)', darkBorder: 'rgba(46,160,67,0.2)' },
-    { icon: FiTarget, label: 'Success Rate', value: '92%', change: 'Excellent', color: '#a371f7', darkBg: 'rgba(163,113,247,0.08)', darkBorder: 'rgba(163,113,247,0.2)' },
-    { icon: FiClock, label: 'Study Hours', value: '24h', change: 'This week', color: '#f0883e', darkBg: 'rgba(240,136,62,0.08)', darkBorder: 'rgba(240,136,62,0.2)' },
+  const safe = stats || {
+    total_attempts: 0,
+    average_score: 0,
+    pass_rate: 0,
+    total_time_hours: 0,
+  }
+
+  const cards = [
+    {
+      icon: FiAward,
+      label: 'Total Exams',
+      value: String(safe.total_attempts),
+      change: safe.total_attempts === 1 ? '1 attempt' : `${safe.total_attempts} attempts`,
+      color: '#3b82f6',
+      darkBg: 'rgba(59,130,246,0.08)',
+      darkBorder: 'rgba(59,130,246,0.2)',
+    },
+    {
+      icon: FiTrendingUp,
+      label: 'Average Score',
+      value: `${Number(safe.average_score || 0).toFixed(1)}%`,
+      change: 'Average across attempts',
+      color: '#2ea043',
+      darkBg: 'rgba(46,160,67,0.08)',
+      darkBorder: 'rgba(46,160,67,0.2)',
+    },
+    {
+      icon: FiTarget,
+      label: 'Success Rate',
+      value: `${Number(safe.pass_rate || 0).toFixed(1)}%`,
+      change: 'Score >= 60%',
+      color: '#a371f7',
+      darkBg: 'rgba(163,113,247,0.08)',
+      darkBorder: 'rgba(163,113,247,0.2)',
+    },
+    {
+      icon: FiClock,
+      label: 'Study Hours',
+      value: `${Number(safe.total_time_hours || 0).toFixed(1)}h`,
+      change: 'Total time spent',
+      color: '#f0883e',
+      darkBg: 'rgba(240,136,62,0.08)',
+      darkBorder: 'rgba(240,136,62,0.2)',
+    },
   ]
 
   const card = (stat, index) => {
@@ -62,7 +101,7 @@ const QuickStats = () => {
       </div>
 
       <div className="space-y-4">
-        {stats.map((stat, index) => card(stat, index))}
+        {cards.map((stat, index) => card(stat, index))}
       </div>
 
       {/* Motivational Message */}
@@ -90,7 +129,7 @@ const QuickStats = () => {
           <div>
             <h4 style={{ fontSize: '13px', fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>Keep it up!</h4>
             <p style={{ fontSize: '12px', color: darkMode ? '#8b949e' : '#4b5563', marginTop: '4px' }}>
-              You're performing great this month. Stay consistent to achieve your goals!
+              Your stats update based on your own submissions—stay consistent to improve.
             </p>
           </div>
         </div>

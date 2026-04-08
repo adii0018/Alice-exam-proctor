@@ -5,7 +5,7 @@ from django.views.decorators.http import require_http_methods
 from bson import ObjectId
 from datetime import datetime
 from ..models import Violation, User, Quiz
-from ..authentication import require_auth
+from ..authentication import require_auth, require_role
 
 
 def serialize_violation(violation):
@@ -98,17 +98,51 @@ def list_violations(request):
         quiz_id = request.GET.get('quiz_id')
         student_id = request.GET.get('student_id')
         
-        if quiz_id:
-            violations = Violation.find_by_quiz(quiz_id)
-        elif student_id:
-            violations = Violation.find_by_student(student_id)
-        else:
-            # Teachers can see all recent violations
-            if request.user.get('role') == 'teacher':
-                violations = Violation.find_recent(limit=100)
+        role = request.user.get('role')
+
+        if role == 'student':
+            # Students can only see their own violations, even if they pass quiz_id/student_id.
+            effective_student_id = request.user['_id']
+            if quiz_id:
+                violations = Violation.find_by_student(effective_student_id, quiz_id)
             else:
-                # Students can only see their own
-                violations = Violation.find_by_student(request.user['_id'])
+                violations = Violation.find_by_student(effective_student_id)
+
+        elif role == 'teacher':
+            from ..models import quizzes_collection, violations_collection
+
+            teacher_id = request.user['_id']
+            teacher_quiz_ids = [
+                q['_id'] for q in quizzes_collection.find({'teacher_id': teacher_id}, {'_id': 1})
+            ]
+
+            if quiz_id:
+                # Ensure the quiz is owned by this teacher.
+                quiz = Quiz.find_by_id(quiz_id)
+                if not quiz or str(quiz.get('teacher_id')) != str(teacher_id):
+                    return JsonResponse({'error': 'Forbidden'}, status=403)
+                violations = Violation.find_by_quiz(quiz_id)
+
+            elif student_id:
+                violations = list(
+                    violations_collection.find(
+                        {
+                            'student_id': ObjectId(student_id),
+                            'quiz_id': {'$in': teacher_quiz_ids},
+                        }
+                    ).sort('timestamp', -1)
+                )
+
+            else:
+                violations = list(
+                    violations_collection.find({'quiz_id': {'$in': teacher_quiz_ids}})
+                    .sort('timestamp', -1)
+                    .limit(100)
+                )
+
+        else:
+            # Default-safe: only return authenticated user violations.
+            violations = Violation.find_by_student(request.user['_id'])
         
         return JsonResponse({
             'violations': [serialize_violation(v) for v in violations]
@@ -120,7 +154,7 @@ def list_violations(request):
 
 @csrf_exempt
 @require_http_methods(["GET"])
-@require_auth
+@require_role('teacher')
 def get_quiz_violations_by_student(request, quiz_id):
     """
     Get all violations for a quiz grouped by student with names
@@ -128,6 +162,10 @@ def get_quiz_violations_by_student(request, quiz_id):
     """
     try:
         from ..models import users_collection, violations_collection
+        quiz = Quiz.find_by_id(quiz_id)
+        if not quiz or str(quiz.get('teacher_id')) != str(request.user['_id']):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
         violations = Violation.find_by_quiz(quiz_id)
 
         # Group by student

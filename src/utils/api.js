@@ -40,6 +40,11 @@ export const violationAPI = {
   getByQuizStudents: (quizId) => api.get(`/violations/quiz/${quizId}/students/`),
 }
 
+// Student scoped dashboard
+export const studentAPI = {
+  dashboard: () => api.get('/student/dashboard/'),
+}
+
 // User/Profile APIs
 export const userAPI = {
   getCurrentUser: () => api.get('/auth/me/'),

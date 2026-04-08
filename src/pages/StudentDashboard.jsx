@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import DashboardSidebar from '../components/student/DashboardSidebar'
 import DashboardNavbar from '../components/student/DashboardNavbar'
@@ -14,6 +14,7 @@ import QuizInterface from '../components/student/QuizInterface'
 import { useTheme } from '../contexts/ThemeContext'
 import AliceAIChat from '../components/ai/AliceAIChat'
 import { FaLeaf } from 'react-icons/fa'
+import { studentAPI } from '../utils/api'
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -50,6 +51,10 @@ const StudentDashboard = () => {
   const [showAliceChat, setShowAliceChat] = useState(false)
   const { darkMode } = useTheme()
 
+  const [dashboard, setDashboard] = useState(null)
+  const [dashboardLoading, setDashboardLoading] = useState(false)
+  const [dashboardError, setDashboardError] = useState(null)
+
   // Handle quiz start from code entry
   const handleQuizStart = (quiz) => {
     setActiveQuiz(quiz)
@@ -65,6 +70,33 @@ const StudentDashboard = () => {
   const handleJoinExam = () => {
     setShowCodeEntry(true)
   }
+
+  useEffect(() => {
+    // Only fetch dashboard when the user is on the dashboard screen.
+    if (activeQuiz || showCodeEntry) return
+
+    let cancelled = false
+    const run = async () => {
+      setDashboardLoading(true)
+      setDashboardError(null)
+      try {
+        const res = await studentAPI.dashboard()
+        if (cancelled) return
+        setDashboard(res.data || null)
+      } catch (e) {
+        if (cancelled) return
+        setDashboardError(e)
+      } finally {
+        if (cancelled) return
+        setDashboardLoading(false)
+      }
+    }
+
+    run()
+    return () => {
+      cancelled = true
+    }
+  }, [activeQuiz, showCodeEntry])
 
   // If quiz is active, show quiz interface
   if (activeQuiz) {
@@ -146,7 +178,17 @@ const StudentDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <WelcomeCard />
+              {dashboardLoading && !dashboard && (
+                <p style={{ color: darkMode ? '#8b949e' : '#6b7280', marginBottom: 12 }}>
+                  Loading your dashboard...
+                </p>
+              )}
+              {dashboardError && (
+                <p style={{ color: '#f85149', marginBottom: 12 }}>
+                  Failed to load dashboard data.
+                </p>
+              )}
+              <WelcomeCard stats={dashboard?.stats || null} />
             </motion.div>
 
             {/* Join Exam Card - Prominent */}
@@ -167,7 +209,7 @@ const StudentDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <UpcomingExams />
+                  <UpcomingExams exams={dashboard?.available_exams || []} />
                 </motion.div>
 
                 <motion.div
@@ -175,7 +217,10 @@ const StudentDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                  <PerformanceSummary />
+                  <PerformanceSummary
+                    dashboardStats={dashboard?.stats || null}
+                    activityScores={dashboard?.stats?.activity_scores_last_7_days || []}
+                  />
                 </motion.div>
               </div>
 
@@ -186,7 +231,7 @@ const StudentDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
-                  <QuickStats />
+                  <QuickStats stats={dashboard?.stats || null} />
                 </motion.div>
 
                 <motion.div
@@ -194,7 +239,7 @@ const StudentDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
                 >
-                  <RecentViolations />
+                  <RecentViolations violations={dashboard?.recent_alerts || []} />
                 </motion.div>
               </div>
             </div>

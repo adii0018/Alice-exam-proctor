@@ -3,7 +3,7 @@ import { FiTrendingUp, FiAward, FiTarget, FiClock } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 
-const PerformanceSummary = () => {
+const PerformanceSummary = ({ dashboardStats = null, activityScores = [] }) => {
   const { darkMode } = useTheme()
   const [hoveredCard, setHoveredCard] = useState(null)
   const [animatedValues, setAnimatedValues] = useState({
@@ -13,14 +13,22 @@ const PerformanceSummary = () => {
     time: 0
   })
 
+  const safeStats = dashboardStats || {}
+  const totalAttempts = Number(safeStats.total_attempts || 0)
+  const completionRate = Number(safeStats.completion_rate || 0)
+  const averageScore = Number(safeStats.average_score || 0)
+  const totalTimeHours = Number(safeStats.total_time_hours || 0)
+  const activityHeightsRaw = Array.isArray(activityScores) && activityScores.length ? activityScores : safeStats.activity_scores_last_7_days
+  const activityHeights = Array.from({ length: 7 }, (_, i) => Number(activityHeightsRaw?.[i] || 0))
+
   const stats = [
     {
       icon: FiTarget,
       label: 'Exams Attempted',
-      value: '12',
+      value: String(totalAttempts),
       animatedKey: 'exams',
-      targetValue: 12,
-      change: '+3 this month',
+      targetValue: totalAttempts,
+      change: 'Based on your attempts',
       color: 'blue',
       gradient: 'from-blue-500 to-blue-600',
       shadowColor: 'shadow-blue-500/50',
@@ -31,10 +39,10 @@ const PerformanceSummary = () => {
     {
       icon: FiAward,
       label: 'Completion Rate',
-      value: '94%',
+      value: `${completionRate}%`,
       animatedKey: 'completion',
-      targetValue: 94,
-      change: '+5% from last month',
+      targetValue: completionRate,
+      change: 'Based on available exams',
       color: 'purple',
       gradient: 'from-purple-500 to-purple-600',
       shadowColor: 'shadow-purple-500/50',
@@ -45,10 +53,10 @@ const PerformanceSummary = () => {
     {
       icon: FiTrendingUp,
       label: 'Average Score',
-      value: '87%',
+      value: `${averageScore}%`,
       animatedKey: 'score',
-      targetValue: 87,
-      change: '+2% improvement',
+      targetValue: averageScore,
+      change: 'From your submissions',
       color: 'green',
       gradient: 'from-green-500 to-green-600',
       shadowColor: 'shadow-green-500/50',
@@ -59,10 +67,10 @@ const PerformanceSummary = () => {
     {
       icon: FiClock,
       label: 'Total Time',
-      value: '24h',
+      value: `${totalTimeHours}h`,
       animatedKey: 'time',
-      targetValue: 24,
-      change: 'Last 30 days',
+      targetValue: totalTimeHours,
+      change: 'Total time spent',
       color: 'orange',
       gradient: 'from-orange-500 to-orange-600',
       shadowColor: 'shadow-orange-500/50',
@@ -248,7 +256,7 @@ const PerformanceSummary = () => {
           </div>
 
           <div className="flex items-end justify-between h-40 gap-3 relative">
-            {[65, 78, 82, 75, 88, 92, 87].map((height, i) => (
+            {activityHeights.map((height, i) => (
               <motion.div
                 key={i}
                 className="flex-1 relative group cursor-pointer"

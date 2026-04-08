@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, FileText, Users, MonitorPlay, AlertTriangle } from 'lucide-react';
-import { quizAPI, flagAPI } from '../utils/api';
+import api, { quizAPI, flagAPI } from '../utils/api';
 import toast from 'react-hot-toast';
 import TeacherLayout from '../components/teacher/TeacherLayout';
 import StatCard from '../components/teacher/StatCard';
@@ -22,6 +22,11 @@ export default function TeacherDashboardNew() {
   // Real data from backend
   const [quizzes, setQuizzes] = useState([]);
   const [flags, setFlags] = useState([]);
+  const [performanceMetrics, setPerformanceMetrics] = useState({
+    average_score: 0,
+    pass_rate: 0,
+    completion_rate: 0,
+  });
   const [stats, setStats] = useState({
     totalExams: 0,
     activeExams: 0,
@@ -36,23 +41,52 @@ export default function TeacherDashboardNew() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [quizzesRes, flagsRes] = await Promise.all([
+      const [quizzesRes, flagsRes, dashboardStatsRes] = await Promise.all([
         quizAPI.getAll(),
-        flagAPI.getAll()
+        flagAPI.getAll(),
+        api.get('/teacher/dashboard-stats/'),
       ]);
       
       setQuizzes(quizzesRes.data);
       setFlags(flagsRes.data);
       
-      // Calculate stats
       setStats({
-        totalExams: quizzesRes.data.length,
-        activeExams: quizzesRes.data.filter(q => q.status === 'active').length,
-        totalStudents: 156, // This would come from backend
-        flaggedViolations: flagsRes.data.filter(f => f.status !== 'resolved').length
+        totalExams: dashboardStatsRes.data.total_exams,
+        activeExams: dashboardStatsRes.data.active_exams,
+        totalStudents: dashboardStatsRes.data.total_students,
+        flaggedViolations: dashboardStatsRes.data.flagged_violations,
       });
+
+      const { total_exams, total_students, total_submissions, average_score, pass_rate } = dashboardStatsRes.data
+      const expected = (total_exams || 0) * (total_students || 0)
+      const completion_rate = expected > 0 ? (total_submissions / expected) * 100 : 0
+      setPerformanceMetrics({
+        average_score: Number(average_score || 0),
+        pass_rate: Number(pass_rate || 0),
+        completion_rate: Number(Math.min(100, completion_rate || 0)),
+      })
     } catch (error) {
-      toast.error('Failed to load dashboard data');
+      const status = error?.response?.status;
+      const msg =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to load dashboard data';
+
+      // Helpful, actionable auth messages
+      if (status === 401) {
+        toast.error('Session expired. Please sign in again.');
+        window.location.href = '/';
+        return;
+      }
+      if (status === 403) {
+        toast.error('Teacher access required. Please log in as a teacher.');
+        return;
+      }
+
+      toast.error(`Failed to load dashboard data${status ? ` (${status})` : ''}`);
+      // Keep a detailed log for debugging
+      console.error('Teacher dashboard fetch failed:', { status, msg, error });
     } finally {
       setLoading(false);
     }
@@ -78,8 +112,8 @@ export default function TeacherDashboardNew() {
     id: quiz._id,
     name: quiz.title,
     code: quiz.code,
-    status: quiz.status === 'active' ? 'Live' : 'Draft',
-    date: new Date(quiz.createdAt).toLocaleString(),
+    status: quiz.is_active ? 'Live' : 'Draft',
+    date: quiz.created_at ? new Date(quiz.created_at).toLocaleString() : '',
     duration: `${quiz.duration} min`,
     students: quiz.submissions?.length || 0,
     is_active: quiz.is_active || false
@@ -87,7 +121,7 @@ export default function TeacherDashboardNew() {
 
   // Get live exams
   const liveExams = filteredQuizzes
-    .filter(q => q.status === 'active')
+    .filter(q => q.is_active === true)
     .map(quiz => ({
       id: quiz._id,
       name: quiz.title,
@@ -254,7 +288,7 @@ export default function TeacherDashboardNew() {
         )}
 
         {/* Performance Insights */}
-        <PerformanceChart />
+        <PerformanceChart metrics={performanceMetrics} />
 
         {/* Recent Violations */}
         {violations.length > 0 && (
