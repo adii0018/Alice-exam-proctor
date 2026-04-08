@@ -1,48 +1,185 @@
-# 🍃 Alice Exam Proctor — AI-Powered Online Proctoring System
+# Alice Exam Proctor — AI-Powered Online Proctoring System
 
-A modern exam proctoring platform with real-time AI monitoring, violation detection, and a clean responsive UI. Built with React + Django.
+A full-stack exam proctoring platform with real-time AI monitoring, violation detection, and role-based dashboards for students, teachers, and admins.
 
-🌐 **Live Demo:** [https://alice-exam-proctor01.vercel.app](https://alice-exam-proctor01.vercel.app)  
+🌐 **Live Demo:** [https://alice-exam-proctor01.vercel.app](https://alice-exam-proctor01.vercel.app)
 ⚙️ **Backend API:** [https://alice-exam-proctor.onrender.com](https://alice-exam-proctor.onrender.com)
 
 ---
 
-## ✨ Features
+## Core Features
 
-- **Role-based Auth** — Student, Teacher, and Admin portals
-- **Google OAuth** — Sign in / Register with Google
-- **AI Proctoring** — Real-time face detection, gaze tracking, head pose analysis
-- **Multi-Face Detection** — Flags multiple people in webcam feed
-- **Live Monitoring** — WebSocket-based real-time teacher dashboard
-- **Alice AI Assistant** — Built-in Gemini-powered chatbot
-- **Quiz Management** — Create, manage, and conduct online exams
-- **Violation Logging** — Full audit trail stored in MongoDB
-- **Responsive UI** — Works on all devices
-- **Dynamic Avatars** — DiceBear-powered unique user avatars
+### Authentication & Users
+- JWT-based auth with 7-day token expiry
+- Google OAuth 2.0 sign-in / registration
+- Role-based access control — Student, Teacher, Admin
+- bcrypt password hashing
+- Profile management (name, bio, department, avatar)
+
+### AI Proctoring (Client-Side)
+- Real-time face detection via `face-api.js`
+- Multi-face detection — flags when more than one person is in frame
+- Gaze tracking and head pose analysis
+- Audio monitoring with risk level indicator
+- Audio calibration modal for environment setup
+- Violation events sent to backend via WebSocket in real-time
+
+### Quiz / Exam System
+- Teachers create quizzes with MCQ questions, duration, and descriptions
+- Auto-generated unique 6-character join codes
+- Students join exams via code entry
+- Active/inactive toggle per quiz
+- Timed exam interface with auto-submit on timeout
+- Score calculation and proctoring report attached to each submission
+
+### Real-Time Monitoring (WebSocket)
+- `ProctoringConsumer` — per-quiz channel for violation streaming
+- `TeacherMonitoringConsumer` — teacher subscribes to live violation feed
+- Violations broadcast to all connected monitors instantly
+- Ping/pong heartbeat support
+- Backed by Django Channels + Redis
+
+### Violation System
+- Violations stored in MongoDB with type, severity, face count, timestamp, metadata
+- Types: `MULTIPLE_FACES`, gaze deviation, audio anomaly, etc.
+- Severity levels: low / medium / high
+- Per-quiz and per-student violation queries
+- Teacher can view violations per quiz with student breakdown
+- Admin can view all violations across the platform
+
+### Dashboards
+
+**Student**
+- Overview: upcoming exams, recent violations, performance summary
+- My Exams — history of completed quizzes with scores
+- Join Exam — enter quiz code to start
+- Violations — personal violation log
+- Profile & Settings
+
+**Teacher**
+- Dashboard stats — total quizzes, students, submissions, violations
+- Exam management — create, edit, toggle active, delete quizzes
+- Student management — view enrolled students and their details
+- Live Monitoring — real-time violation feed via WebSocket
+- Results — submission scores and proctoring reports
+- Violations — per-quiz violation breakdown
+- Performance charts via Recharts
+
+**Super Admin**
+- Platform-wide stats dashboard
+- User management — list, activate/deactivate, role changes
+- Exam management — view and act on all exams
+- Violations management — full violation log
+- Audit logs
+- System settings
+
+### Alice AI Assistant
+- Built-in chat powered by Google Gemini 1.5 Flash
+- Maintains last 5 messages as conversation context
+- Falls back to demo mode if no API key is configured
+- Accessible from within the platform UI
+
+### UI / UX
+- React 18 + Vite + Tailwind CSS
+- Framer Motion animations
+- Recharts for data visualization
+- DiceBear avatars — unique per user, no image uploads needed
+- Dark/light theme via ThemeContext
+- Responsive layout with mobile bottom nav for student and teacher
+- Toast notifications via react-hot-toast
+- Lucide + React Icons icon sets
 
 ---
 
-## 🛠️ Tech Stack
+## Architecture
+
+```
+alice-exam-proctor/
+├── src/                        # React frontend (Vite)
+│   ├── pages/
+│   │   ├── student/            # MyExams, ExamPage, Violations, Profile, Settings
+│   │   ├── teacher/            # Exams, Students, LiveMonitoring, Results, Violations
+│   │   └── admin/              # SuperAdminDashboard, UsersManagement, ExamsManagement, etc.
+│   ├── components/
+│   │   ├── exam/               # ProctorPanel, QuestionPanel, GazeWarning, AudioRiskIndicator, etc.
+│   │   ├── student/            # Dashboard widgets, QuizInterface, QuizResult
+│   │   ├── teacher/            # QuizCreator, ExamTable, FlagMonitor, LiveMonitorCard
+│   │   ├── admin/              # StatCard, ViolationChart, LiveActivityFeed, SystemHealthMonitor
+│   │   ├── ai/                 # AliceAIChat
+│   │   └── common/             # ProtectedRoute, UserAvatar, PremiumFooter, SoundSettings
+│   ├── contexts/               # AuthContext, ThemeContext
+│   ├── hooks/                  # useViolationWebSocket
+│   └── App.jsx                 # Route definitions with role-based ProtectedRoute
+│
+└── django_backend/             # Django + Channels backend
+    ├── api/
+    │   ├── models.py           # MongoDB collections: users, quizzes, submissions, flags, violations
+    │   ├── authentication.py   # JWT encode/decode, bcrypt, require_auth / require_role decorators
+    │   ├── consumers.py        # ProctoringConsumer, TeacherMonitoringConsumer (WebSocket)
+    │   ├── routing.py          # WebSocket URL routing
+    │   └── views/
+    │       ├── auth.py         # register, login, google_auth, get_current_user, update_profile
+    │       ├── quiz.py         # CRUD, toggle-active, submit, get-by-code
+    │       ├── violation.py    # create, list, stats, per-student breakdown
+    │       ├── flag.py         # create, list, update status
+    │       ├── ai.py           # Gemini chat endpoint
+    │       ├── stats.py        # Teacher dashboard & performance stats
+    │       ├── students.py     # Teacher student list & details
+    │       ├── student_dashboard.py
+    │       ├── admin_api.py    # Admin CRUD for users, exams, violations, audit logs
+    │       └── contact.py      # Email via SMTP
+    └── exam_proctoring/
+        ├── settings.py         # Django config, MongoDB, Redis, CORS, security headers
+        ├── asgi.py             # ASGI entry point for Daphne + Channels
+        └── urls.py             # Root URL config
+```
+
+### Data Flow
+
+```
+Student Browser
+  │
+  ├── REST (Axios) ──────────────► Django REST API ──► MongoDB
+  │                                                        (users, quizzes, submissions, violations)
+  │
+  └── WebSocket ─────────────────► Django Channels ──► Redis Channel Layer
+                                        │
+                                        └── Broadcast ──► Teacher Browser (live monitoring)
+```
+
+### Key Design Decisions
+- MongoDB via PyMongo (no ORM) — flexible schema for proctoring metadata
+- SQLite kept only for Django admin session/auth tables
+- Redis as the channel layer for WebSocket group messaging
+- All AI/ML runs client-side (face-api.js) — no video sent to server
+- JWT stored client-side, validated per-request via `require_auth` / `require_role` decorators
+
+---
+
+## Tech Stack
 
 | Layer | Tech |
 |---|---|
-| Frontend | React 18, Vite, React Router, Axios |
-| Backend | Django 4.2, Django REST Framework, Django Channels |
-| Database | MongoDB (PyMongo) |
-| Auth | JWT + Google OAuth |
-| AI/ML | face-api.js, OpenCV.js, Gemini AI |
-| Real-time | WebSockets via Django Channels + Redis |
+| Frontend | React 18, Vite, React Router v6, Axios |
+| Styling | Tailwind CSS, Framer Motion |
+| Charts | Recharts |
+| Backend | Django 4.2, Django REST Framework |
+| Real-time | Django Channels, Daphne, Redis |
+| Database | MongoDB (PyMongo) + SQLite (Django admin) |
+| Auth | JWT (PyJWT), bcrypt, Google OAuth 2.0 |
+| AI/ML | face-api.js (client), Google Gemini 1.5 Flash (server) |
 | Deployment | Vercel (frontend), Render (backend) |
 
 ---
 
-## � Local Setup
+## Local Setup
 
 ### Backend
 ```bash
 cd django_backend
 python -m venv venv
 venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS/Linux
 pip install -r requirements.txt
 copy .env.example .env       # fill in your values
 python init_database.py
@@ -70,67 +207,30 @@ VITE_GOOGLE_CLIENT_ID=your_google_client_id
 SECRET_KEY=your_secret_key
 DEBUG=True
 MONGODB_URI=your_mongodb_uri
+MONGODB_DB=alice_exam_proctor
 REDIS_URL=redis://localhost:6379
 GEMINI_API_KEY=your_gemini_key
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+EMAIL_HOST_USER=your_email
+EMAIL_HOST_PASSWORD=your_email_password
 ```
 
 ---
 
-## 🎨 Avatar System
-
-Alice uses [DiceBear](https://dicebear.com) to generate unique, consistent avatars for each user based on their username or email. No image uploads needed!
-
-### Features
-- **10+ Avatar Styles** — From professional to playful
-- **Consistent Generation** — Same username = same avatar
-- **Zero Storage** — Generated via API on-the-fly
-- **Fallback Support** — Shows initials if API fails
-- **Customizable** — Size, border, style options
-
-### Usage Example
-```jsx
-import UserAvatar from './components/common/UserAvatar';
-import { AVATAR_STYLES } from './utils/avatarGenerator';
-
-<UserAvatar 
-  user={user} 
-  size={64} 
-  style={AVATAR_STYLES.INITIALS}
-  showBorder={true}
-/>
-```
-
-### Available Styles
-- `INITIALS` — Text-based (default)
-- `LORELEI` — Illustrated characters
-- `AVATAAARS` — Cartoon style
-- `BOTTTS` — Robots
-- `PIXEL_ART` — 8-bit retro
-- `ADVENTURER` — Adventure characters
-- And more...
-
-Visit `/avatar-showcase` (when implemented in routes) to see all styles in action!
-
----
-
-## 🎮 Demo Credentials
+## Demo Credentials
 
 | Role | Email | Password |
 |---|---|---|
 | Student | student1@example.com | password123 |
 | Teacher | teacher1@example.com | password123 |
 
-Or just use **Continue with Google** on the auth page.
+Or use **Continue with Google** on the auth page.
 
 ---
 
-## 👤 Author
+## Author
 
-**Aditya Singh Rajput**  
-📧 opg21139@gmail.com
-
----
+**Aditya Singh Rajput** — opg21139@gmail.com
 
 Made with ❤️ by the Alice Team
