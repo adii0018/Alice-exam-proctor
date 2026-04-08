@@ -131,13 +131,14 @@ class Submission:
 
 class Flag:
     @staticmethod
-    def create(quiz_id, student_id, flag_type, severity, timestamp):
+    def create(quiz_id, student_id, flag_type, severity, timestamp, metadata=None):
         flag = {
             'quiz_id': quiz_id,
             'student_id': student_id,
             'type': flag_type,
             'severity': severity,
             'timestamp': timestamp,
+            'metadata': metadata or {},
             'status': 'pending'
         }
         result = flags_collection.insert_one(flag)

@@ -5,6 +5,7 @@ from ..models import (
     users_collection, quizzes_collection, submissions_collection,
     violations_collection, flags_collection
 )
+from ..authentication import require_role
 from bson import ObjectId
 from datetime import datetime, timedelta
 
@@ -26,6 +27,7 @@ def _write_audit_log(action, target_id, request, details=''):
 
 
 @api_view(['GET'])
+@require_role('admin')
 def dashboard_stats(request):
     """Get dashboard statistics for super admin"""
     try:
@@ -45,6 +47,7 @@ def dashboard_stats(request):
 
 
 @api_view(['GET'])
+@require_role('admin')
 def users_list(request):
     """Get all users with filtering"""
     try:
@@ -61,6 +64,7 @@ def users_list(request):
 
 
 @api_view(['POST'])
+@require_role('admin')
 def user_action(request, user_id, action):
     """Perform action on user (deactivate, reset password, etc.)"""
     try:
@@ -104,6 +108,7 @@ def user_action(request, user_id, action):
 
 
 @api_view(['GET'])
+@require_role('admin')
 def violations_list(request):
     """Get all violations with filtering"""
     try:
@@ -133,6 +138,7 @@ def violations_list(request):
 
 
 @api_view(['GET'])
+@require_role('admin')
 def audit_logs(request):
     """Get audit logs (admin actions)"""
     try:
@@ -149,6 +155,7 @@ def audit_logs(request):
 
 
 @api_view(['GET', 'POST'])
+@require_role('admin')
 def system_settings(request):
     """Get or update system settings"""
     try:
@@ -175,6 +182,7 @@ def system_settings(request):
 
 
 @api_view(['GET'])
+@require_role('admin')
 def exams_list(request):
     """Get all exams across all teachers"""
     try:
@@ -194,6 +202,7 @@ def exams_list(request):
 
 
 @api_view(['POST'])
+@require_role('admin')
 def exam_action(request, exam_id, action):
     """Perform action on exam (force stop, lock, etc.)"""
     try:

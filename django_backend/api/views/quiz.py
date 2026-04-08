@@ -63,6 +63,10 @@ def get_quiz(request, quiz_id):
         quiz = Quiz.find_by_id(quiz_id)
         if not quiz:
             return JsonResponse({'error': 'Quiz not found'}, status=404)
+
+        # Students must not be able to fetch draft/inactive quiz content by ID.
+        if request.user.get('role') == 'student' and not quiz.get('is_active', False):
+            return JsonResponse({'error': 'This quiz is not active. Please contact your teacher.'}, status=403)
         
         return JsonResponse(serialize_quiz(quiz))
     except Exception as e:
@@ -109,7 +113,7 @@ def toggle_quiz_active(request, quiz_id):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@require_auth
+@require_role('student')
 def submit_quiz(request, quiz_id):
     try:
         data = json.loads(request.body)
@@ -120,6 +124,9 @@ def submit_quiz(request, quiz_id):
         quiz = Quiz.find_by_id(quiz_id)
         if not quiz:
             return JsonResponse({'error': 'Quiz not found'}, status=404)
+
+        if request.user.get('role') == 'student' and not quiz.get('is_active', False):
+            return JsonResponse({'error': 'This quiz is not active. Please contact your teacher.'}, status=403)
 
         # Calculate score
         correct = 0

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { quizAPI } from '../../utils/api';
+import api, { quizAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 import PerformanceChart from '../../components/teacher/PerformanceChart';
 import { TrendingUp, Award, Users, Target } from 'lucide-react';
@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 export default function Results() {
   const [quizzes, setQuizzes] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,8 +18,12 @@ export default function Results() {
 
   const fetchQuizzes = async () => {
     try {
-      const response = await quizAPI.getAll();
-      setQuizzes(response.data);
+      const [quizzesRes, statsRes] = await Promise.all([
+        quizAPI.getAll(),
+        api.get('/teacher/dashboard-stats/'),
+      ]);
+      setQuizzes(quizzesRes.data);
+      setDashboardStats(statsRes.data);
     } catch (error) {
       toast.error('Failed to load results');
     } finally {
@@ -26,17 +31,29 @@ export default function Results() {
     }
   };
 
-  // Calculate stats
-  const totalSubmissions = quizzes.reduce((sum, q) => sum + (q.submissions?.length || 0), 0);
-  const avgScore = 75; // Mock - calculate from actual submissions
-  const passRate = 82; // Mock
+  const totalSubmissions = dashboardStats?.total_submissions || 0;
+  const avgScore = dashboardStats?.average_score || 0;
+  const passRate = dashboardStats?.pass_rate || 0;
+  const completionRate = (() => {
+    const expected = (dashboardStats?.total_exams || 0) * (dashboardStats?.total_students || 0);
+    if (!expected) return 0;
+    return Math.min(100, (totalSubmissions / expected) * 100);
+  })();
+
+  const performanceMetrics = {
+    average_score: avgScore,
+    pass_rate: passRate,
+    completion_rate: completionRate,
+  };
 
   const stats = [
     { icon: Users, label: 'Total Submissions', value: totalSubmissions, color: 'blue' },
-    { icon: Award, label: 'Average Score', value: `${avgScore}%`, color: 'green' },
-    { icon: Target, label: 'Pass Rate', value: `${passRate}%`, color: 'purple' },
-    { icon: TrendingUp, label: 'Improvement', value: '+12%', color: 'orange' },
+    { icon: Award, label: 'Average Score', value: `${Number(avgScore).toFixed(1)}%`, color: 'green' },
+    { icon: Target, label: 'Pass Rate', value: `${Number(passRate).toFixed(1)}%`, color: 'purple' },
+    { icon: TrendingUp, label: 'Completion Rate', value: `${Number(completionRate).toFixed(1)}%`, color: 'orange' },
   ];
+
+  const { darkMode } = useTheme();
 
   if (loading) {
     return (
@@ -45,8 +62,6 @@ export default function Results() {
       </div>
     );
   }
-
-  const { darkMode } = useTheme();
   const cardColors = { blue: '#58a6ff', green: '#3fb950', purple: '#bc8cff', orange: '#f0883e' };
 
   return (
@@ -73,7 +88,7 @@ export default function Results() {
         })}
       </div>
 
-      <PerformanceChart />
+      <PerformanceChart metrics={performanceMetrics} />
 
       <div style={{ background: darkMode ? '#161b22' : '#fff', border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`, borderRadius: 12, overflow: 'hidden' }}>
         <div style={{ padding: '16px 24px', borderBottom: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}` }}>

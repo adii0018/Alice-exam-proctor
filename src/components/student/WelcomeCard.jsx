@@ -3,11 +3,16 @@ import { FiZap, FiShield, FiEye, FiCpu } from 'react-icons/fi'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 
-const WelcomeCard = () => {
+const WelcomeCard = ({ stats = null }) => {
   const { user } = useAuth()
   const { darkMode } = useTheme()
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+
+  const safeStats = stats || {}
+  const activeExams = Number(safeStats.available_exams_count || 0)
+  const completed = Number(safeStats.total_attempts || 0)
+  const successRate = Number(safeStats.pass_rate || 0)
 
   if (darkMode) {
     return (
@@ -158,9 +163,9 @@ const WelcomeCard = () => {
             style={{ marginTop: '28px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}
           >
             {[
-              { label: 'Active Exams', value: '2' },
-              { label: 'Completed', value: '8' },
-              { label: 'Success Rate', value: '94%' },
+              { label: 'Active Exams', value: String(activeExams) },
+              { label: 'Completed', value: String(completed) },
+              { label: 'Success Rate', value: `${successRate.toFixed(1)}%` },
             ].map(({ label, value }) => (
               <div
                 key={label}
@@ -244,7 +249,7 @@ const WelcomeCard = () => {
           </motion.div>
         </div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-8 grid grid-cols-3 gap-4">
-          {[{ label: 'Active Exams', value: '2' }, { label: 'Completed', value: '8' }, { label: 'Success Rate', value: '94%' }].map(({ label, value }) => (
+          {[{ label: 'Active Exams', value: String(activeExams) }, { label: 'Completed', value: String(completed) }, { label: 'Success Rate', value: `${successRate.toFixed(1)}%` }].map(({ label, value }) => (
             <div key={label} className="relative group">
               <div className="relative px-4 py-4 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all">
                 <p className="text-sm opacity-90 mb-1">{label}</p>

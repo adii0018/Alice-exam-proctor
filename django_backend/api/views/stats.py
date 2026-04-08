@@ -19,8 +19,13 @@ from ..authentication import require_auth, require_role
 def get_performance_stats(request):
     """Get overall performance statistics"""
     try:
-        # Get all submissions
-        submissions = list(submissions_collection.find())
+        teacher_id = request.user['_id']
+        teacher_quiz_ids = [
+            q['_id'] for q in quizzes_collection.find({'teacher_id': teacher_id}, {'_id': 1})
+        ]
+
+        # Get submissions only for this teacher's quizzes
+        submissions = list(submissions_collection.find({'quiz_id': {'$in': teacher_quiz_ids}}))
         
         if not submissions:
             return JsonResponse({
@@ -45,9 +50,12 @@ def get_performance_stats(request):
         pass_rate = (passed_count / len(submissions)) * 100
         
         # Calculate completion rate
-        # Get all active quizzes
-        active_quizzes = list(quizzes_collection.find({'is_active': True}))
-        total_students = users_collection.count_documents({'role': 'student'})
+        # Get all active quizzes for this teacher
+        active_quizzes = list(
+            quizzes_collection.find({'teacher_id': teacher_id, 'is_active': True}, {'_id': 1})
+        )
+        unique_student_ids = {s.get('student_id') for s in submissions if s.get('student_id') is not None}
+        total_students = len(unique_student_ids)
         
         if active_quizzes and total_students > 0:
             expected_submissions = len(active_quizzes) * total_students
@@ -117,7 +125,7 @@ def get_dashboard_stats(request):
         # Count statistics
         total_exams = len(quizzes)
         active_exams = sum(1 for q in quizzes if q.get('is_active', False))
-        total_students = users_collection.count_documents({'role': 'student'})
+        total_students = 0
         
         # Count violations for teacher's quizzes
         flagged_violations = flags_collection.count_documents({
@@ -129,6 +137,9 @@ def get_dashboard_stats(request):
         submissions = list(submissions_collection.find({
             'quiz_id': {'$in': quiz_ids}
         }))
+
+        # Unique students who submitted for this teacher's quizzes
+        total_students = len({str(s.get('student_id')) for s in submissions if s.get('student_id') is not None})
         
         # Calculate performance metrics
         if submissions:
@@ -161,6 +172,11 @@ def get_quiz_stats(request, quiz_id):
         quiz = quizzes_collection.find_one({'_id': ObjectId(quiz_id)})
         if not quiz:
             return JsonResponse({'error': 'Quiz not found'}, status=404)
+
+        # Ensure quiz belongs to the current teacher
+        teacher_id = request.user['_id']
+        if str(quiz.get('teacher_id')) != str(teacher_id):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
         
         # Get submissions
         submissions = list(submissions_collection.find({'quiz_id': ObjectId(quiz_id)}))

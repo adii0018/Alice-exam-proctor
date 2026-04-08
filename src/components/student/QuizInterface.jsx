@@ -15,6 +15,9 @@ const QuizInterface = ({ quiz, onExit }) => {
   const [startTime] = useState(Date.now())
 
   const videoRef = useRef(null)
+  const timerRef = useRef(null)
+  const hasSubmittedRef = useRef(false)
+  const handleSubmitRef = useRef(null)
 
   // ── Proctoring ──────────────────────────────────────────────────────────
   const {
@@ -46,21 +49,10 @@ const QuizInterface = ({ quiz, onExit }) => {
     }
   }, [decision])
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleSubmit()
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [])
-
   const handleSubmit = async () => {
+    // Prevent duplicate submissions (timer + manual click)
+    if (hasSubmittedRef.current) return
+    hasSubmittedRef.current = true
     setSubmitting(true)
 
     try {
@@ -68,9 +60,17 @@ const QuizInterface = ({ quiz, onExit }) => {
       const timeString = `${Math.floor(timeTaken / 60)}m ${timeTaken % 60}s`
 
       let correctAnswers = 0, wrongAnswers = 0
-      quiz.questions.forEach((q) => {
-        if (answers[q._id] === q.correctAnswer) correctAnswers++
-        else if (answers[q._id]) wrongAnswers++
+      quiz.questions.forEach((q, idx) => {
+        const qId = q._id || q.id || idx
+        const submitted = answers[qId]
+        const expected = q.correctAnswer
+
+        // Both stored as index (number) -> primary path
+        if (Number.isFinite(submitted) && Number.isFinite(expected) && submitted === expected) {
+          correctAnswers++
+        } else if (submitted !== undefined && submitted !== null && submitted !== '') {
+          wrongAnswers++
+        }
       })
 
       const totalQuestions = quiz.questions.length
@@ -96,8 +96,40 @@ const QuizInterface = ({ quiz, onExit }) => {
     } catch (error) {
       toast.error('Failed to submit quiz')
       setSubmitting(false)
+      hasSubmittedRef.current = false // allow retry if submission failed
     }
   }
+
+  // Keep a reference to the latest submit function (avoid stale closure).
+  handleSubmitRef.current = handleSubmit
+
+  // ── Timer ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current)
+          timerRef.current = null
+          handleSubmitRef.current?.()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }, [])
+
+  // Stop ticking after submission result is ready.
+  useEffect(() => {
+    if (quizResult && timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }, [quizResult])
 
   // ── Camera setup ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -155,7 +187,7 @@ const QuizInterface = ({ quiz, onExit }) => {
                 <label
                   key={index}
                   className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    answers[question._id] === option
+                    answers[question._id] === index
                       ? 'border-primary-600 bg-primary-50'
                       : 'border-gray-200 hover:border-primary-300'
                   }`}
@@ -163,9 +195,9 @@ const QuizInterface = ({ quiz, onExit }) => {
                   <input
                     type="radio"
                     name={question._id}
-                    value={option}
-                    checked={answers[question._id] === option}
-                    onChange={() => setAnswers({ ...answers, [question._id]: option })}
+                    value={index}
+                    checked={answers[question._id] === index}
+                    onChange={() => setAnswers({ ...answers, [question._id]: index })}
                     className="mr-3"
                   />
                   {option}
