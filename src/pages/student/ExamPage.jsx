@@ -29,6 +29,7 @@ const ExamPage = () => {
   const [answers, setAnswers] = useState({});
   const [markedForReview, setMarkedForReview] = useState(new Set());
   const [timeRemaining, setTimeRemaining] = useState(3600);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMultiFaceWarning, setShowMultiFaceWarning] = useState(false);
@@ -213,12 +214,11 @@ const ExamPage = () => {
     if (exam) setupCamera();
   }, [exam]);
 
-  // If this exam was already submitted, redirect straight to result page
+  // Clear any stale result from a previous attempt so student can start fresh
   useEffect(() => {
-    const stored = localStorage.getItem(`exam_result_${examId}`);
-    if (stored) {
-      navigate(`/student/exam/${examId}/result`, { replace: true });
-    }
+    // Remove old result data when entering exam page — do NOT redirect
+    // (backend already blocks duplicate submissions, so no need to guard here)
+    localStorage.removeItem(`exam_result_${examId}`);
   }, [examId]);
 
   const fetchExamData = async () => {
@@ -443,6 +443,9 @@ const ExamPage = () => {
   const handlePrevious = () => { if (currentQuestion > 0) setCurrentQuestion(p => p - 1); };
 
   const handleConfirmSubmit = async () => {
+    // Prevent duplicate submissions
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       soundManager.playExamEnd();
       const token = localStorage.getItem('token');
@@ -527,7 +530,8 @@ const ExamPage = () => {
       cleanup();
       navigate(`/student/exam/${examId}/result`);
     } catch (err) {
-      showWarningToast('Failed to submit exam. Please try again.');
+      setIsSubmitting(false);
+      showWarningToast(`Failed to submit exam: ${err.message || 'Please try again.'}`);
     }
   };
 
@@ -642,6 +646,7 @@ const ExamPage = () => {
           onCancel={() => setShowExitConfirm(false)}
           answeredCount={Object.keys(answers).length}
           totalQuestions={exam.questions.length}
+          isSubmitting={isSubmitting}
         />
       )}
 

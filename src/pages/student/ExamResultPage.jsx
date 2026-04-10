@@ -49,12 +49,19 @@ const ExamResultPage = () => {
           `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`,
           { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
         );
+        // Accept 200 and also silently ignore 403 (inactive quiz — student already submitted)
         if (quizRes.ok) {
           quizData = await quizRes.json();
           // Update quiz title if available
           setQuiz(prev => ({ ...prev, ...quizData, title: quizData.title || prev?.title }));
+        } else if (quizRes.status !== 403) {
+          // Only throw for non-403 errors (403 means quiz is inactive — result still valid)
+          throw new Error(`Quiz fetch failed: ${quizRes.status}`);
         }
-      } catch { /* Quiz API failed — localStorage result still shown */ }
+      } catch (fetchErr) {
+        // Quiz API failed — localStorage result still shown if available
+        if (!hasLocalResult) throw fetchErr;
+      }
 
       // If quiz API failed AND no localStorage result, show error
       if (!quizData && !hasLocalResult) {

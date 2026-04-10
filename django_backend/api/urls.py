@@ -52,6 +52,7 @@ urlpatterns = [
     path('teacher/dashboard-stats/', stats.get_dashboard_stats, name='teacher_dashboard_stats'),
     path('teacher/performance-stats/', stats.get_performance_stats, name='teacher_performance_stats'),
     path('teacher/quizzes/<str:quiz_id>/stats/', stats.get_quiz_stats, name='teacher_quiz_stats'),
+    path('teacher/quizzes/<str:quiz_id>/results/', stats.get_quiz_results, name='teacher_quiz_results'),
 
     # Teacher students
     path('teacher/students/', students.list_students, name='teacher_students'),

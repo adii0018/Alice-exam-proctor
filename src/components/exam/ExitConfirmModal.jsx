@@ -5,7 +5,8 @@ const ExitConfirmModal = ({
   onConfirm, 
   onCancel, 
   answeredCount, 
-  totalQuestions 
+  totalQuestions,
+  isSubmitting = false,
 }) => {
   const unansweredCount = totalQuestions - answeredCount;
 
@@ -71,9 +72,18 @@ const ExitConfirmModal = ({
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={isSubmitting}
+            className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2"
           >
-            Submit Exam
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Submitting...
+              </>
+            ) : 'Submit Exam'}
           </button>
         </div>
       </motion.div>

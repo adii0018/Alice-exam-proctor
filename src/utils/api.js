@@ -54,6 +54,7 @@ export const userAPI = {
 // Teacher stats APIs
 export const teacherAPI = {
   dashboardStats: () => api.get('/teacher/dashboard-stats/'),
+  quizResults: (quizId) => api.get(`/teacher/quizzes/${quizId}/results/`),
 }
 
 export default api

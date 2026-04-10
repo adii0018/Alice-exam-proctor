@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, AlertTriangle, AlertCircle, AlertOctagon, ChevronDown, ChevronUp,
@@ -8,6 +8,7 @@ import {
 import { violationAPI } from '../../utils/api';
 import { useTheme } from '../../contexts/ThemeContext';
 import toast from 'react-hot-toast';
+import useViolationWebSocket from '../../hooks/useViolationWebSocket';
 
 /* ─── Violation type human-readable info ─── */
 const V_INFO = {
@@ -265,13 +266,87 @@ export default function QuizViolationsModal({ quiz, onClose }) {
   const [data, setData]       = useState([]);
   const [loading, setLoading] = useState(true);
   const [sevFilter, setSevFilter] = useState('all');
+  const knownViolationKeysRef = useRef(new Set());
+
+  const quizId = useMemo(() => String(quiz.id || quiz._id || ''), [quiz.id, quiz._id]);
+
+  const buildViolationKey = (studentId, violation) => {
+    const normalizedStudentId = String(studentId || '');
+    const normalizedType = String(violation.type || violation.violation_type || 'UNKNOWN');
+    const normalizedTs = violation.timestamp || '';
+    return `${normalizedStudentId}|${normalizedType}|${normalizedTs}`;
+  };
 
   useEffect(() => {
-    violationAPI.getByQuizStudents(quiz.id)
-      .then(res => setData(res.data.students || []))
+    if (!quizId) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+
+    knownViolationKeysRef.current = new Set();
+
+    violationAPI.getByQuizStudents(quizId)
+      .then(res => {
+        const students = res.data.students || [];
+        students.forEach(student => {
+          (student.violations || []).forEach(v => {
+            knownViolationKeysRef.current.add(buildViolationKey(student.student_id, v));
+          });
+        });
+        setData(students);
+      })
       .catch(() => toast.error('Failed to load violation details'))
       .finally(() => setLoading(false));
-  }, [quiz.id]);
+  }, [quizId]);
+
+  useViolationWebSocket({
+    enabled: Boolean(quizId),
+    onViolation: (violation) => {
+      const incomingQuizId = String(violation.quiz_id || '');
+      if (!incomingQuizId || incomingQuizId !== quizId) return;
+
+      const studentId = String(violation.student_id || '');
+      const violationRecord = {
+        type: violation.violation_type || violation.type || 'UNKNOWN',
+        severity: String(violation.severity || 'medium').toLowerCase(),
+        face_count: violation.face_count ?? null,
+        metadata: violation.metadata || {},
+        timestamp: violation.timestamp || new Date().toISOString(),
+      };
+
+      const violationKey = buildViolationKey(studentId, violationRecord);
+      if (knownViolationKeysRef.current.has(violationKey)) return;
+      knownViolationKeysRef.current.add(violationKey);
+
+      setData(prev => {
+        const next = [...prev];
+        const existingIdx = next.findIndex(s => String(s.student_id) === studentId);
+
+        if (existingIdx >= 0) {
+          next[existingIdx] = {
+            ...next[existingIdx],
+            violations: [violationRecord, ...(next[existingIdx].violations || [])],
+          };
+        } else {
+          next.unshift({
+            student_id: studentId,
+            student_name: violation.student_name || 'Unknown',
+            violations: [violationRecord],
+          });
+        }
+
+        return next
+          .map(student => ({
+            ...student,
+            violations: [...(student.violations || [])].sort(
+              (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            ),
+          }))
+          .sort((a, b) => (b.violations?.length || 0) - (a.violations?.length || 0));
+      });
+    },
+  });
 
   const totalViolations = data.reduce((sum, s) => sum + s.violations.length, 0);
   const highTotal  = data.reduce((sum, s) => sum + s.violations.filter(v => v.severity === 'high').length, 0);

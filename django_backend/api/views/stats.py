@@ -228,3 +228,65 @@ def get_quiz_stats(request, quiz_id):
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+@require_role('teacher')
+def get_quiz_results(request, quiz_id):
+    """Get student-wise results for a specific quiz"""
+    try:
+        quiz = quizzes_collection.find_one({'_id': ObjectId(quiz_id)})
+        if not quiz:
+            return JsonResponse({'error': 'Quiz not found'}, status=404)
+
+        teacher_id = request.user['_id']
+        if str(quiz.get('teacher_id')) != str(teacher_id):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
+        submissions = list(
+            submissions_collection.find({'quiz_id': ObjectId(quiz_id)}).sort('submitted_at', -1)
+        )
+
+        if not submissions:
+            return JsonResponse({
+                'quiz_id': str(quiz_id),
+                'quiz_title': quiz.get('title', 'Unknown'),
+                'total_questions': len(quiz.get('questions', [])),
+                'results': [],
+            })
+
+        student_ids = list({s.get('student_id') for s in submissions if s.get('student_id') is not None})
+        users = list(users_collection.find(
+            {'_id': {'$in': student_ids}},
+            {'name': 1, 'email': 1}
+        ))
+        user_map = {str(u['_id']): u for u in users}
+
+        total_questions = len(quiz.get('questions', []))
+        results = []
+        for submission in submissions:
+            sid = str(submission.get('student_id', ''))
+            user = user_map.get(sid, {})
+            score = float(submission.get('score', 0) or 0)
+            correct_answers = round((score / 100) * total_questions) if total_questions else 0
+
+            results.append({
+                'submission_id': str(submission.get('_id')),
+                'student_id': sid,
+                'student_name': user.get('name', 'Unknown Student'),
+                'student_email': user.get('email', ''),
+                'score': round(score, 1),
+                'correct_answers': correct_answers,
+                'total_questions': total_questions,
+                'submitted_at': submission.get('submitted_at').isoformat() if submission.get('submitted_at') else None,
+            })
+
+        return JsonResponse({
+            'quiz_id': str(quiz_id),
+            'quiz_title': quiz.get('title', 'Unknown'),
+            'total_questions': total_questions,
+            'results': results,
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
