@@ -15,6 +15,7 @@ import useProctoring, { Decision } from '../../hooks/useProctoring';
 import { useSmartAudioDetection } from '../../hooks/useSmartAudioDetection';
 import soundManager from '../../utils/soundEffects';
 import { flagAPI } from '../../utils/api';
+import { FullscreenGuard } from '../../utils/proctoring/FullscreenGuard';
 
 const ExamPage = () => {
   const { examId } = useParams();
@@ -43,6 +44,10 @@ const ExamPage = () => {
 
   const videoRef = useRef(null);
   const wsRef = useRef(null);
+
+  // ── Fullscreen Guard ────────────────────────────────────────────────────
+  const fullscreenGuardRef = useRef(null);
+  const [fullscreenStrikes, setFullscreenStrikes] = useState(0);
 
   // ── Proctoring ─────────────────────────────────────────────────────────
   const {
@@ -245,22 +250,80 @@ const ExamPage = () => {
     return () => clearInterval(timer);
   }, [exam]);
 
-  // ── Fullscreen ─────────────────────────────────────────────────────────
+  // ── Fullscreen Guard ────────────────────────────────────────────────────
   const requestFullscreen = () => {
     document.documentElement.requestFullscreen?.().catch(() => {});
   };
 
   useEffect(() => {
-    const handler = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-      if (!document.fullscreenElement) {
-        soundManager.playWarning();
-        showWarningToast('Warning: Fullscreen mode exited');
-      }
+    // Instantiate FullscreenGuard
+    const guard = new FullscreenGuard({
+      maxStrikes: 3,
+
+      onStrikeUpdate: (count) => {
+        setFullscreenStrikes(count);
+      },
+
+      onViolation: async (violation) => {
+        soundManager.playViolationAlert();
+
+        // Build a user-friendly toast message per violation type
+        const messages = {
+          FULLSCREEN_EXIT:      `⚠️ Fullscreen exited! Strike ${violation.strike}/${violation.maxStrikes}`,
+          WINDOW_BLUR_OVERLAY:  `⚠️ Another window detected on top! Strike ${violation.strike}/${violation.maxStrikes}`,
+          WINDOW_RESIZED:       `⚠️ Window resized — possible split screen! Strike ${violation.strike}/${violation.maxStrikes}`,
+          DEVTOOLS_ATTEMPT:     `🚨 DevTools access blocked! Strike ${violation.strike}/${violation.maxStrikes}`,
+          SCREENSHOT_ATTEMPT:   `🚨 Screenshot attempt blocked! Strike ${violation.strike}/${violation.maxStrikes}`,
+        };
+        showWarningToast(messages[violation.type] || `⚠️ Proctoring violation: ${violation.type}`);
+
+        // Update isFullscreen state
+        setIsFullscreen(!!document.fullscreenElement);
+
+        // Flag to backend
+        try {
+          await flagAPI.create({
+            quiz_id:   examId,
+            type:      violation.type,
+            severity:  violation.severity,
+            timestamp: violation.timestamp,
+            metadata:  violation,
+          });
+        } catch { /* non-blocking */ }
+
+        // Real-time WebSocket alert to teacher
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          wsRef.current.send(JSON.stringify({
+            type:           'violation_alert',
+            student_id:     user._id || user.id,
+            violation_type: violation.type,
+            severity:       violation.severity,
+            metadata:       violation,
+          }));
+        }
+      },
+
+      onTerminate: () => {
+        showWarningToast('🚨 Exam terminated due to repeated fullscreen violations!');
+        soundManager.playExamEnd();
+        // Auto-submit after short delay so student sees the message
+        setTimeout(() => handleAutoSubmit(), 2000);
+      },
+    });
+
+    fullscreenGuardRef.current = guard;
+    guard.start();
+
+    // Sync isFullscreen state via native event too
+    const syncHandler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', syncHandler);
+
+    return () => {
+      guard.stop();
+      document.removeEventListener('fullscreenchange', syncHandler);
     };
-    document.addEventListener('fullscreenchange', handler);
-    return () => document.removeEventListener('fullscreenchange', handler);
-  }, []);
+  }, [examId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Tab switch ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -353,12 +416,14 @@ const ExamPage = () => {
         transformedAnswers[qId] = selectedOptionId;
 
         const correctOptionId = Number(question.correctAnswer);
-        if (Number.isFinite(correctOptionId)) {
+        // Use index comparison if correctAnswer is a valid non-negative integer
+        if (Number.isFinite(correctOptionId) && correctOptionId >= 0 && String(question.correctAnswer).trim() !== '') {
           if (selectedOptionId === correctOptionId) correctCount++;
           else wrongCount++;
           return;
         }
 
+        // Fallback: compare answer text
         const selectedOption = question.options[selectedOptionId];
         const selectedText = selectedOption?.text;
         if (selectedText !== undefined && selectedText === question.correctAnswer) correctCount++;
@@ -383,21 +448,24 @@ const ExamPage = () => {
       }
       const submitData = await res.json().catch(() => ({}));
 
-      const backendCorrect = submitData.correct ?? submitData.correct_answers ?? submitData.correctAnswers;
+      // Parse backend response — try multiple possible field names
+      const backendCorrect = submitData.correct ?? submitData.correct_answers ?? submitData.correctAnswers ?? submitData.right_answers;
+      const backendWrong = submitData.wrong ?? submitData.wrong_answers ?? submitData.wrongAnswers;
       const backendTotal = submitData.total ?? submitData.total_questions ?? submitData.totalQuestions ?? totalQuestions;
-      const backendPercentage = submitData.score ?? submitData.percentage;
+      const backendPercentage = submitData.score ?? submitData.percentage ?? submitData.marks;
 
-      const finalCorrect = Number.isFinite(backendCorrect) ? backendCorrect : correctCount;
-      const finalTotal = Number.isFinite(backendTotal) ? backendTotal : totalQuestions;
-      const finalPercentage = Number.isFinite(backendPercentage)
-        ? Math.round(backendPercentage)
+      const finalCorrect = Number.isFinite(Number(backendCorrect)) ? Number(backendCorrect) : correctCount;
+      const finalWrong = Number.isFinite(Number(backendWrong)) ? Number(backendWrong) : wrongCount;
+      const finalTotal = Number.isFinite(Number(backendTotal)) ? Number(backendTotal) : totalQuestions;
+      const finalPercentage = Number.isFinite(Number(backendPercentage))
+        ? Math.round(Number(backendPercentage))
         : (finalTotal > 0 ? Math.round((finalCorrect / finalTotal) * 100) : percentage);
 
       const resultData = {
         score: finalCorrect,
         totalQuestions: finalTotal,
         correctAnswers: finalCorrect,
-        wrongAnswers: Math.max(0, finalTotal - finalCorrect),
+        wrongAnswers: finalWrong,
         timeTaken,
         percentage: finalPercentage,
         violations: [...audioViolations, ...violations].map(v => ({
@@ -425,6 +493,7 @@ const ExamPage = () => {
 
   const cleanup = () => {
     stopAudioMonitoring();
+    fullscreenGuardRef.current?.stop();
     wsRef.current?.close();
     videoRef.current?.srcObject?.getTracks().forEach(t => t.stop());
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -499,6 +568,8 @@ const ExamPage = () => {
             violationCount={violations.length}
             tabSwitchCount={tabSwitchCount}
             faceCount={faceCount}
+            fullscreenStrikes={fullscreenStrikes}
+            isFullscreen={isFullscreen}
           />
           {/* Audio Risk Indicator */}
           <div className="px-4 pb-4">
