@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
-import { Camera, Mic, Eye, AlertTriangle, Shield } from 'lucide-react';
+import { Camera, Mic, Eye, AlertTriangle, Shield, Maximize, Minimize } from 'lucide-react';
 
 const ProctorPanel = ({ 
   videoRef, 
   faceStatus, 
   violationCount,
   tabSwitchCount,
-  faceCount = 0
+  faceCount = 0,
+  fullscreenStrikes = 0,
+  isFullscreen = true,
 }) => {
   const getFaceStatusConfig = () => {
     switch (faceStatus) {
@@ -112,6 +114,27 @@ const ProctorPanel = ({
             </div>
           </div>
         </div>
+
+        {/* Fullscreen Status */}
+        <div className={`p-3 rounded-lg border ${
+          isFullscreen
+            ? 'bg-green-50 border-green-200'
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center gap-2">
+            {isFullscreen
+              ? <Maximize className="w-5 h-5 text-green-600" />
+              : <Minimize className="w-5 h-5 text-red-600" />
+            }
+            <div className="flex-1">
+              <p className={`text-sm font-medium ${
+                isFullscreen ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {isFullscreen ? 'Fullscreen Locked' : '⚠️ Fullscreen Exited!'}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Statistics */}
@@ -141,6 +164,33 @@ const ProctorPanel = ({
                 {tabSwitchCount}
               </span>
             </div>
+          </div>
+
+          {/* Fullscreen Strikes */}
+          <div className={`p-3 rounded-lg border ${
+            fullscreenStrikes >= 2 ? 'bg-red-50 border-red-300' :
+            fullscreenStrikes === 1 ? 'bg-yellow-50 border-yellow-300' :
+            'bg-gray-50 border-gray-200'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Fullscreen Strikes</span>
+              <span className={`text-lg font-bold ${
+                fullscreenStrikes >= 2 ? 'text-red-600' :
+                fullscreenStrikes === 1 ? 'text-yellow-600' :
+                'text-gray-900'
+              }`}>
+                {fullscreenStrikes}/3
+              </span>
+            </div>
+            {fullscreenStrikes > 0 && (
+              <p className={`text-xs mt-1 ${
+                fullscreenStrikes >= 2 ? 'text-red-500' : 'text-yellow-500'
+              }`}>
+                {fullscreenStrikes >= 2
+                  ? '🚨 Next violation = exam termination!'
+                  : '⚠️ Return to fullscreen immediately'}
+              </p>
+            )}
           </div>
         </div>
       </div>

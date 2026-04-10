@@ -39,10 +39,10 @@ const QuizResult = ({ result, quiz, onBackToDashboard }) => {
   } = result
 
   const [showViolations, setShowViolations] = useState(false)
-  const hasAcademicScore = Number.isFinite(score) && Number.isFinite(percentage)
+  const hasAcademicScore = Number.isFinite(score) && score !== null && Number.isFinite(percentage) && percentage !== null
   const passed = hasAcademicScore ? percentage >= 60 : false
   const unattempted = (Number.isFinite(totalQuestions) && Number.isFinite(correctAnswers) && Number.isFinite(wrongAnswers))
-    ? totalQuestions - correctAnswers - wrongAnswers
+    ? Math.max(0, totalQuestions - correctAnswers - wrongAnswers)
     : '--'
 
   const totalViolations  = violations.length

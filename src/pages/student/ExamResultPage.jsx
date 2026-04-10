@@ -20,26 +20,43 @@ const ExamResultPage = () => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const studentId = user._id || user.id;
 
-      // Try localStorage first (freshly submitted result)
+      // ── Step 1: Check localStorage first (freshly submitted result) ─────
       const stored = localStorage.getItem(`exam_result_${examId}`);
-      if (stored) {
+      const hasLocalResult = !!stored;
+
+      if (hasLocalResult) {
         const storedResult = JSON.parse(stored);
         setResult(storedResult);
         setQuiz({ _id: examId, title: storedResult.quizTitle || 'Exam Result', questions: [] });
+        setLoading(false); // ✅ Show immediately — don't wait for API
       }
 
-      // Fetch quiz details (needed for title + fallback reconstruction)
-      const quizRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
-      if (!quizRes.ok) throw new Error('Failed to fetch quiz details');
-      const quizData = await quizRes.json();
-      setQuiz(quizData);
+      // ── Step 2: Fetch quiz details from API (for enrichment / fresh load) ─
+      let quizData = null;
+      try {
+        const quizRes = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`,
+          { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
+        );
+        if (quizRes.ok) {
+          quizData = await quizRes.json();
+          // Update quiz title if available
+          setQuiz(prev => ({ ...prev, ...quizData, title: quizData.title || prev?.title }));
+        }
+      } catch { /* Quiz API failed — localStorage result still shown */ }
 
-      // Try reconstructing from quiz submission list (if API includes it)
-      const submission = (quizData.submissions || []).find((s) =>
-        (s.student_id === studentId) || (s.studentId === studentId) || (s.student?._id === studentId)
-      );
+      // If quiz API failed AND no localStorage result, show error
+      if (!quizData && !hasLocalResult) {
+        throw new Error('Failed to fetch quiz details');
+      }
+
+      // ── Step 3: Try to find this student's submission in API response ────
+      const submission = quizData
+        ? (quizData.submissions || []).find((s) =>
+            (s.student_id === studentId) || (s.studentId === studentId) || (s.student?._id === studentId)
+          )
+        : null;
+
       if (submission) {
         const totalQuestions = quizData.questions?.length || submission.totalQuestions || submission.total_questions || 0;
         const submittedAnswers = submission.answers || {};
@@ -54,9 +71,7 @@ const ExamResultPage = () => {
             const correctNum = Number(correct);
             const isIndexMatch = Number.isFinite(submittedNum) && Number.isFinite(correctNum) && submittedNum === correctNum;
             const isTextMatch = typeof submitted === 'string' && submitted === correct;
-            if (qId && (isIndexMatch || isTextMatch)) {
-              correctCount += 1;
-            }
+            if (qId && (isIndexMatch || isTextMatch)) correctCount += 1;
           }
         }
 
@@ -68,19 +83,19 @@ const ExamResultPage = () => {
           : correctCount;
         const percentage = Number.isFinite(Number(submission.percentage))
           ? Number(submission.percentage)
-          : (submissionScore !== null ? Math.round(submissionScore) : (totalQuestions ? Math.round((score / totalQuestions) * 100) : 0));
+          : (submissionScore !== null
+            ? Math.round(submissionScore)
+            : (totalQuestions ? Math.round((score / totalQuestions) * 100) : 0));
         const timeSpentSeconds = submission.timeSpent ?? submission.time_spent ?? 0;
         const timeTaken = timeSpentSeconds
           ? `${Math.floor(timeSpentSeconds / 60)}:${String(timeSpentSeconds % 60).padStart(2, '0')}`
           : 'N/A';
 
         setResult({
-          score,
-          totalQuestions,
+          score, totalQuestions,
           correctAnswers: score,
           wrongAnswers: Math.max(0, totalQuestions - score),
-          timeTaken,
-          percentage,
+          timeTaken, percentage,
           violations: [],
           proctoringScore: submission.proctoringReport?.score ?? 0,
           proctoringDecision: submission.proctoringReport?.decision ?? 'CLEAN',
@@ -91,30 +106,56 @@ const ExamResultPage = () => {
         return;
       }
 
-      // Fallback: fetch violations from backend to reconstruct result
-      const violationsRes = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/violations/?quiz_id=${examId}&student_id=${studentId}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const violationsData = violationsRes.ok ? await violationsRes.json() : { violations: [] };
+      // ── Step 4: No API submission — fetch backend violations ─────────────
+      let backendViolations = [];
+      try {
+        const violationsRes = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/violations/?quiz_id=${examId}&student_id=${studentId}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        if (violationsRes.ok) {
+          const violationsData = await violationsRes.json();
+          backendViolations = (violationsData.violations || []).map(v => ({
+            type: v.violation_type,
+            timestamp: new Date(v.timestamp).toLocaleTimeString(),
+            severity: v.severity,
+          }));
+        }
+      } catch { /* violations fetch failed */ }
 
+      // ── CRITICAL FIX: If localStorage has real scores, DO NOT overwrite! ─
+      // Only merge violations (prefer localStorage violations as they're richer)
+      if (hasLocalResult) {
+        const storedResult = JSON.parse(stored);
+        const mergedViolations = storedResult.violations?.length
+          ? storedResult.violations
+          : backendViolations;
+        setResult({
+          ...storedResult,
+          violations: mergedViolations,
+          quizTitle: quizData?.title || storedResult.quizTitle,
+        });
+        setLoading(false);
+        return;
+      }
+
+      // ── Step 5: Absolute last resort — show violations-only result ───────
       setResult({
-        // If only violations exist, keep proctoring trail but avoid fake marks.
-        score: null,
-        totalQuestions: quizData.questions?.length || 0,
-        correctAnswers: null,
-        wrongAnswers: null,
-        timeTaken: 'N/A',
-        percentage: null,
-        violations: (violationsData.violations || []).map(v => ({
-          type: v.violation_type,
-          timestamp: new Date(v.timestamp).toLocaleTimeString(),
-          severity: v.severity,
-        })),
-        quizTitle: quizData.title,
+        score: null, totalQuestions: quizData?.questions?.length || 0,
+        correctAnswers: null, wrongAnswers: null,
+        timeTaken: 'N/A', percentage: null,
+        violations: backendViolations,
+        quizTitle: quizData?.title,
       });
       setLoading(false);
+
     } catch (err) {
+      // If localStorage result is already shown, silently ignore API errors
+      const stored = localStorage.getItem(`exam_result_${examId}`);
+      if (stored) {
+        setLoading(false);
+        return;
+      }
       setError(err.message);
       setLoading(false);
     }
