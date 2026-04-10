@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
-  LayoutDashboard, FileText, Users, MonitorPlay,
+  LayoutDashboard, FileText,
   BarChart3, AlertTriangle, Settings, UserCircle,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -40,8 +40,6 @@ const AliceLogo = ({ size = 36, dark }) => (
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher' },
   { icon: FileText, label: 'Exams', path: '/teacher/exams' },
-  { icon: Users, label: 'Students', path: '/teacher/students' },
-  { icon: MonitorPlay, label: 'Live Monitoring', path: '/teacher/live' },
   { icon: BarChart3, label: 'Results', path: '/teacher/results' },
   { icon: AlertTriangle, label: 'Violations', path: '/teacher/violations' },
   { icon: UserCircle, label: 'Profile', path: '/teacher/profile' },

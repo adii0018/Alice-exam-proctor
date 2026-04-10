@@ -1,55 +1,133 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import api, { quizAPI, teacherAPI } from '../../utils/api';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { teacherAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
-import PerformanceChart from '../../components/teacher/PerformanceChart';
-import { TrendingUp, Award, Users, Target, X } from 'lucide-react';
+import { Award, Users, Target, TrendingUp, Radio, RefreshCw } from 'lucide-react';
 import TeacherLayout from '../../components/teacher/TeacherLayout';
 import { useTheme } from '../../contexts/ThemeContext';
+import api from '../../utils/api';
+const POLL_MS = 5000;
 
 export default function Results() {
-  const [quizzes, setQuizzes] = useState([]);
+  const [allRows, setAllRows] = useState([]);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedQuiz, setSelectedQuiz] = useState(null);
-  const [quizResults, setQuizResults] = useState([]);
-  const [loadingResults, setLoadingResults] = useState(false);
+  const { darkMode } = useTheme();
 
-  useEffect(() => {
-    fetchQuizzes();
-  }, []);
-
-  const fetchQuizzes = async () => {
+  const fetchAll = useCallback(async (opts = { silent: false }) => {
+    const silent = opts.silent === true;
     try {
-      const [quizzesRes, statsRes] = await Promise.all([
-        quizAPI.getAll(),
+      if (!silent) setLoading(true);
+      const [resultsRes, statsRes] = await Promise.all([
+        teacherAPI.allResults(),
         api.get('/teacher/dashboard-stats/'),
       ]);
-      setQuizzes(quizzesRes.data);
       setDashboardStats(statsRes.data);
-    } catch (error) {
-      toast.error('Failed to load results');
+      setAllRows(resultsRes.data?.results || []);
+    } catch (err) {
+      if (!silent) {
+        console.error('[Results] fetchAll error:', err?.response?.data || err);
+        toast.error('Failed to load results — ' + (err?.response?.data?.error || err?.message || 'Unknown error'));
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, []);
 
-  const openQuizResults = async (quiz) => {
-    const quizId = quiz._id || quiz.id;
-    setSelectedQuiz({ id: quizId, title: quiz.title });
-    setLoadingResults(true);
-    setQuizResults([]);
+  useEffect(() => {
+    fetchAll({ silent: false });
+  }, [fetchAll]);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      fetchAll({ silent: true });
+    }, POLL_MS);
+    const onFocus = () => fetchAll({ silent: true });
+    const onVis = () => {
+      if (document.visibilityState === 'visible') fetchAll({ silent: true });
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [fetchAll]);
+
+  const wsRef = useRef(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    if (!token || !userStr) return;
+
+    let user;
     try {
-      const res = await teacherAPI.quizResults(quizId);
-      setQuizResults(res.data.results || []);
-    } catch (error) {
-      toast.error('Failed to load quiz results');
-      setSelectedQuiz(null);
-    } finally {
-      setLoadingResults(false);
+      user = JSON.parse(userStr);
+    } catch {
+      return;
     }
-  };
+    const teacherId = user._id || user.id;
+    if (!teacherId) return;
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const wsBase = apiUrl.replace('http://', 'ws://').replace('https://', 'wss://').replace(/\/api\/?$/, '');
+    const url = `${wsBase}/ws/teacher/monitor/${teacherId}/?token=${encodeURIComponent(token)}`;
+
+    let stopped = false;
+    let reconnectTimer;
+
+    const connect = () => {
+      if (stopped) return;
+      try {
+        const ws = new WebSocket(url);
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+          console.log('[Results WS] Connected to teacher monitoring channel');
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('[Results WS] Message received:', data);
+            if (data.type === 'QUIZ_SUBMISSION' && data.submission) {
+              fetchAll({ silent: true });
+              toast.success(
+                `🎉 ${data.submission.student_name || 'Student'} submitted · ${data.submission.quiz_title || 'Exam'} · ${Number(data.submission.score).toFixed(1)}%`,
+                { duration: 5000 }
+              );
+            }
+          } catch {
+            /* ignore */
+          }
+        };
+
+        ws.onerror = (err) => {
+          console.warn('[Results WS] WebSocket error:', err);
+        };
+
+        ws.onclose = (evt) => {
+          console.log('[Results WS] Disconnected, code:', evt.code, '— reconnecting...');
+          wsRef.current = null;
+          if (!stopped) {
+            reconnectTimer = window.setTimeout(connect, 3500);
+          }
+        };
+      } catch {
+        if (!stopped) reconnectTimer = window.setTimeout(connect, 5000);
+      }
+    };
+
+    connect();
+    return () => {
+      stopped = true;
+      if (reconnectTimer) window.clearTimeout(reconnectTimer);
+      wsRef.current?.close();
+      wsRef.current = null;
+    };
+  }, [fetchAll]);
 
   const totalSubmissions = dashboardStats?.total_submissions || 0;
   const avgScore = dashboardStats?.average_score || 0;
@@ -60,12 +138,7 @@ export default function Results() {
     return Math.min(100, (totalSubmissions / expected) * 100);
   })();
 
-  const performanceMetrics = {
-    average_score: avgScore,
-    pass_rate: passRate,
-    completion_rate: completionRate,
-  };
-
+  const cardColors = { blue: '#58a6ff', green: '#3fb950', purple: '#bc8cff', orange: '#f0883e' };
   const stats = [
     { icon: Users, label: 'Total Submissions', value: totalSubmissions, color: 'blue' },
     { icon: Award, label: 'Average Score', value: `${Number(avgScore).toFixed(1)}%`, color: 'green' },
@@ -73,188 +146,122 @@ export default function Results() {
     { icon: TrendingUp, label: 'Completion Rate', value: `${Number(completionRate).toFixed(1)}%`, color: 'orange' },
   ];
 
-  const { darkMode } = useTheme();
+  const border = darkMode ? '#30363d' : '#e5e7eb';
+  const cardBg = darkMode ? '#161b22' : '#fff';
+  const textPrimary = darkMode ? '#e6edf3' : '#111827';
+  const textSub = darkMode ? '#8b949e' : '#6b7280';
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
-        <div style={{ width: 48, height: 48, border: '3px solid #2ea043', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      </div>
+      <TeacherLayout title="Results">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+          <div style={{ width: 48, height: 48, border: '3px solid #2ea043', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        </div>
+      </TeacherLayout>
     );
   }
-  const cardColors = { blue: '#58a6ff', green: '#3fb950', purple: '#bc8cff', orange: '#f0883e' };
 
   return (
     <TeacherLayout title="Results">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>Results & Analytics</h2>
-        <p style={{ color: darkMode ? '#8b949e' : '#6b7280', marginTop: 4 }}>Track student performance and exam statistics</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          const c = cardColors[stat.color];
-          return (
-            <div key={index} style={{ background: darkMode ? '#161b22' : '#fff', border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`, borderRadius: 12, padding: 24 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 8, background: darkMode ? `${c}22` : `${c}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                <Icon size={22} color={c} />
-              </div>
-              <p style={{ fontSize: '1.5rem', fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>{stat.value}</p>
-              <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#6b7280', marginTop: 4 }}>{stat.label}</p>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+            <div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: textPrimary }}>Results & Analytics</h2>
+              <p style={{ color: textSub, marginTop: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span>Student-wise quiz scores from your exams only</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#3fb950' }}>
+                  <Radio size={14} aria-hidden />
+                  Instant updates via WebSocket · backup refresh ~{POLL_MS / 1000}s
+                </span>
+              </p>
             </div>
-          );
-        })}
-      </div>
-
-      <PerformanceChart metrics={performanceMetrics} />
-
-      <div style={{ background: darkMode ? '#161b22' : '#fff', border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`, borderRadius: 12, overflow: 'hidden' }}>
-        <div style={{ padding: '16px 24px', borderBottom: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}` }}>
-          <h3 style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>Quiz-wise Results</h3>
+            <button
+              onClick={() => fetchAll({ silent: false })}
+              title="Manually refresh results"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '8px 16px', borderRadius: 8, border: `1px solid ${border}`,
+                background: cardBg, color: textPrimary, cursor: 'pointer',
+                fontSize: 13, fontWeight: 600,
+              }}
+            >
+              <RefreshCw size={14} />
+              Refresh
+            </button>
+          </div>
         </div>
-        <div style={{ padding: 24 }}>
-          {quizzes.length === 0 ? (
-            <p style={{ textAlign: 'center', color: darkMode ? '#8b949e' : '#6b7280', padding: '32px 0' }}>No results available yet</p>
-          ) : (
-            <div className="space-y-4">
-              {quizzes.map(quiz => (
-                <div key={quiz._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, background: darkMode ? '#1c2128' : '#f9fafb', borderRadius: 8 }}>
-                  <div>
-                    <h4 style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>{quiz.title}</h4>
-                    <p style={{ fontSize: '0.875rem', color: darkMode ? '#8b949e' : '#6b7280' }}>{quiz.submissions?.length || 0} submissions</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <button
-                      onClick={() => openQuizResults(quiz)}
-                      style={{
-                        border: 'none',
-                        borderRadius: 8,
-                        padding: '8px 12px',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        background: darkMode ? '#388bfd22' : '#dbeafe',
-                        color: darkMode ? '#58a6ff' : '#1d4ed8',
-                      }}
-                    >
-                      View Students
-                    </button>
-                  </div>
+
+        {/* Stat cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((stat, i) => {
+            const Icon = stat.icon;
+            const c = cardColors[stat.color];
+            return (
+              <div key={i} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: 12, padding: 24 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 8, background: `${c}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Icon size={22} color={c} />
                 </div>
-              ))}
+                <p style={{ fontSize: '1.5rem', fontWeight: 700, color: textPrimary }}>{stat.value}</p>
+                <p style={{ fontSize: '0.875rem', color: textSub, marginTop: 4 }}>{stat.label}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Flat results table */}
+        <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 24px', borderBottom: `1px solid ${border}` }}>
+            <h3 style={{ fontWeight: 600, color: textPrimary, margin: 0 }}>Student Results</h3>
+          </div>
+          {allRows.length === 0 ? (
+            <p style={{ textAlign: 'center', color: textSub, padding: '40px 0' }}>No submissions yet</p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: darkMode ? '#0d1117' : '#f9fafb' }}>
+                    {['#', 'Student Name', 'Quiz', 'Score', 'Correct', 'Submitted At'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '10px 16px', fontSize: 12, fontWeight: 600, color: textSub, borderBottom: `1px solid ${border}` }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {allRows.map((row, i) => (
+                    <tr key={row.submission_id || i} style={{ borderBottom: `1px solid ${darkMode ? '#21262d' : '#f3f4f6'}` }}>
+                      <td style={{ padding: '12px 16px', color: textSub, fontSize: 13 }}>{i + 1}</td>
+                      <td style={{ padding: '12px 16px', color: textPrimary, fontWeight: 600 }}>{row.student_name}</td>
+                      <td style={{ padding: '12px 16px', color: textSub }}>{row.quiz_title}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '3px 10px',
+                          borderRadius: 20,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          background: Number(row.score) >= 50
+                            ? (darkMode ? '#2ea04322' : '#dcfce7')
+                            : (darkMode ? '#f8514922' : '#fee2e2'),
+                          color: Number(row.score) >= 50
+                            ? (darkMode ? '#3fb950' : '#16a34a')
+                            : (darkMode ? '#f85149' : '#dc2626'),
+                        }}>
+                          {Number(row.score).toFixed(1)}%
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 16px', color: textSub }}>{row.correct_answers}/{row.total_questions}</td>
+                      <td style={{ padding: '12px 16px', color: textSub, fontSize: '0.85rem' }}>
+                        {row.submitted_at ? new Date(row.submitted_at).toLocaleString('en-IN') : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
-      </div>
-
-      <AnimatePresence>
-        {selectedQuiz && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 1000,
-              background: 'rgba(0,0,0,0.65)',
-              backdropFilter: 'blur(4px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 16,
-            }}
-            onClick={(e) => e.target === e.currentTarget && setSelectedQuiz(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.96 }}
-              style={{
-                width: '100%',
-                maxWidth: 900,
-                maxHeight: '90vh',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                borderRadius: 12,
-                background: darkMode ? '#161b22' : '#fff',
-                border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
-              }}
-            >
-              <div style={{ padding: '14px 18px', borderBottom: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontWeight: 700, color: darkMode ? '#e6edf3' : '#111827' }}>
-                    {selectedQuiz.title} - Student Marks
-                  </h3>
-                  <p style={{ margin: 0, marginTop: 4, fontSize: '0.85rem', color: darkMode ? '#8b949e' : '#6b7280' }}>
-                    Per student score for this quiz
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSelectedQuiz(null)}
-                  style={{
-                    border: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
-                    background: darkMode ? '#0d1117' : '#f9fafb',
-                    color: darkMode ? '#8b949e' : '#6b7280',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    padding: 8,
-                    display: 'flex',
-                  }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              <div style={{ overflow: 'auto', padding: 18 }}>
-                {loadingResults ? (
-                  <p style={{ textAlign: 'center', color: darkMode ? '#8b949e' : '#6b7280', padding: '20px 0' }}>Loading student marks...</p>
-                ) : quizResults.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: darkMode ? '#8b949e' : '#6b7280', padding: '20px 0' }}>No submissions for this quiz yet</p>
-                ) : (
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ background: darkMode ? '#0d1117' : '#f9fafb' }}>
-                        {['Student Name', 'Email', 'Marks', 'Correct', 'Submitted At'].map(head => (
-                          <th
-                            key={head}
-                            style={{
-                              textAlign: 'left',
-                              padding: '10px 12px',
-                              fontSize: 12,
-                              color: darkMode ? '#8b949e' : '#6b7280',
-                              borderBottom: `1px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
-                            }}
-                          >
-                            {head}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {quizResults.map((row) => (
-                        <tr key={row.submission_id} style={{ borderBottom: `1px solid ${darkMode ? '#21262d' : '#f3f4f6'}` }}>
-                          <td style={{ padding: '10px 12px', color: darkMode ? '#e6edf3' : '#111827', fontWeight: 600 }}>{row.student_name}</td>
-                          <td style={{ padding: '10px 12px', color: darkMode ? '#8b949e' : '#6b7280', fontSize: '0.9rem' }}>{row.student_email || '-'}</td>
-                          <td style={{ padding: '10px 12px', color: darkMode ? '#58a6ff' : '#1d4ed8', fontWeight: 700 }}>{Number(row.score).toFixed(1)}%</td>
-                          <td style={{ padding: '10px 12px', color: darkMode ? '#8b949e' : '#6b7280' }}>
-                            {row.correct_answers}/{row.total_questions}
-                          </td>
-                          <td style={{ padding: '10px 12px', color: darkMode ? '#8b949e' : '#6b7280', fontSize: '0.85rem' }}>
-                            {row.submitted_at ? new Date(row.submitted_at).toLocaleString('en-IN') : '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       </motion.div>
     </TeacherLayout>
   );

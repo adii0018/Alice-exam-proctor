@@ -82,8 +82,10 @@ def require_role(*roles):
             if not user:
                 return JsonResponse({'error': 'User not found'}, status=401)
             
-            # Check if user has required role
-            if user['role'] not in roles:
+            # Case-insensitive role check (DB / clients may vary in casing)
+            allowed = {(r or '').strip().lower() for r in roles}
+            user_role = (user.get('role') or '').strip().lower()
+            if user_role not in allowed:
                 return JsonResponse({'error': 'Unauthorized'}, status=403)
             
             request.user = user

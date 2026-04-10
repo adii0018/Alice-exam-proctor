@@ -170,20 +170,45 @@ class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
     WebSocket consumer for teacher's live monitoring dashboard
     Subscribes to all active quizzes
     """
-    
+
     async def connect(self):
-        """Handle WebSocket connection"""
+        """Handle WebSocket connection - verify JWT token"""
         self.teacher_id = self.scope['url_route']['kwargs'].get('teacher_id')
         self.room_group_name = f'teacher_monitor_{self.teacher_id}'
-        
+
+        # ── Token authentication via query param ──────────────────────────────
+        try:
+            from urllib.parse import parse_qs
+            from .authentication import decode_token  # reuse existing helper
+            qs = parse_qs(self.scope.get('query_string', b'').decode())
+            token = (qs.get('token') or [None])[0]
+            if not token:
+                await self.close(code=4001)
+                return
+            # decode_token returns JWT payload: {'user_id': str, 'role': str, 'exp': ...}
+            payload = decode_token(token)
+            if not payload:
+                await self.close(code=4001)
+                return
+            # Verify the teacher_id in URL matches token's user_id
+            token_user_id = str(payload.get('user_id', ''))
+            token_role = str(payload.get('role', '')).strip().lower()
+            if token_user_id != str(self.teacher_id) or token_role != 'teacher':
+                await self.close(code=4001)
+                return
+        except Exception:
+            await self.close(code=4001)
+            return
+        # ─────────────────────────────────────────────────────────────────────
+
         # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-        
+
         await self.accept()
-        
+
         await self.send(text_data=json.dumps({
             'type': 'connection_established',
             'message': 'Connected to teacher monitoring channel'
@@ -233,4 +258,11 @@ class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'VIOLATION_ALERT',
             'violation': event['violation']
+        }))
+
+    async def submission_broadcast(self, event):
+        """Notify teacher when a student submits a quiz (live results)."""
+        await self.send(text_data=json.dumps({
+            'type': 'QUIZ_SUBMISSION',
+            'submission': event['submission'],
         }))

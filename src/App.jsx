@@ -10,8 +10,6 @@ import Violations from './pages/student/Violations'
 import Profile from './pages/student/Profile'
 import Settings from './pages/student/Settings'
 import TeacherExams from './pages/teacher/Exams'
-import TeacherStudents from './pages/teacher/Students'
-import TeacherLiveMonitoring from './pages/teacher/LiveMonitoring'
 import TeacherResults from './pages/teacher/Results'
 import TeacherViolations from './pages/teacher/Violations'
 import TeacherSettings from './pages/teacher/Settings'
@@ -116,22 +114,6 @@ function App() {
             element={
               <ProtectedRoute role="teacher">
                 <TeacherExams />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/teacher/students" 
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherStudents />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/teacher/live" 
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherLiveMonitoring />
               </ProtectedRoute>
             } 
           />

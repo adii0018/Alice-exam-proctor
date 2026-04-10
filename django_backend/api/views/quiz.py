@@ -1,10 +1,15 @@
 import json
+from datetime import datetime
+
+from asgiref.sync import async_to_sync
+from bson import ObjectId
+from channels.layers import get_channel_layer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from bson import ObjectId
-from ..models import Quiz, Submission
+
 from ..authentication import require_auth, require_role
+from ..models import Quiz, Submission
 
 
 def serialize_quiz(quiz):
@@ -16,13 +21,48 @@ def serialize_quiz(quiz):
     return quiz
 
 
+def _broadcast_quiz_submission_to_teacher(quiz, quiz_id, student_user, submission_id, score, correct, total):
+    """Push live result to teacher WebSocket; never raises (submit must always succeed)."""
+    try:
+        channel_layer = get_channel_layer()
+        if not channel_layer:
+            return
+        tid = quiz.get('teacher_id')
+        if tid is None:
+            return
+        group = f'teacher_monitor_{str(tid)}'
+        student_name = (
+            student_user.get('name')
+            or student_user.get('username')
+            or 'Unknown Student'
+        )
+        payload = {
+            'submission_id': str(submission_id),
+            'quiz_id': str(quiz_id),
+            'quiz_title': quiz.get('title') or '',
+            'student_id': str(student_user['_id']),
+            'student_name': student_name,
+            'score': round(float(score), 1),
+            'correct_answers': int(correct),
+            'total_questions': int(total),
+            'submitted_at': datetime.utcnow().isoformat() + 'Z',
+        }
+        async_to_sync(channel_layer.group_send)(
+            group,
+            {'type': 'submission_broadcast', 'submission': payload},
+        )
+    except Exception:
+        pass
+
+
 @csrf_exempt
 @require_auth
 def quizzes_handler(request):
     """Handle both GET (list) and POST (create) for /quizzes/"""
     if request.method == 'GET':
         try:
-            if request.user['role'] == 'teacher':
+            role = (request.user.get('role') or '').strip().lower()
+            if role == 'teacher':
                 quizzes = Quiz.find_all(request.user['_id'])
             else:
                 quizzes = Quiz.find_all()
@@ -203,6 +243,16 @@ def submit_quiz(request, quiz_id):
             score,
             proctoring_report=proctoring_report,
             time_spent=time_spent,
+        )
+
+        _broadcast_quiz_submission_to_teacher(
+            quiz,
+            quiz_id,
+            request.user,
+            submission_id,
+            score,
+            correct,
+            len(quiz['questions']),
         )
 
         return JsonResponse({

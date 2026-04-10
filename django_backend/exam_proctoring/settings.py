@@ -76,15 +76,28 @@ DATABASES = {
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
 MONGODB_DB = os.getenv('MONGODB_DB', 'alice_exam_proctor')
 
-# Channels
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379')],
+# Channels — use Redis when a real Redis URL is provided, else InMemory
+_redis_url = os.getenv('REDIS_URL', '')
+_use_redis = _redis_url and not _redis_url.startswith('redis://localhost') and not _redis_url.startswith('redis://127.0.0.1')
+
+if _use_redis:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [_redis_url],
+            },
         },
-    },
-}
+    }
+else:
+    # InMemoryChannelLayer: works on local dev and Render free tier (no Redis)
+    # NOTE: WebSocket broadcasts only work within a SINGLE worker process.
+    # For multi-worker production, set REDIS_URL to a real Redis instance.
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = DEBUG

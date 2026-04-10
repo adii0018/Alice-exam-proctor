@@ -91,8 +91,15 @@ class Quiz:
 
     @staticmethod
     def find_all(teacher_id=None):
-        query = {'teacher_id': teacher_id} if teacher_id else {}
-        return list(quizzes_collection.find(query))
+        if teacher_id is None:
+            return list(quizzes_collection.find({}))
+        tid = teacher_id
+        oid = tid if isinstance(tid, ObjectId) else ObjectId(str(tid))
+        s = str(oid)
+        # Match ObjectId or legacy string storage
+        return list(
+            quizzes_collection.find({'$or': [{'teacher_id': oid}, {'teacher_id': s}, {'teacher_id': tid}]})
+        )
 
     @staticmethod
     def find_by_id(quiz_id):

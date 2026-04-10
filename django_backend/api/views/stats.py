@@ -5,10 +5,11 @@ from django.views.decorators.http import require_http_methods
 from datetime import datetime, timedelta
 from bson import ObjectId
 from ..models import (
-    users_collection, 
-    quizzes_collection, 
-    submissions_collection, 
-    flags_collection
+    Quiz,
+    users_collection,
+    quizzes_collection,
+    submissions_collection,
+    flags_collection,
 )
 from ..authentication import require_auth, require_role
 
@@ -20,9 +21,8 @@ def get_performance_stats(request):
     """Get overall performance statistics"""
     try:
         teacher_id = request.user['_id']
-        teacher_quiz_ids = [
-            q['_id'] for q in quizzes_collection.find({'teacher_id': teacher_id}, {'_id': 1})
-        ]
+        teacher_quizzes = Quiz.find_all(teacher_id)
+        teacher_quiz_ids = [q['_id'] for q in teacher_quizzes]
 
         # Get submissions only for this teacher's quizzes
         submissions = list(submissions_collection.find({'quiz_id': {'$in': teacher_quiz_ids}}))
@@ -51,9 +51,7 @@ def get_performance_stats(request):
         
         # Calculate completion rate
         # Get all active quizzes for this teacher
-        active_quizzes = list(
-            quizzes_collection.find({'teacher_id': teacher_id, 'is_active': True}, {'_id': 1})
-        )
+        active_quizzes = [q for q in teacher_quizzes if q.get('is_active', False)]
         unique_student_ids = {s.get('student_id') for s in submissions if s.get('student_id') is not None}
         total_students = len(unique_student_ids)
         
@@ -117,9 +115,9 @@ def get_performance_stats(request):
 def get_dashboard_stats(request):
     """Get comprehensive dashboard statistics"""
     try:
-        # Get teacher's quizzes
+        # Get teacher's quizzes (same scoping as quiz list API)
         teacher_id = request.user['_id']
-        quizzes = list(quizzes_collection.find({'teacher_id': teacher_id}))
+        quizzes = Quiz.find_all(teacher_id)
         quiz_ids = [q['_id'] for q in quizzes]
         
         # Count statistics
@@ -288,5 +286,71 @@ def get_quiz_results(request, quiz_id):
             'total_questions': total_questions,
             'results': results,
         })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+@require_role('teacher')
+def get_teacher_all_results(request):
+    """All student submission rows for this teacher's quizzes only (one round-trip)."""
+    try:
+        teacher_id = request.user['_id']
+        quizzes = Quiz.find_all(teacher_id)
+        if not quizzes:
+            return JsonResponse({'results': []})
+
+        # Build quiz_map with BOTH str and ObjectId keys so submissions always match
+        # (submissions store quiz_id as ObjectId in MongoDB)
+        quiz_map = {}
+        quiz_ids = []
+        for q in quizzes:
+            oid = q['_id']  # ObjectId
+            quiz_map[str(oid)] = q      # string key  e.g. "663abc..."
+            quiz_map[oid] = q           # ObjectId key (for direct lookup)
+            quiz_ids.append(oid)
+
+        submissions = list(
+            submissions_collection.find({'quiz_id': {'$in': quiz_ids}}).sort('submitted_at', -1)
+        )
+        if not submissions:
+            return JsonResponse({'results': []})
+
+        student_ids = list({s.get('student_id') for s in submissions if s.get('student_id') is not None})
+        users = list(
+            users_collection.find({'_id': {'$in': student_ids}}, {'name': 1, 'email': 1})
+        )
+        user_map = {str(u['_id']): u for u in users}
+
+        flat = []
+        for submission in submissions:
+            raw_qid = submission.get('quiz_id')
+            # Try ObjectId key first (exact match), then string key
+            quiz = quiz_map.get(raw_qid) or quiz_map.get(str(raw_qid), None)
+            if not quiz:
+                continue
+            qid_key = str(raw_qid)
+            sid = str(submission.get('student_id', ''))
+            user = user_map.get(sid, {})
+            total_questions = len(quiz.get('questions', []))
+            score = float(submission.get('score', 0) or 0)
+            correct_answers = round((score / 100) * total_questions) if total_questions else 0
+            flat.append({
+                'submission_id': str(submission.get('_id')),
+                'student_id': sid,
+                'student_name': user.get('name', 'Unknown Student'),
+                'student_email': user.get('email', ''),
+                'quiz_id': qid_key,
+                'quiz_title': quiz.get('title', 'Unknown'),
+                'score': round(score, 1),
+                'correct_answers': correct_answers,
+                'total_questions': total_questions,
+                'submitted_at': submission.get('submitted_at').isoformat()
+                if submission.get('submitted_at')
+                else None,
+            })
+
+        return JsonResponse({'results': flat})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
