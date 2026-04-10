@@ -93,10 +93,11 @@ export default function Results() {
             const data = JSON.parse(event.data);
             console.log('[Results WS] Message received:', data);
             if (data.type === 'QUIZ_SUBMISSION' && data.submission) {
+              const s = data.submission;
               fetchAll({ silent: true });
               toast.success(
-                `🎉 ${data.submission.student_name || 'Student'} submitted · ${data.submission.quiz_title || 'Exam'} · ${Number(data.submission.score).toFixed(1)}%`,
-                { duration: 5000 }
+                `🎉 ${s.student_name || 'Student'}${s.student_email ? ` (${s.student_email})` : ''} · ${s.quiz_title || 'Exam'} · ${Number(s.score).toFixed(1)}%`,
+                { duration: 6000 }
               );
             }
           } catch {
@@ -221,7 +222,7 @@ export default function Results() {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ background: darkMode ? '#0d1117' : '#f9fafb' }}>
-                    {['#', 'Student Name', 'Quiz', 'Score', 'Correct', 'Submitted At'].map(h => (
+                    {['#', 'Student Name', 'Email', 'Quiz', 'Score', 'Correct', 'Submitted At'].map(h => (
                       <th key={h} style={{ textAlign: 'left', padding: '10px 16px', fontSize: 12, fontWeight: 600, color: textSub, borderBottom: `1px solid ${border}` }}>
                         {h}
                       </th>
@@ -230,9 +231,16 @@ export default function Results() {
                 </thead>
                 <tbody>
                   {allRows.map((row, i) => (
-                    <tr key={row.submission_id || i} style={{ borderBottom: `1px solid ${darkMode ? '#21262d' : '#f3f4f6'}` }}>
+                    <motion.tr
+                      key={row.submission_id || i}
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25 }}
+                      style={{ borderBottom: `1px solid ${darkMode ? '#21262d' : '#f3f4f6'}` }}
+                    >
                       <td style={{ padding: '12px 16px', color: textSub, fontSize: 13 }}>{i + 1}</td>
-                      <td style={{ padding: '12px 16px', color: textPrimary, fontWeight: 600 }}>{row.student_name}</td>
+                      <td style={{ padding: '12px 16px', color: textPrimary, fontWeight: 600 }}>{row.student_name || '—'}</td>
+                      <td style={{ padding: '12px 16px', color: textSub, fontSize: 13 }}>{row.student_email || '—'}</td>
                       <td style={{ padding: '12px 16px', color: textSub }}>{row.quiz_title}</td>
                       <td style={{ padding: '12px 16px' }}>
                         <span style={{
@@ -255,7 +263,7 @@ export default function Results() {
                       <td style={{ padding: '12px 16px', color: textSub, fontSize: '0.85rem' }}>
                         {row.submitted_at ? new Date(row.submitted_at).toLocaleString('en-IN') : '-'}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>

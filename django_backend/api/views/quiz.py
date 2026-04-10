@@ -42,6 +42,7 @@ def _broadcast_quiz_submission_to_teacher(quiz, quiz_id, student_user, submissio
             'quiz_title': quiz.get('title') or '',
             'student_id': str(student_user['_id']),
             'student_name': student_name,
+            'student_email': student_user.get('email', ''),
             'score': round(float(score), 1),
             'correct_answers': int(correct),
             'total_questions': int(total),
