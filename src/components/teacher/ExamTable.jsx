@@ -80,7 +80,7 @@ export default function ExamTable({ exams, onAction }) {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['Exam Name', 'Status', 'Active', 'Date & Time', 'Duration', 'Students', 'Actions'].map((h, i) => (
+                {['Exam Name', 'Status', 'Active', 'Date & Time', 'Duration', 'Students / Limit', 'Actions'].map((h, i) => (
                   <th key={h} style={{ ...th, textAlign: i === 6 ? 'right' : 'left' }}>{h}</th>
                 ))}
               </tr>
@@ -140,7 +140,28 @@ export default function ExamTable({ exams, onAction }) {
                   </td>
                   <td style={td}>{exam.date}</td>
                   <td style={td}>{exam.duration}</td>
-                  <td style={td}>{exam.students}</td>
+                  <td style={td}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <span style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>
+                        {exam.students}
+                        {exam.max_students > 0 && (
+                          <span style={{ fontWeight: 400, color: darkMode ? '#8b949e' : '#6b7280' }}> / {exam.max_students}</span>
+                        )}
+                      </span>
+                      {exam.max_students > 0 && (
+                        <span style={{
+                          fontSize: '0.7rem',
+                          color: exam.students >= exam.max_students ? '#f85149' : '#3fb950',
+                          fontWeight: 500
+                        }}>
+                          {exam.students >= exam.max_students ? '🔒 Full' : `${exam.max_students - exam.students} seats left`}
+                        </span>
+                      )}
+                      {exam.max_students === 0 && (
+                        <span style={{ fontSize: '0.7rem', color: darkMode ? '#8b949e' : '#9ca3af' }}>Unlimited</span>
+                      )}
+                    </div>
+                  </td>
                   <td style={{ ...td, textAlign: 'right' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
                       {exam.status === 'Live' && (

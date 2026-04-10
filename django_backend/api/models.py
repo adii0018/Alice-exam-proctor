@@ -72,7 +72,7 @@ class User:
 
 class Quiz:
     @staticmethod
-    def create(title, description, duration, questions, teacher_id):
+    def create(title, description, duration, questions, teacher_id, max_students=0):
         quiz = {
             'title': title,
             'description': description,
@@ -81,7 +81,8 @@ class Quiz:
             'teacher_id': teacher_id,
             'code': generate_quiz_code(),
             'is_active': False,
-            'created_at': None
+            'created_at': None,
+            'max_students': int(max_students) if max_students else 0,  # 0 = unlimited
         }
         result = quizzes_collection.insert_one(quiz)
         quiz['_id'] = result.inserted_id
@@ -127,6 +128,22 @@ class Submission:
         }
         result = submissions_collection.insert_one(submission)
         return result.inserted_id
+
+    @staticmethod
+    def has_student_submitted(quiz_id, student_id):
+        """Check if a student has already submitted this quiz (one-attempt enforcement)"""
+        existing = submissions_collection.find_one({
+            'quiz_id': ObjectId(quiz_id) if isinstance(quiz_id, str) else quiz_id,
+            'student_id': ObjectId(student_id) if isinstance(student_id, str) else student_id,
+        })
+        return existing is not None
+
+    @staticmethod
+    def count_submissions_for_quiz(quiz_id):
+        """Count total unique students who have submitted this quiz"""
+        return submissions_collection.count_documents({
+            'quiz_id': ObjectId(quiz_id) if isinstance(quiz_id, str) else quiz_id,
+        })
 
 
 class Flag:
