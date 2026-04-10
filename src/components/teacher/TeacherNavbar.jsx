@@ -98,7 +98,7 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
                 outline: 'none',
                 transition: 'all 0.2s',
               }}
-              onFocus={e => { e.target.style.borderColor = darkMode ? '#3fb950' : '#3b82f6'; e.target.style.boxShadow = darkMode ? '0 0 0 3px rgba(46,160,67,0.1)' : '0 0 0 3px rgba(59,130,246,0.1)' }}
+              onFocus={e => { e.target.style.borderColor = darkMode ? '#3fb950' : '#059669'; e.target.style.boxShadow = darkMode ? '0 0 0 3px rgba(46,160,67,0.1)' : '0 0 0 3px rgba(5,150,105,0.12)' }}
               onBlur={e => { e.target.style.borderColor = gh.inputBorder; e.target.style.boxShadow = 'none' }}
             />
             {searchQuery && (
@@ -163,7 +163,7 @@ export default function TeacherNavbar({ title, sidebarCollapsed, onSearch }) {
                 size={32}
                 showBorder={darkMode}
                 borderColor={gh.avatarBorder}
-                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #059669, #0d9488)'}
               />
               <span className="hidden lg:block" style={{ fontSize: 13, fontWeight: 500, color: gh.titleColor }}>
                 {user?.username || 'Teacher'}

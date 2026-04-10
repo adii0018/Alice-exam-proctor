@@ -18,7 +18,7 @@ const QuickStats = ({ stats = null }) => {
       label: 'Total Exams',
       value: String(safe.total_attempts),
       change: safe.total_attempts === 1 ? '1 attempt' : `${safe.total_attempts} attempts`,
-      color: '#3b82f6',
+      color: '#059669',
       darkBg: 'rgba(59,130,246,0.08)',
       darkBorder: 'rgba(59,130,246,0.2)',
     },
@@ -65,7 +65,7 @@ const QuickStats = ({ stats = null }) => {
           border: `1px solid ${stat.darkBorder}`,
           transition: 'all 0.2s',
         } : {}}
-        className={darkMode ? '' : `relative p-4 rounded-2xl border transition-all duration-300 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 hover:shadow-lg hover:scale-[1.02]`}
+        className={darkMode ? '' : `relative p-4 rounded-2xl border transition-all duration-300 bg-emerald-50 border-emerald-200 hover:shadow-lg hover:scale-[1.02]`}
       >
         <div className="flex items-center gap-4">
           <div
@@ -114,14 +114,14 @@ const QuickStats = ({ stats = null }) => {
           backgroundColor: 'rgba(46,160,67,0.06)',
           border: '1px solid rgba(46,160,67,0.2)',
         } : {}}
-        className={darkMode ? '' : 'mt-6 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-100 dark:border-blue-800'}
+        className={darkMode ? '' : 'mt-6 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100'}
       >
         <div className="flex items-start gap-3">
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
             style={darkMode
               ? { backgroundColor: 'rgba(46,160,67,0.1)', border: '1px solid rgba(46,160,67,0.3)' }
-              : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }
+              : { background: 'linear-gradient(135deg, #059669, #0d9488)' }
             }
           >
             <span style={{ fontSize: '18px' }}>🎯</span>

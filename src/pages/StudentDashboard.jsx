@@ -7,14 +7,11 @@ import WelcomeCard from '../components/student/WelcomeCard'
 import UpcomingExams from '../components/student/UpcomingExams'
 import QuickStats from '../components/student/QuickStats'
 import RecentViolations from '../components/student/RecentViolations'
-import JoinExamCard from '../components/student/JoinExamCard'
 import PerformanceSummary from '../components/student/PerformanceSummary'
-import QuizCodeEntry from '../components/student/QuizCodeEntry'
-import QuizInterface from '../components/student/QuizInterface'
 import { useTheme } from '../contexts/ThemeContext'
 import AliceAIChat from '../components/ai/AliceAIChat'
-import { FaLeaf } from 'react-icons/fa'
 import { studentAPI } from '../utils/api'
+import LightweightBackground from '../components/common/LightweightBackground'
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -32,13 +29,13 @@ const AliceLogo = ({ size = 36, dark }) => (
       <rect width="100" height="100" rx="22" fill="url(#lgDash)"/>
       <defs>
         <linearGradient id="lgDash" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#3b82f6"/>
-          <stop offset="100%" stopColor="#9333ea"/>
+          <stop offset="0%" stopColor="#059669"/>
+          <stop offset="100%" stopColor="#0d9488"/>
         </linearGradient>
       </defs>
       <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.95"/>
       <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.65"/>
-      <line x1="50" y1="22" x2="50" y2="78" stroke="#6366f1" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" opacity="0.4"/>
       <path d="M50 82 Q48 89 44 93" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   )
@@ -46,8 +43,6 @@ const AliceLogo = ({ size = 36, dark }) => (
 
 const StudentDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [activeQuiz, setActiveQuiz] = useState(null)
-  const [showCodeEntry, setShowCodeEntry] = useState(false)
   const [showAliceChat, setShowAliceChat] = useState(false)
   const { darkMode } = useTheme()
 
@@ -55,26 +50,7 @@ const StudentDashboard = () => {
   const [dashboardLoading, setDashboardLoading] = useState(false)
   const [dashboardError, setDashboardError] = useState(null)
 
-  // Handle quiz start from code entry
-  const handleQuizStart = (quiz) => {
-    setActiveQuiz(quiz)
-    setShowCodeEntry(false)
-  }
-
-  // Handle quiz exit
-  const handleQuizExit = () => {
-    setActiveQuiz(null)
-  }
-
-  // Handle join exam button click
-  const handleJoinExam = () => {
-    setShowCodeEntry(true)
-  }
-
   useEffect(() => {
-    // Only fetch dashboard when the user is on the dashboard screen.
-    if (activeQuiz || showCodeEntry) return
-
     let cancelled = false
     const run = async () => {
       setDashboardLoading(true)
@@ -93,26 +69,14 @@ const StudentDashboard = () => {
     }
 
     run()
-    return () => {
-      cancelled = true
-    }
-  }, [activeQuiz, showCodeEntry])
-
-  // If quiz is active, show quiz interface
-  if (activeQuiz) {
-    return <QuizInterface quiz={activeQuiz} onExit={handleQuizExit} />
-  }
-
-  // If code entry is shown, show code entry screen
-  if (showCodeEntry) {
-    return <QuizCodeEntry onQuizStart={handleQuizStart} onBack={() => setShowCodeEntry(false)} />
-  }
+    return () => { cancelled = true }
+  }, [])
 
   return (
     <div
-      className={darkMode ? '' : 'min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30'}
-      style={darkMode ? { minHeight: '100vh', backgroundColor: '#0d1117' } : {}}
+      style={darkMode ? { minHeight: '100vh', backgroundColor: '#0d1117', position: 'relative' } : { minHeight: '100vh', backgroundColor: '#f6f8fa', position: 'relative' }}
     >
+      {!darkMode && <LightweightBackground />}
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <DashboardSidebar 
@@ -150,7 +114,7 @@ const StudentDashboard = () => {
               <div>
                 <h1
                   className="text-lg font-bold"
-                  style={darkMode ? { color: '#e6edf3' } : { background: 'linear-gradient(to right, #2563eb, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+                  style={darkMode ? { color: '#e6edf3' } : { background: 'linear-gradient(to right, #059669, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
                 >
                   Alice
                 </h1>
@@ -161,7 +125,7 @@ const StudentDashboard = () => {
               className="w-10 h-10 rounded-full flex items-center justify-center font-semibold"
               style={darkMode
                 ? { backgroundColor: '#21262d', border: '1px solid #30363d', color: '#3fb950' }
-                : { background: 'linear-gradient(135deg, #3b82f6, #9333ea)', color: 'white' }
+                : { background: 'linear-gradient(135deg, #059669, #0d9488)', color: 'white' }
               }
             >
               S
@@ -189,15 +153,6 @@ const StudentDashboard = () => {
                 </p>
               )}
               <WelcomeCard stats={dashboard?.stats || null} />
-            </motion.div>
-
-            {/* Join Exam Card - Prominent */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <JoinExamCard onJoinExam={handleJoinExam} />
             </motion.div>
 
             {/* Two Column Layout */}
@@ -255,10 +210,23 @@ const StudentDashboard = () => {
       <button
         onClick={() => setShowAliceChat(prev => !prev)}
         className="fixed bottom-20 right-6 md:bottom-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50"
-        style={{ background: 'linear-gradient(135deg, #3b82f6, #9333ea)' }}
+        style={{ background: 'linear-gradient(135deg, #2ea043, #1a7f37)', boxShadow: '0 0 0 3px rgba(46,160,67,0.25), 0 8px 24px rgba(0,0,0,0.4)' }}
         title="Chat with Alice AI"
       >
-        <FaLeaf className="text-white text-xl" />
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="12" y1="2" x2="12" y2="5" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+          <circle cx="12" cy="1.5" r="1.2" fill="white"/>
+          <rect x="4" y="5" width="16" height="11" rx="3" fill="white" fillOpacity="0.95"/>
+          <circle cx="9" cy="10" r="1.8" fill="#2ea043"/>
+          <circle cx="15" cy="10" r="1.8" fill="#2ea043"/>
+          <circle cx="9.6" cy="9.4" r="0.6" fill="white"/>
+          <circle cx="15.6" cy="9.4" r="0.6" fill="white"/>
+          <rect x="8.5" y="13" width="7" height="1.5" rx="0.75" fill="#2ea043" fillOpacity="0.7"/>
+          <rect x="7" y="17" width="10" height="5" rx="2" fill="white" fillOpacity="0.85"/>
+          <rect x="2" y="17.5" width="4" height="2.5" rx="1.25" fill="white" fillOpacity="0.7"/>
+          <rect x="18" y="17.5" width="4" height="2.5" rx="1.25" fill="white" fillOpacity="0.7"/>
+          <circle cx="12" cy="19.5" r="1" fill="#2ea043" fillOpacity="0.6"/>
+        </svg>
       </button>
     </div>
   )

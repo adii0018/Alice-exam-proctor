@@ -13,6 +13,17 @@ const ExamResultPage = () => {
 
   useEffect(() => { fetchResult(); }, [examId]);
 
+  // Block browser back navigation to the exam page after submission
+  useEffect(() => {
+    // Push a duplicate entry so back button stays on result page
+    window.history.pushState(null, '', window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const fetchResult = async () => {
     try {
       setLoading(true);
@@ -174,7 +185,7 @@ const ExamResultPage = () => {
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Failed to Load Results</h2>
           <p className="text-gray-600 mb-6">{error}</p>
-          <button onClick={handleBackToDashboard} className="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700">
+          <button onClick={handleBackToDashboard} className="w-full py-3 px-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700">
             Back to Dashboard
           </button>
         </div>
@@ -188,7 +199,7 @@ const ExamResultPage = () => {
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">No Results Found</h2>
           <p className="text-gray-600 mb-6">We couldn't find results for this exam.</p>
-          <button onClick={handleBackToDashboard} className="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700">
+          <button onClick={handleBackToDashboard} className="w-full py-3 px-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700">
             Back to Dashboard
           </button>
         </div>

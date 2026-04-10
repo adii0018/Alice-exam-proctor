@@ -149,7 +149,20 @@ def get_dashboard_stats(request):
         else:
             average_score = 0
             pass_rate = 0
-        
+
+        # Completion rate: what % of (quiz, student) slots have been filled
+        # Use max_students if set on quizzes, otherwise use unique submitters as reference
+        total_capacity = 0
+        for q in quizzes:
+            max_s = q.get('max_students', 0)
+            if max_s and max_s > 0:
+                total_capacity += max_s
+            else:
+                # fallback: count unique students who submitted any quiz for this teacher
+                total_capacity += total_students if total_students > 0 else 1
+        completion_rate = (len(submissions) / total_capacity) * 100 if total_capacity > 0 else 0
+        completion_rate = min(completion_rate, 100)  # cap at 100%
+
         return JsonResponse({
             'total_exams': total_exams,
             'active_exams': active_exams,
@@ -158,6 +171,7 @@ def get_dashboard_stats(request):
             'total_submissions': len(submissions),
             'average_score': round(average_score, 1),
             'pass_rate': round(pass_rate, 1),
+            'completion_rate': round(completion_rate, 1),
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

@@ -101,7 +101,7 @@ export default function Students() {
                   >
                     <td style={{ padding: '14px 24px', borderBottom: `1px solid ${darkMode ? '#21262d' : '#f3f4f6'}` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#3b82f6,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 600, flexShrink: 0 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#059669,#0d9488)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 600, flexShrink: 0 }}>
                           {student.name?.[0]}
                         </div>
                         <span style={{ fontWeight: 600, color: darkMode ? '#e6edf3' : '#111827' }}>{student.name}</span>

@@ -23,8 +23,8 @@ const MobileBottomNav = () => {
   const gh = {
     bg: darkMode ? 'rgba(13,17,23,0.85)' : 'rgba(255,255,255,0.85)',
     border: darkMode ? '#21262d' : 'rgba(229,231,235,0.5)',
-    activeText: darkMode ? '#3fb950' : '#2563eb',
-    activeBg: darkMode ? 'rgba(46,160,67,0.15)' : 'rgba(59,130,246,0.1)',
+    activeText: darkMode ? '#3fb950' : '#059669',
+    activeBg: darkMode ? 'rgba(46,160,67,0.15)' : 'rgba(5,150,105,0.1)',
     inactiveText: darkMode ? '#8b949e' : '#6b7280',
   };
 

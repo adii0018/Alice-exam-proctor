@@ -77,6 +77,8 @@ def login(request):
 @require_auth
 def get_current_user(request):
     user = request.user
+    created_at = user.get('created_at')
+    created_at_str = created_at.strftime('%b %Y') if created_at else None
     return JsonResponse({
         'id': str(user['_id']),
         'name': user['name'],
@@ -87,7 +89,8 @@ def get_current_user(request):
         'bio': user.get('bio'),
         'date_of_birth': user.get('date_of_birth'),
         'department': user.get('department'),
-        'profile_picture': user.get('profile_picture')
+        'profile_picture': user.get('profile_picture'),
+        'created_at': created_at_str
     })
 
 

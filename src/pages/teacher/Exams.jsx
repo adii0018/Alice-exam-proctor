@@ -137,7 +137,7 @@ export default function Exams() {
             </div>
             <button
               onClick={handleCreateExam}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: darkMode ? '#2ea043' : 'linear-gradient(135deg,#3b82f6,#7c3aed)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: darkMode ? '#2ea043' : '#059669', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
             >
               <Plus size={18} />
               Create Exam

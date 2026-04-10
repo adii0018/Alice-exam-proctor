@@ -35,29 +35,39 @@ export default function PerformanceChart(props) {
     },
   ];
 
-  // Animate numbers on mount
+  // Animate numbers whenever metrics change
   useEffect(() => {
+    const targets = {
+      score: Number(safe.average_score || 0),
+      pass: Number(safe.pass_rate || 0),
+      completion: Number(safe.completion_rate || 0),
+    };
+
+    // Reset to 0 first
+    setAnimatedValues({ score: 0, pass: 0, completion: 0 });
+
     const duration = 2000;
     const steps = 60;
-    const interval = duration / steps;
+    const intervalMs = duration / steps;
+    const timers = [];
 
-    metricCards.forEach(metric => {
+    Object.entries(targets).forEach(([key, targetValue]) => {
       let current = 0;
-      const increment = metric.targetValue / steps;
-      
+      const increment = targetValue / steps;
       const timer = setInterval(() => {
         current += increment;
-        if (current >= metric.targetValue) {
-          current = metric.targetValue;
+        if (current >= targetValue) {
+          current = targetValue;
           clearInterval(timer);
         }
-        setAnimatedValues(prev => ({
-          ...prev,
-          [metric.animatedKey]: current.toFixed(1)
-        }));
-      }, interval);
+        setAnimatedValues(prev => ({ ...prev, [key]: current.toFixed(1) }));
+      }, intervalMs);
+      timers.push(timer);
     });
-  }, [metricCards]);
+
+    return () => timers.forEach(clearInterval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [safe.average_score, safe.pass_rate, safe.completion_rate]);
 
   return (
     <div

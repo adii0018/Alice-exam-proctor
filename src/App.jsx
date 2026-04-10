@@ -5,6 +5,7 @@ import AuthPage from './pages/AuthPage'
 import StudentDashboard from './pages/StudentDashboard'
 import TeacherDashboardNew from './pages/TeacherDashboardNew'
 import MyExams from './pages/student/MyExams'
+import JoinExam from './pages/student/JoinExam'
 import Violations from './pages/student/Violations'
 import Profile from './pages/student/Profile'
 import Settings from './pages/student/Settings'
@@ -58,7 +59,7 @@ function App() {
             path="/student/join" 
             element={
               <ProtectedRoute role="student">
-                <StudentDashboard />
+                <JoinExam />
               </ProtectedRoute>
             } 
           />

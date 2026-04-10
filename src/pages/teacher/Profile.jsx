@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, Phone, MapPin, Calendar, Award, TrendingUp, Edit2, X, Camera, Save, Briefcase } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { userAPI } from '../../utils/api';
+import { userAPI, teacherAPI } from '../../utils/api';
 import TeacherLayout from '../../components/teacher/TeacherLayout';
 import UserAvatar from '../../components/common/UserAvatar';
 import toast from 'react-hot-toast';
@@ -12,6 +12,11 @@ export default function Profile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
+  const [stats, setStats] = useState([
+    { icon: Award, label: 'Total Exams', value: '—', color: 'blue' },
+    { icon: TrendingUp, label: 'Active Students', value: '—', color: 'green' },
+    { icon: Calendar, label: 'Member Since', value: '—', color: 'purple' }
+  ]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,35 +28,40 @@ export default function Profile() {
     specialization: ''
   });
 
-  // Fetch current user profile data
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
-        const response = await userAPI.getCurrentUser();
-        setProfileData(response.data);
+        const [profileRes, statsRes] = await Promise.all([
+          userAPI.getCurrentUser(),
+          teacherAPI.dashboardStats()
+        ]);
+
+        const profile = profileRes.data;
+        setProfileData(profile);
         setFormData({
-          name: response.data.name || '',
-          email: response.data.email || '',
-          phone: response.data.phone || '',
-          location: response.data.location || '',
-          bio: response.data.bio || '',
-          date_of_birth: response.data.date_of_birth || '',
-          department: response.data.department || '',
-          specialization: response.data.specialization || ''
+          name: profile.name || '',
+          email: profile.email || '',
+          phone: profile.phone || '',
+          location: profile.location || '',
+          bio: profile.bio || '',
+          date_of_birth: profile.date_of_birth || '',
+          department: profile.department || '',
+          specialization: profile.specialization || ''
         });
+
+        const dashStats = statsRes.data;
+        setStats([
+          { icon: Award, label: 'Total Exams', value: String(dashStats.total_exams ?? 0), color: 'blue' },
+          { icon: TrendingUp, label: 'Active Students', value: String(dashStats.total_students ?? 0), color: 'green' },
+          { icon: Calendar, label: 'Member Since', value: profile.created_at || '—', color: 'purple' }
+        ]);
       } catch (error) {
         console.error('Failed to fetch profile:', error);
       }
     };
-    
-    fetchProfile();
-  }, []);
 
-  const stats = [
-    { icon: Award, label: 'Total Exams', value: '24', color: 'blue' },
-    { icon: TrendingUp, label: 'Active Students', value: '156', color: 'green' },
-    { icon: Calendar, label: 'Member Since', value: 'Jan 2026', color: 'purple' }
-  ];
+    fetchData();
+  }, []);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -174,18 +184,7 @@ export default function Profile() {
                   />
                 </div>
 
-                {/* Camera button with 3D effect */}
-                <motion.button 
-                  whileHover={{ scale: 1.1, translateZ: 10 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="absolute bottom-2 right-2 w-10 h-10 bg-white text-blue-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
-                  style={{
-                    transform: 'translateZ(40px)',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  <Camera className="w-5 h-5" />
-                </motion.button>
+
               </div>
             </motion.div>
 

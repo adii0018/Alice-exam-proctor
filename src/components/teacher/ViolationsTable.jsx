@@ -11,15 +11,92 @@ const severityConfig = {
 export default function ViolationsTable({ violations }) {
   const { darkMode } = useTheme();
 
-  if (darkMode) {
-    return (
-      <div style={{ backgroundColor: '#161b22', border: '1px solid #30363d', borderRadius: 12, overflow: 'hidden' }}>
+  const surface = darkMode ? '#161b22' : '#fff';
+  const border  = darkMode ? '#30363d' : '#e5e7eb';
+  const subtext = darkMode ? '#8b949e' : '#6b7280';
+  const heading = darkMode ? '#e6edf3' : '#111827';
+  const rowHover= darkMode ? '#1c2128' : '#f9fafb';
+
+  return (
+    <>
+      {/* ── Mobile: card list (hidden on md+) ── */}
+      <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {violations.map((v, index) => {
+          const sc = severityConfig[v.severity] || severityConfig.Low;
+          const SeverityIcon = sc.icon;
+          return (
+            <motion.div
+              key={v.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              style={{
+                background: surface, border: `1px solid ${border}`,
+                borderRadius: 12, padding: '14px 16px',
+              }}
+            >
+              {/* Top row: avatar + name + time */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                    background: darkMode ? '#21262d' : 'linear-gradient(135deg,#059669,#0d9488)',
+                    border: darkMode ? '1px solid #30363d' : 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 13, fontWeight: 700, color: darkMode ? '#3fb950' : '#fff',
+                  }}>
+                    {v.student[0]}
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: heading }}>{v.student}</p>
+                    <p style={{ margin: 0, fontSize: '0.72rem', color: subtext }}>{v.exam}</p>
+                  </div>
+                </div>
+                <span style={{ fontSize: '0.7rem', color: subtext }}>{v.time}</span>
+              </div>
+
+              {/* Bottom row: type + severity */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                <span style={{
+                  fontSize: '0.75rem', color: subtext,
+                  background: darkMode ? '#21262d' : '#f3f4f6',
+                  border: `1px solid ${border}`,
+                  padding: '3px 10px', borderRadius: 8,
+                }}>
+                  {v.type}
+                </span>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '3px 10px', borderRadius: 9999,
+                  background: darkMode ? sc.dark.bg : undefined,
+                  border: darkMode ? `1px solid ${sc.dark.border}` : undefined,
+                }}
+                  className={darkMode ? '' : `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${sc.light}`}
+                >
+                  <SeverityIcon style={{ width: 12, height: 12, color: darkMode ? sc.dark.color : undefined }} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: darkMode ? sc.dark.color : undefined }}>{v.severity}</span>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* ── Desktop: table (hidden on mobile) ── */}
+      <div
+        className="hidden md:block"
+        style={{ background: surface, border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}
+      >
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ backgroundColor: '#0d1117', borderBottom: '1px solid #21262d' }}>
+              <tr style={{ background: darkMode ? '#0d1117' : '#f9fafb', borderBottom: `1px solid ${border}` }}>
                 {['Student', 'Exam', 'Violation Type', 'Severity', 'Time'].map(h => (
-                  <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <th key={h} style={{
+                    padding: '10px 20px', textAlign: 'left',
+                    fontSize: 11, fontWeight: 600, color: subtext,
+                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                  }}>
                     {h}
                   </th>
                 ))}
@@ -35,36 +112,44 @@ export default function ViolationsTable({ violations }) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    style={{ borderBottom: '1px solid #21262d', transition: 'background 0.15s' }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1c2128'}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                    style={{ borderBottom: `1px solid ${darkMode ? '#21262d' : '#f3f4f6'}`, transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = rowHover}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
-                    <td style={{ padding: '14px 20px' }}>
+                    <td style={{ padding: '13px 20px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{
-                          width: 30, height: 30, borderRadius: '50%',
-                          backgroundColor: '#21262d', border: '1px solid #30363d',
+                          width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                          background: darkMode ? '#21262d' : 'linear-gradient(135deg,#059669,#0d9488)',
+                          border: darkMode ? '1px solid #30363d' : 'none',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 12, fontWeight: 600, color: '#3fb950',
+                          fontSize: 12, fontWeight: 700, color: darkMode ? '#3fb950' : '#fff',
                         }}>
                           {v.student[0]}
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: '#e6edf3' }}>{v.student}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: heading }}>{v.student}</span>
                       </div>
                     </td>
-                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#8b949e' }}>{v.exam}</td>
-                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#8b949e' }}>{v.type}</td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 6,
-                        padding: '3px 10px', borderRadius: 9999,
-                        backgroundColor: sc.dark.bg, border: `1px solid ${sc.dark.border}`,
-                      }}>
-                        <SeverityIcon style={{ width: 12, height: 12, color: sc.dark.color }} />
-                        <span style={{ fontSize: 11, fontWeight: 500, color: sc.dark.color }}>{v.severity}</span>
-                      </div>
+                    <td style={{ padding: '13px 20px', fontSize: 13, color: subtext }}>{v.exam}</td>
+                    <td style={{ padding: '13px 20px', fontSize: 13, color: subtext }}>{v.type}</td>
+                    <td style={{ padding: '13px 20px' }}>
+                      {darkMode ? (
+                        <div style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                          padding: '3px 10px', borderRadius: 9999,
+                          background: sc.dark.bg, border: `1px solid ${sc.dark.border}`,
+                        }}>
+                          <SeverityIcon style={{ width: 12, height: 12, color: sc.dark.color }} />
+                          <span style={{ fontSize: 11, fontWeight: 600, color: sc.dark.color }}>{v.severity}</span>
+                        </div>
+                      ) : (
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${sc.light}`}>
+                          <SeverityIcon className="w-3.5 h-3.5" />
+                          <span className="text-xs font-medium">{v.severity}</span>
+                        </div>
+                      )}
                     </td>
-                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#6e7681' }}>{v.time}</td>
+                    <td style={{ padding: '13px 20px', fontSize: 13, color: subtext }}>{v.time}</td>
                   </motion.tr>
                 );
               })}
@@ -72,55 +157,6 @@ export default function ViolationsTable({ violations }) {
           </table>
         </div>
       </div>
-    )
-  }
-
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              {['Student', 'Exam', 'Violation Type', 'Severity', 'Time'].map(h => (
-                <th key={h} className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {violations.map((v, index) => {
-              const sc = severityConfig[v.severity] || severityConfig.Low;
-              const SeverityIcon = sc.icon;
-              return (
-                <motion.tr
-                  key={v.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <span className="text-white text-xs font-medium">{v.student[0]}</span>
-                      </div>
-                      <span className="font-medium text-gray-900">{v.student}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{v.exam}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{v.type}</td>
-                  <td className="px-6 py-4">
-                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${sc.light}`}>
-                      <SeverityIcon className="w-3.5 h-3.5" />
-                      <span className="text-xs font-medium">{v.severity}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{v.time}</td>
-                </motion.tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </>
   );
 }

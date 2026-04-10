@@ -30,6 +30,7 @@ def generate_quiz_code():
 class User:
     @staticmethod
     def create(name, email, password_hash, role='student'):
+        from datetime import datetime
         user = {
             'name': name,
             'email': email,
@@ -41,7 +42,7 @@ class User:
             'date_of_birth': None,
             'department': None,
             'profile_picture': None,
-            'created_at': None
+            'created_at': datetime.utcnow()
         }
         result = users_collection.insert_one(user)
         user['_id'] = result.inserted_id

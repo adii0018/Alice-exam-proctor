@@ -6,6 +6,7 @@ import MobileBottomNav from './MobileBottomNav';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import UserAvatar from '../common/UserAvatar';
+import LightweightBackground from '../common/LightweightBackground';
 
 // Alice logo — same as student dashboard
 const AliceLogo = ({ size = 36, dark }) => (
@@ -135,10 +136,11 @@ export default function TeacherLayout({ children, title }) {
     <div
       style={darkMode
         ? { minHeight: '100vh', backgroundColor: '#0d1117', position: 'relative' }
-        : { minHeight: '100vh', backgroundColor: '#f9fafb' }
+        : { minHeight: '100vh', backgroundColor: '#f6f8fa', position: 'relative' }
       }
     >
       <StarField active={darkMode} />
+      {!darkMode && <LightweightBackground />}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Desktop Sidebar */}
@@ -180,7 +182,7 @@ export default function TeacherLayout({ children, title }) {
                     className="text-lg font-bold"
                     style={darkMode 
                       ? { color: '#e6edf3' } 
-                      : { background: 'linear-gradient(to right, #2563eb, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                      : { background: 'linear-gradient(to right, #059669, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
                     }
                   >
                     {getTitle()}
@@ -193,7 +195,7 @@ export default function TeacherLayout({ children, title }) {
                 size={40}
                 showBorder={darkMode}
                 borderColor={gh.avatarBorder}
-                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #059669, #0d9488)'}
               />
             </div>
           </div>

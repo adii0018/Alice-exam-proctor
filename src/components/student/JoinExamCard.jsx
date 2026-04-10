@@ -320,7 +320,7 @@ const JoinExamCard = ({ onJoinExam }) => {
                       color: '#388bfd', fontWeight: 700, fontSize: '14px', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                     } : {}}
-                    className={darkMode ? '' : 'w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2'}
+                    className={darkMode ? '' : 'w-full py-4 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl font-bold hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2'}
                   >
                     <FiPlay style={{ width: 16, height: 16 }} />
                     <span>Retry Pre-Check</span>
@@ -330,12 +330,12 @@ const JoinExamCard = ({ onJoinExam }) => {
                 <div style={darkMode ? {
                   padding: '16px', borderRadius: '10px',
                   backgroundColor: 'rgba(56,139,253,0.06)', border: '1px solid rgba(56,139,253,0.2)',
-                } : {}} className={darkMode ? '' : 'p-4 rounded-2xl bg-blue-50 border border-blue-200'}>
+                } : {}} className={darkMode ? '' : 'p-4 rounded-2xl bg-emerald-50 border border-emerald-200'}>
                   <div className="flex items-center gap-3">
-                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent" />
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-emerald-600 border-t-transparent" />
                     <div>
-                      <p style={{ fontSize: '13px', fontWeight: 500, color: darkMode ? '#388bfd' : '#1e40af' }}>Running system checks...</p>
-                      <p style={{ fontSize: '12px', color: darkMode ? '#8b949e' : '#3b82f6', marginTop: '2px' }}>Please wait</p>
+                      <p style={{ fontSize: '13px', fontWeight: 500, color: darkMode ? '#388bfd' : '#065f46' }}>Running system checks...</p>
+                      <p style={{ fontSize: '12px', color: darkMode ? '#8b949e' : '#059669', marginTop: '2px' }}>Please wait</p>
                     </div>
                   </div>
                 </div>
@@ -386,7 +386,7 @@ const PreCheckItem = ({ icon: Icon, label, status, error, darkMode }) => (
           <FiX style={{ width: 20, height: 20, color: darkMode ? '#f85149' : '#dc2626' }} />
         </motion.div>
       ) : (
-        <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600" />
+        <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-emerald-600" />
       )}
     </div>
   </motion.div>

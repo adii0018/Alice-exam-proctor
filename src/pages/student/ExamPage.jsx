@@ -187,6 +187,14 @@ const ExamPage = () => {
     if (exam) setupCamera();
   }, [exam]);
 
+  // If this exam was already submitted, redirect straight to result page
+  useEffect(() => {
+    const stored = localStorage.getItem(`exam_result_${examId}`);
+    if (stored) {
+      navigate(`/student/exam/${examId}/result`, { replace: true });
+    }
+  }, [examId]);
+
   const fetchExamData = async () => {
     try {
       setLoading(true);
@@ -517,7 +525,7 @@ const ExamPage = () => {
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Failed to Load Exam</h2>
           <p className="text-gray-600 mb-6">{error}</p>
-          <button onClick={() => window.location.reload()} className="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 mb-3">Try Again</button>
+          <button onClick={() => window.location.reload()} className="w-full py-3 px-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 mb-3">Try Again</button>
           <button onClick={() => navigate('/student')} className="w-full py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300">Back to Dashboard</button>
           <p className="text-xs text-gray-500 mt-4">Redirecting in 5 seconds...</p>
         </div>

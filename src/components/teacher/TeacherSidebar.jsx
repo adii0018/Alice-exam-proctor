@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, Users, MonitorPlay,
   BarChart3, AlertTriangle, Settings, UserCircle,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
+import UserAvatar from '../common/UserAvatar';
 
 // Alice logo — same as landing page
 const AliceLogo = ({ size = 36, dark }) => (
@@ -23,8 +25,8 @@ const AliceLogo = ({ size = 36, dark }) => (
       <rect width="100" height="100" rx="22" fill="url(#lgTeacher)"/>
       <defs>
         <linearGradient id="lgTeacher" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#3b82f6"/>
-          <stop offset="100%" stopColor="#9333ea"/>
+          <stop offset="0%" stopColor="#059669"/>
+          <stop offset="100%" stopColor="#0d9488"/>
         </linearGradient>
       </defs>
       <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.95"/>
@@ -50,6 +52,7 @@ export default function TeacherSidebar({ collapsed, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { darkMode } = useTheme();
+  const { user } = useAuth();
 
   const gh = {
     bg: darkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.95)',
@@ -57,9 +60,9 @@ export default function TeacherSidebar({ collapsed, onToggle }) {
     text: darkMode ? '#e6edf3' : '#374151',
     subText: darkMode ? '#8b949e' : '#6b7280',
     hoverBg: darkMode ? '#21262d' : '#f9fafb',
-    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(59,130,246,0.06)',
-    activeText: darkMode ? '#3fb950' : '#2563eb',
-    activeBar: darkMode ? '#2ea043' : '#2563eb',
+    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(5,150,105,0.06)',
+    activeText: darkMode ? '#3fb950' : '#059669',
+    activeBar: darkMode ? '#2ea043' : '#059669',
     iconColor: darkMode ? '#8b949e' : '#6b7280',
     chevronColor: darkMode ? '#8b949e' : '#6b7280',
     footerText: darkMode ? '#6e7681' : '#9ca3af',
@@ -211,18 +214,39 @@ export default function TeacherSidebar({ collapsed, onToggle }) {
 
       {/* Footer */}
       <div style={{ padding: 16, borderTop: `1px solid ${gh.border}` }}>
-        <AnimatePresence mode="wait">
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{ fontSize: '11px', color: gh.footerText, textAlign: 'center' }}
-            >
-              v2.0.1 • 2026
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <Link to="/teacher/profile">
+          <div
+            className={`p-3 rounded-xl ${collapsed ? 'flex justify-center' : 'flex items-center gap-3'} cursor-pointer transition-all`}
+            style={darkMode
+              ? { backgroundColor: '#161b22', border: `1px solid ${gh.bottomBorder}` }
+              : { background: 'linear-gradient(135deg, #ecfdf5, #f0fdf4)', border: '1px solid #a7f3d0' }
+            }
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            <UserAvatar
+              user={user}
+              size={32}
+              showBorder={darkMode}
+              borderColor={gh.bottomBorder}
+              fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #059669, #0d9488)'}
+            />
+            <AnimatePresence mode="wait">
+              {!collapsed && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <p className="text-sm font-medium" style={{ color: darkMode ? '#e6edf3' : '#111827' }}>
+                    {user?.name || user?.username || 'Teacher'}
+                  </p>
+                  <p style={{ fontSize: '11px', color: gh.subText }}>View Profile</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </Link>
       </div>
     </motion.aside>
   );

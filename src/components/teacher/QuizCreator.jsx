@@ -134,7 +134,7 @@ const QuizCreator = ({ onClose, editQuizId = null }) => {
                 navigator.clipboard.writeText(quizCode);
                 toast.success('Code copied!');
               }}
-              className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+              className="px-2 py-1 bg-emerald-500 text-white rounded text-xs hover:bg-emerald-600"
             >
               Copy
             </button>

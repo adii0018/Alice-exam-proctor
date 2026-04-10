@@ -160,7 +160,7 @@ const DashboardNavbar = ({ title = 'Dashboard', sidebarCollapsed }) => {
                 size={40}
                 showBorder={darkMode}
                 borderColor={gh.avatarBorder}
-                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+                fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #059669, #0d9488)'}
               />
               <div className="text-left hidden md:block">
                 <p className="text-sm font-medium" style={{ color: gh.titleColor }}>{user?.name || 'Student'}</p>

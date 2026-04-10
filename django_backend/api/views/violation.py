@@ -181,6 +181,8 @@ def get_quiz_violations_by_student(request, quiz_id):
             student_map[sid]['violations'].append({
                 'type': v['violation_type'],
                 'severity': v['severity'],
+                'face_count': v.get('face_count'),
+                'metadata': v.get('metadata', {}),
                 'timestamp': v['timestamp'].isoformat() if isinstance(v['timestamp'], datetime) else v['timestamp'],
             })
 

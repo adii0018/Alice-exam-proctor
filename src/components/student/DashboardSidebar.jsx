@@ -26,8 +26,8 @@ const AliceLogo = ({ size = 36, dark }) => (
       <rect width="100" height="100" rx="22" fill="url(#lgSide)"/>
       <defs>
         <linearGradient id="lgSide" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#3b82f6"/>
-          <stop offset="100%" stopColor="#9333ea"/>
+          <stop offset="0%" stopColor="#059669"/>
+          <stop offset="100%" stopColor="#0d9488"/>
         </linearGradient>
       </defs>
       <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="white" opacity="0.95"/>
@@ -61,16 +61,16 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
     text: darkMode ? '#e6edf3' : '#374151',
     subText: darkMode ? '#8b949e' : '#6b7280',
     hoverBg: darkMode ? '#21262d' : '#f9fafb',
-    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(59,130,246,0.05)',
-    activeText: darkMode ? '#3fb950' : '#2563eb',
-    activeBar: darkMode ? '#2ea043' : '#2563eb',
+    activeBg: darkMode ? 'rgba(46,160,67,0.1)' : 'rgba(5,150,105,0.06)',
+    activeText: darkMode ? '#3fb950' : '#059669',
+    activeBar: darkMode ? '#2ea043' : '#059669',
     iconColor: darkMode ? '#8b949e' : '#6b7280',
-    bottomBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #eff6ff, #f5f3ff)',
-    bottomBorder: darkMode ? '#30363d' : '#dbeafe',
+    bottomBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #ecfdf5, #f0fdf4)',
+    bottomBorder: darkMode ? '#30363d' : '#a7f3d0',
     avatarBg: darkMode ? '#21262d' : undefined,
     avatarBorder: darkMode ? '#30363d' : undefined,
     chevronColor: darkMode ? '#8b949e' : '#6b7280',
-    logoBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #3b82f6, #9333ea)',
+    logoBg: darkMode ? '#161b22' : 'linear-gradient(135deg, #059669, #0d9488)',
     logoBorder: darkMode ? '#30363d' : 'none',
   }
 
@@ -107,7 +107,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
                 style={{
-                  background: darkMode ? 'transparent' : 'linear-gradient(135deg, #3b82f6, #9333ea)',
+                  background: darkMode ? 'transparent' : 'linear-gradient(135deg, #059669, #0d9488)',
                   border: darkMode ? 'none' : 'none',
                 }}
               >
@@ -118,7 +118,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                   className="text-lg font-bold"
                   style={darkMode
                     ? { color: '#e6edf3' }
-                    : { background: 'linear-gradient(to right, #2563eb, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                    : { background: 'linear-gradient(to right, #059669, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
                   }
                 >
                   Alice
@@ -211,7 +211,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
             className={`p-3 rounded-xl ${isCollapsed ? 'flex justify-center' : 'flex items-center gap-3'} cursor-pointer transition-all`}
             style={darkMode
               ? { backgroundColor: '#161b22', border: `1px solid ${gh.bottomBorder}` }
-              : { background: 'linear-gradient(135deg, #eff6ff, #f5f3ff)', border: '1px solid #dbeafe' }
+              : { background: 'linear-gradient(135deg, #ecfdf5, #f0fdf4)', border: '1px solid #a7f3d0' }
             }
             onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
@@ -221,7 +221,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
               size={32}
               showBorder={darkMode}
               borderColor={gh.avatarBorder}
-              fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #3b82f6, #9333ea)'}
+              fallbackGradient={darkMode ? undefined : 'linear-gradient(135deg, #059669, #0d9488)'}
             />
             <AnimatePresence mode="wait">
               {!isCollapsed && (

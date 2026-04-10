@@ -51,4 +51,9 @@ export const userAPI = {
   updateProfile: (data) => api.put('/auth/profile/', data)
 }
 
+// Teacher stats APIs
+export const teacherAPI = {
+  dashboardStats: () => api.get('/teacher/dashboard-stats/'),
+}
+
 export default api

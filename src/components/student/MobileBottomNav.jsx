@@ -36,19 +36,19 @@ const MobileBottomNav = () => {
                 whileTap={{ scale: 0.9 }}
                 className={`
                   p-2 rounded-xl transition-colors
-                  ${active ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
+                  ${active ? 'bg-emerald-50 dark:bg-emerald-900/30' : ''}
                 `}
               >
-                <Icon className={`w-6 h-6 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
+                <Icon className={`w-6 h-6 ${active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-400'}`} />
               </motion.div>
-              <span className={`text-xs font-medium ${active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}>
+              <span className={`text-xs font-medium ${active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-400'}`}>
                 {item.label}
               </span>
               
               {active && (
                 <motion.div
                   layoutId="mobileActiveIndicator"
-                  className="absolute -top-1 w-1 h-1 bg-blue-600 rounded-full"
+                  className="absolute -top-1 w-1 h-1 bg-emerald-600 rounded-full"
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
