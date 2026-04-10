@@ -46,7 +46,8 @@ export default function Exams() {
     date: new Date(quiz.createdAt).toLocaleString(),
     duration: `${quiz.duration} min`,
     students: quiz.submissions?.length || 0,
-    is_active: quiz.is_active || false
+    is_active: quiz.is_active || false,
+    max_students: quiz.max_students || 0
   }));
 
   const handleExamAction = async (action, exam) => {

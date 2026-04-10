@@ -42,11 +42,12 @@ def quizzes_handler(request):
             description = data.get('description', '')
             duration = data.get('duration', 30)
             questions = data.get('questions', [])
+            max_students = data.get('max_students', 0)  # 0 = unlimited
             
             if not title or not questions:
                 return JsonResponse({'error': 'Missing required fields'}, status=400)
             
-            quiz = Quiz.create(title, description, duration, questions, request.user['_id'])
+            quiz = Quiz.create(title, description, duration, questions, request.user['_id'], max_students)
             
             return JsonResponse(serialize_quiz(quiz))
         except Exception as e:
@@ -85,6 +86,27 @@ def get_quiz_by_code(request, code):
         # Students can only join active quizzes
         if request.user['role'] == 'student' and not quiz.get('is_active', False):
             return JsonResponse({'error': 'This quiz is not active. Please contact your teacher.'}, status=403)
+        
+        if request.user['role'] == 'student':
+            quiz_id = str(quiz['_id'])
+            student_id = str(request.user['_id'])
+
+            # ✅ Check: One attempt per student
+            if Submission.has_student_submitted(quiz_id, student_id):
+                return JsonResponse(
+                    {'error': 'Aapne yeh quiz pehle se de diya hai. Ek student sirf ek baar quiz de sakta hai.'},
+                    status=403
+                )
+
+            # ✅ Check: Max students quota
+            max_students = quiz.get('max_students', 0)
+            if max_students and max_students > 0:
+                submission_count = Submission.count_submissions_for_quiz(quiz_id)
+                if submission_count >= max_students:
+                    return JsonResponse(
+                        {'error': f'Yeh quiz full ho gayi hai. Maximum {max_students} students allowed hain.'},
+                        status=403
+                    )
         
         return JsonResponse(serialize_quiz(quiz))
     except Exception as e:
@@ -127,6 +149,25 @@ def submit_quiz(request, quiz_id):
 
         if request.user.get('role') == 'student' and not quiz.get('is_active', False):
             return JsonResponse({'error': 'This quiz is not active. Please contact your teacher.'}, status=403)
+
+        student_id = str(request.user['_id'])
+
+        # ✅ Double-check: One attempt per student (prevent duplicate submissions)
+        if Submission.has_student_submitted(quiz_id, student_id):
+            return JsonResponse(
+                {'error': 'Aapne yeh quiz pehle se submit kar diya hai. Duplicate submission allowed nahi hai.'},
+                status=403
+            )
+
+        # ✅ Double-check: Max students quota before saving
+        max_students = quiz.get('max_students', 0)
+        if max_students and max_students > 0:
+            submission_count = Submission.count_submissions_for_quiz(quiz_id)
+            if submission_count >= max_students:
+                return JsonResponse(
+                    {'error': f'Yeh quiz full ho gayi hai. Maximum {max_students} students allowed hain.'},
+                    status=403
+                )
 
         # Calculate score
         correct = 0
@@ -216,6 +257,8 @@ def update_quiz(request, quiz_id):
             update_data['questions'] = data['questions']
         if 'status' in data:
             update_data['status'] = data['status']
+        if 'max_students' in data:
+            update_data['max_students'] = int(data['max_students']) if data['max_students'] else 0
         
         # Update the quiz
         result = Quiz.update(quiz_id, update_data)
