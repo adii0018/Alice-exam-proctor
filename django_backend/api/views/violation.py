@@ -186,14 +186,15 @@ def get_quiz_violations_by_student(request, quiz_id):
                 'timestamp': v['timestamp'].isoformat() if isinstance(v['timestamp'], datetime) else v['timestamp'],
             })
 
-        # Fetch student names in bulk
+        # Fetch student names + emails in bulk
         if student_map:
             student_ids = [ObjectId(sid) for sid in student_map.keys()]
-            students = list(users_collection.find({'_id': {'$in': student_ids}}, {'name': 1}))
+            students = list(users_collection.find({'_id': {'$in': student_ids}}, {'name': 1, 'email': 1}))
             for s in students:
                 sid = str(s['_id'])
                 if sid in student_map:
                     student_map[sid]['student_name'] = s.get('name', 'Unknown')
+                    student_map[sid]['student_email'] = s.get('email', '')
 
         result = sorted(student_map.values(), key=lambda x: len(x['violations']), reverse=True)
         return JsonResponse({'students': result}, safe=False)

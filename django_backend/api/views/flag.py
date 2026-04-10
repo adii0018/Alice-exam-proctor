@@ -80,6 +80,52 @@ def create_flag(request):
 
 
 @csrf_exempt
+@require_http_methods(["GET"])
+@require_role('teacher')
+def get_quiz_flags_by_student(request, quiz_id):
+    """
+    Get all flags for a quiz grouped by student with names + emails
+    GET /api/flags/quiz/<quiz_id>/students/
+    """
+    try:
+        # Verify quiz belongs to this teacher
+        quiz = quizzes_collection.find_one({'_id': ObjectId(quiz_id)})
+        if not quiz or str(quiz.get('teacher_id')) != str(request.user['_id']):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+
+        flags = list(flags_collection.find({'quiz_id': ObjectId(quiz_id)}).sort('timestamp', -1))
+
+        # Group by student
+        student_map = {}
+        for f in flags:
+            sid = str(f['student_id'])
+            if sid not in student_map:
+                student_map[sid] = {'student_id': sid, 'student_name': 'Unknown', 'student_email': '', 'violations': []}
+            student_map[sid]['violations'].append({
+                'type': f.get('type', 'UNKNOWN'),
+                'severity': f.get('severity', 'medium'),
+                'face_count': f.get('metadata', {}).get('face_count'),
+                'metadata': f.get('metadata', {}),
+                'timestamp': f['timestamp'] if isinstance(f['timestamp'], str) else str(f['timestamp']),
+            })
+
+        # Enrich with student names + emails
+        if student_map:
+            student_ids = [ObjectId(sid) for sid in student_map.keys()]
+            students = list(users_collection.find({'_id': {'$in': student_ids}}, {'name': 1, 'email': 1}))
+            for s in students:
+                sid = str(s['_id'])
+                if sid in student_map:
+                    student_map[sid]['student_name'] = s.get('name', 'Unknown')
+                    student_map[sid]['student_email'] = s.get('email', '')
+
+        result = sorted(student_map.values(), key=lambda x: len(x['violations']), reverse=True)
+        return JsonResponse({'students': result})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
 @require_http_methods(["PUT"])
 @require_role('teacher')
 def update_flag(request, flag_id):

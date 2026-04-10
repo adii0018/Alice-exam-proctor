@@ -21,6 +21,7 @@ urlpatterns = [
     # Flags
     path('flags/', flag.list_flags, name='list_flags'),
     path('flags/create/', flag.create_flag, name='create_flag'),
+    path('flags/quiz/<str:quiz_id>/students/', flag.get_quiz_flags_by_student, name='quiz_flags_by_student'),
     path('flags/<str:flag_id>/update/', flag.update_flag, name='update_flag'),
     
     # Violations

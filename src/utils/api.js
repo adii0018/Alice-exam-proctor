@@ -31,7 +31,8 @@ export const quizAPI = {
 export const flagAPI = {
   getAll: () => api.get('/flags/'),
   create: (data) => api.post('/flags/create/', data),
-  update: (id, data) => api.put(`/flags/${id}/update/`, data)
+  update: (id, data) => api.put(`/flags/${id}/update/`, data),
+  getByQuizStudents: (quizId) => api.get(`/flags/quiz/${quizId}/students/`),
 }
 
 // Violation APIs
