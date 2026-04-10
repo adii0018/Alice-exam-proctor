@@ -63,54 +63,11 @@ export const useSmartAudioDetection = ({
     const now = Date.now();
     if (now - lastWarningRef.current < 2500) return; // avoid spam, keep alerts immediate
 
-    // Always notify student on detected voice event (not only high cumulative risk)
+    // Only show red high-severity alert; medium/low/score-based toasts are suppressed
     if (violation.severity === 'high') {
       toast.error('🚨 Loud/continuous voice detected in background', {
         duration: 7000,
         style: { background: '#dc2626', color: 'white' },
-      });
-      lastWarningRef.current = now;
-      return;
-    }
-
-    if (violation.severity === 'medium') {
-      toast.error('⚠️ Background speaking detected. Stay silent.', {
-        duration: 5000,
-        style: { background: '#ea580c', color: 'white' },
-      });
-      lastWarningRef.current = now;
-      return;
-    }
-
-    if (violation.severity === 'low') {
-      toast('⚠️ Voice detected. Please remain silent during exam.', {
-        duration: 3500,
-        icon: '⚠️',
-        style: { background: '#d97706', color: 'white' },
-      });
-      lastWarningRef.current = now;
-      return;
-    }
-
-    // Fallback: keep old score-based behavior for unknown severity values
-    const score = violation.decayedRiskScore ?? violation.riskScore;
-    if (score > 90) {
-      toast.error('🚨 High Risk: Exam flagged for review', {
-        duration: 8000,
-        style: { background: '#dc2626', color: 'white' },
-      });
-      lastWarningRef.current = now;
-    } else if (score > 60) {
-      toast.error('⚠️ Suspicious Activity: Admin has been notified', {
-        duration: 6000,
-        style: { background: '#ea580c', color: 'white' },
-      });
-      lastWarningRef.current = now;
-    } else if (score > 30) {
-      toast('⚠️ Audio Detected: Please remain silent during the exam', {
-        duration: 4000,
-        icon: '⚠️',
-        style: { background: '#d97706', color: 'white' },
       });
       lastWarningRef.current = now;
     }

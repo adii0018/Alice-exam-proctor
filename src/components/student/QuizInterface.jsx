@@ -22,10 +22,13 @@ const QuizInterface = ({ quiz, onExit }) => {
   // ── Proctoring ──────────────────────────────────────────────────────────
   const {
     isReady, faceCount, isLookingAway, gazeDirection,
-    score, decision, tabSwitchCount, violations, getReport,
+    score, decision, tabSwitchCount, violations, getReport, gazePattern,
   } = useProctoring({
     videoRef,
     enabled: true,
+    onGazePattern: () => {
+      toast('👁️ Repetitive eye movement detected. Please focus on the screen.', { id: 'gaze-pattern', icon: '⚠️', duration: 5000 })
+    },
     onViolation: async (entry) => {
       // Persist every confirmed violation to the backend
       try {

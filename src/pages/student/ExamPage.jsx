@@ -9,6 +9,7 @@ import ExitConfirmModal from '../../components/exam/ExitConfirmModal';
 import RulesModal from '../../components/exam/RulesModal';
 import MultiFaceWarning from '../../components/exam/MultiFaceWarning';
 import GazeWarning from '../../components/exam/GazeWarning';
+import AudioWarning from '../../components/exam/AudioWarning';
 import AudioCalibrationModal from '../../components/exam/AudioCalibrationModal';
 import AudioRiskIndicator from '../../components/exam/AudioRiskIndicator';
 import useProctoring, { Decision } from '../../hooks/useProctoring';
@@ -42,6 +43,12 @@ const ExamPage = () => {
   const [audioCalibrationDone, setAudioCalibrationDone] = useState(false);
   const [audioViolations, setAudioViolations] = useState([]);
 
+  // ── Audio Warning Banner (same style as MultiFaceWarning) ───────────────
+  const [showAudioWarning, setShowAudioWarning] = useState(false);
+  const [audioWarningSeverity, setAudioWarningSeverity] = useState('medium');
+  const [audioWarningMessage, setAudioWarningMessage] = useState('');
+  const audioWarningTimerRef = useRef(null);
+
   const videoRef = useRef(null);
   const wsRef = useRef(null);
 
@@ -53,9 +60,14 @@ const ExamPage = () => {
   const {
     isReady, faceCount, isLookingAway, gazeDirection,
     score, decision, tabSwitchCount, violations, getReport,
+    calibrateGaze, isGazeCalibrated, gazePattern,
   } = useProctoring({
     videoRef,
     enabled: !!exam,
+    onGazePattern: (pattern) => {
+      // Play alert sound for repetitive patterns
+      soundManager.playViolationAlert();
+    },
     onViolation: async (entry) => {
       soundManager.playViolationAlert();
       try {
@@ -98,7 +110,7 @@ const ExamPage = () => {
   } = useSmartAudioDetection({
     enabled: !!exam,
     autoStart: true,          // auto-starts monitoring once calibration done
-    onViolation: async (violation) => {
+    onViolation: async (violation, throttled) => {
       // Skip internal system events (recalibration notices)
       if (violation._isSystemEvent) return;
 
@@ -112,7 +124,21 @@ const ExamPage = () => {
       ].slice(0, 200));
 
       soundManager.playViolationAlert();
-      showWarningToast('Background voice detected. Please remain silent.');
+
+      // Show AudioWarning banner (same style as MultiFaceWarning)
+      if (!throttled) {
+        const sev = String(violation.severity || '').toLowerCase();
+        if (sev === 'high') {
+          showWarningToast('🚨 Loud voice detected! Your exam is flagged for review.');
+        } else {
+          triggerAudioWarning(
+            sev,
+            sev === 'medium'
+              ? 'Background speaking detected. Please stay silent.'
+              : 'Voice detected. Please remain silent during the exam.'
+          );
+        }
+      }
 
       // Send audio violation to backend
       try {
@@ -392,6 +418,14 @@ const ExamPage = () => {
     setTimeout(() => setShowWarning(false), 4000);
   };
 
+  const triggerAudioWarning = (severity, message) => {
+    setAudioWarningSeverity(severity);
+    setAudioWarningMessage(message);
+    setShowAudioWarning(true);
+    if (audioWarningTimerRef.current) clearTimeout(audioWarningTimerRef.current);
+    audioWarningTimerRef.current = setTimeout(() => setShowAudioWarning(false), 4500);
+  };
+
   const handleAnswerSelect = (questionId, optionId) => {
     soundManager.playClick();
     setAnswers(prev => ({ ...prev, [questionId]: optionId }));
@@ -595,7 +629,12 @@ const ExamPage = () => {
       </AnimatePresence>
 
       <MultiFaceWarning faceCount={faceCount} isVisible={showMultiFaceWarning} />
-      <GazeWarning isVisible={showGazeWarning} direction={gazeDirection} duration={0} />
+      <GazeWarning isVisible={showGazeWarning} direction={gazeDirection} duration={0} gazePattern={gazePattern} />
+      <AudioWarning
+        isVisible={showAudioWarning}
+        severity={audioWarningSeverity}
+        message={audioWarningMessage}
+      />
 
       {showExitConfirm && (
         <ExitConfirmModal
@@ -615,8 +654,12 @@ const ExamPage = () => {
         calibrationProgress={calibrationProgress}
         isCalibrated={isCalibrated}
         onStartCalibration={async () => {
-          const ok = await startCalibration();
-          if (!ok) {
+          // Run audio + gaze calibration in parallel (both ~3 s)
+          const [audioOk] = await Promise.all([
+            startCalibration(),
+            calibrateGaze(3000),
+          ]);
+          if (!audioOk) {
             // Mic unavailable — close modal and proceed without audio
             setAudioCalibrationDone(true);
             setShowCalibrationModal(false);

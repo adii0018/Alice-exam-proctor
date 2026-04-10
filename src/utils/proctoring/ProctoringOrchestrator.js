@@ -23,6 +23,7 @@ import { CheatingScoreEngine, Decision } from './CheatingScoreEngine.js';
 import { FaceDetectionEngine } from './FaceDetectionEngine.js';
 import { HeadPoseEngine }      from './HeadPoseEngine.js';
 import { TabSwitchEngine }     from './TabSwitchEngine.js';
+import { GazePatternAnalyzer } from './GazePatternAnalyzer.js';
 import { EventType }           from './ProctoringLogger.js';
 
 export { Decision, EventType };
@@ -44,11 +45,19 @@ export class ProctoringOrchestrator {
     onFaceCount,
     onGazeChange,
     onTabSwitch,
+    onGazePattern,
     faceIntervalMs = 800,
     gazeIntervalMs = 400,
   } = {}) {
     this._logger = new ProctoringLogger();
     this._scorer = new CheatingScoreEngine({ logger: this._logger });
+
+    // GazePatternAnalyzer — detects repetitive eye movement patterns
+    this._gazePatternAnalyzer = new GazePatternAnalyzer({
+      onPattern: payload => onGazePattern?.(payload),
+      logger:    this._logger,
+      scorer:    this._scorer,
+    });
 
     this._faceEngine = new FaceDetectionEngine({
       logger:            this._logger,
@@ -57,10 +66,21 @@ export class ProctoringOrchestrator {
       intervalMs:        faceIntervalMs,
     });
 
+    // Wrap onGazeChange to also feed the pattern analyzer
+    const _wrappedGazeChange = (data) => {
+      onGazeChange?.(data);
+      // Feed every direction event (including 'center') into pattern analyzer
+      this._gazePatternAnalyzer.push(data.direction ?? 'center', {
+        irisH:     data.irisH,
+        irisV:     data.irisV,
+        gazeScore: data.gazeScore,
+      });
+    };
+
     this._gazeEngine = new HeadPoseEngine({
       logger:        this._logger,
       scorer:        this._scorer,
-      onGazeChange:  onGazeChange,
+      onGazeChange:  _wrappedGazeChange,
       intervalMs:    gazeIntervalMs,
     });
 
@@ -110,6 +130,7 @@ export class ProctoringOrchestrator {
     this._faceEngine.stop();
     this._gazeEngine.stop();
     this._tabEngine.stop();
+    this._gazePatternAnalyzer.reset();
   }
 
   destroy() {
