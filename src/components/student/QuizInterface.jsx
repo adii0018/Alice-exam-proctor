@@ -18,6 +18,7 @@ const QuizInterface = ({ quiz, onExit }) => {
   const timerRef = useRef(null)
   const hasSubmittedRef = useRef(false)
   const handleSubmitRef = useRef(null)
+  const flagCountRef = useRef(0)  // track total flags for auto-terminate
 
   // ── Proctoring ──────────────────────────────────────────────────────────
   const {
@@ -30,7 +31,23 @@ const QuizInterface = ({ quiz, onExit }) => {
       toast('👁️ Repetitive eye movement detected. Please focus on the screen.', { id: 'gaze-pattern', icon: '⚠️', duration: 5000 })
     },
     onViolation: async (entry) => {
-      // Persist every confirmed violation to the backend
+      // Count FIRST before any async operation
+      flagCountRef.current += 1
+      const count = flagCountRef.current
+      const remaining = 3 - count
+
+      if (remaining > 0) {
+        toast.error(
+          `⚠️ Warning ${count}/3 — ${remaining} more violation${remaining !== 1 ? 's' : ''} will end your exam!`,
+          { id: 'flag-warn', duration: 5000 }
+        )
+      } else {
+        // 3rd violation — show toast then auto-submit
+        toast.error('🚨 3 violations detected — Exam is being terminated!', { id: 'flag-terminate', duration: 6000 })
+        setTimeout(() => { handleSubmitRef.current?.() }, 1500)
+      }
+
+      // Persist violation to backend (non-blocking)
       try {
         await flagAPI.create({
           quiz_id:   quiz._id,

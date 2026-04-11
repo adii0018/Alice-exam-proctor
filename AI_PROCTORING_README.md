@@ -46,6 +46,7 @@ Student ki aankhein aur sar ki direction track karta hai.
 **Kaise kaam karta hai:**
 - Har 400ms pe face ke landmarks detect hote hain
 - Yaw (left/right), Pitch (up/down), Roll (tilt) angles calculate hote hain
+
 - Pehli baar calibration hoti hai student ki neutral position ke liye
 - Agar student zyada der tak door dekhe toh violation log hota hai
 
