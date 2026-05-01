@@ -1,34 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import TestimonialsSection from '../components/common/TestimonialsSection'
 import PremiumFooter from '../components/common/PremiumFooter'
-
-// ── Alice logo — leaf, GitHub dark theme ─────────────────────────────────────
-function AliceLogo({ size = 32 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-      {/* Dark background */}
-      <rect width="100" height="100" rx="22" fill="#161b22"/>
-      <rect width="100" height="100" rx="22" fill="none" stroke="#30363d" strokeWidth="2"/>
-
-      {/* Right leaf lobe */}
-      <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z"
-            fill="#3fb950" opacity="0.95"/>
-
-      {/* Left leaf lobe (darker) */}
-      <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z"
-            fill="#2ea043" opacity="0.7"/>
-
-      {/* Center vein */}
-      <line x1="50" y1="22" x2="50" y2="78"
-            stroke="#0d1117" strokeWidth="1.8" strokeLinecap="round" opacity="0.35"/>
-
-      {/* Stem */}
-      <path d="M50 82 Q48 89 44 93"
-            fill="none" stroke="#2ea043" strokeWidth="2.5" strokeLinecap="round"/>
-    </svg>
-  )
-}
+import GlassmorphicNav from '../components/common/GlassmorphicNav'
+import AliceLogo from '../components/common/AliceLogo'
 
 // ── Star field canvas ─────────────────────────────────────────────────────────
 function StarField() {
@@ -113,7 +88,12 @@ function useReveal(threshold = 0.12) {
 }
 
 // ── static data ───────────────────────────────────────────────────────────────
-const NAV_LINKS = ['Features', 'How it Works', 'GitHub', 'Contact']
+const NAV_ITEMS = [
+  { label: 'Home', href: '/' },
+  { label: 'Features', href: '#features' },
+  { label: 'How it Works', href: '#how-it-works' },
+  { label: 'Contact', href: '#contact' }
+]
 
 const FEATURES = [
   {
@@ -197,8 +177,8 @@ const CODE_SNIPPET = `// Alice Proctor — violation event
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function GithubLandingPage() {
+  const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [submitting, setSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState(null)
@@ -397,6 +377,9 @@ export default function GithubLandingPage() {
         /* divider */
         .gh-divider { border: none; border-top: 1px solid #21262d; }
 
+        /* divider */
+        .gh-divider { border: none; border-top: 1px solid #21262d; }
+
         /* reveal */
         .reveal { transition: opacity 0.6s ease, transform 0.6s ease; }
         .reveal-hidden { opacity: 0; transform: translateY(24px); }
@@ -419,84 +402,44 @@ export default function GithubLandingPage() {
         }
       `}</style>
 
-      {/* ── NAVBAR ─────────────────────────────────────────────────────────── */}
-      <header style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        background: scrolled ? 'rgba(13,17,23,0.95)' : '#0d1117',
-        borderBottom: `1px solid ${scrolled ? '#21262d' : 'transparent'}`,
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        transition: 'background 0.2s ease, border-color 0.2s ease',
-      }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <AliceLogo size={34} />
-            <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', letterSpacing: -0.3 }}>Alice Exam Proctor</span>
-          </div>
-
-          {/* Desktop nav */}
-          <nav className="gh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {NAV_LINKS.map(l => (
-              <a
-                key={l}
-                href={l === 'GitHub' ? 'https://github.com/adii0018' : `#${l.toLowerCase().replace(/\s+/g, '-')}`}
-                target={l === 'GitHub' ? '_blank' : undefined}
-                rel={l === 'GitHub' ? 'noopener noreferrer' : undefined}
-                className="gh-nav-link"
-              >{l}</a>
-            ))}
-          </nav>
-
-          {/* Actions */}
-          <div className="gh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Link to="/auth" className="gh-btn-outline" style={{ padding: '7px 16px' }}>Sign in</Link>
-            <Link to="/auth" className="gh-btn" style={{ padding: '7px 16px' }}>Get started</Link>
-          </div>
-
-          {/* Mobile toggle */}
-          <button
-            className="gh-mobile-toggle"
-            style={{ display: 'none', background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', padding: 6 }}
-            onClick={() => setMobileOpen(o => !o)}
-            aria-label="Toggle menu"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              {mobileOpen
-                ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
-                : <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>
-              }
-            </svg>
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div style={{ background: '#161b22', borderTop: '1px solid #21262d', padding: '12px 24px 20px' }}>
-            {NAV_LINKS.map(l => (
-              <a
-                key={l}
-                href={l === 'GitHub' ? 'https://github.com/adii0018' : `#${l.toLowerCase().replace(/\s+/g, '-')}`}
-                target={l === 'GitHub' ? '_blank' : undefined}
-                rel={l === 'GitHub' ? 'noopener noreferrer' : undefined}
-                className="gh-nav-link"
-                style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}
-                onClick={() => setMobileOpen(false)}
-              >{l}</a>
-            ))}
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <Link to="/auth" className="gh-btn-outline" style={{ flex: 1, justifyContent: 'center' }}>Sign in</Link>
-              <Link to="/auth" className="gh-btn" style={{ flex: 1, justifyContent: 'center' }}>Get started</Link>
-            </div>
-          </div>
-        )}
-      </header>
+      {/* ── GLASSMORPHIC NAVBAR ──────────────────────────────────────────── */}
+      <GlassmorphicNav />
 
       {/* ── HERO ───────────────────────────────────────────────────────────── */}
-      <section style={{ padding: '80px 24px 100px', maxWidth: 1280, margin: '0 auto' }}>
-        <div
-          ref={heroRef}
-          className="gh-hero-grid reveal"
-          style={{
+      <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        {/* Background Video */}
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
+        >
+          <source src="https://res.cloudinary.com/dfonotyfb/video/upload/v1775585556/dds3_1_rqhg7x.mp4" type="video/mp4" />
+        </video>
+        
+        {/* Dark Overlay for Better Text Readability */}
+        <div style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          background: 'linear-gradient(135deg, rgba(13,17,23,0.7) 0%, rgba(13,17,23,0.5) 50%, rgba(13,17,23,0.8) 100%)', 
+          zIndex: 1 
+        }} />
+        
+        {/* Hero Content */}
+        <div style={{ 
+          position: 'relative', 
+          zIndex: 2, 
+          padding: '120px 24px 100px', 
+          maxWidth: 1280, 
+          margin: '0 auto',
+          width: '100%'
+        }}>
+          <div
+            ref={heroRef}
+            className="gh-hero-grid reveal"
+            style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
             gap: 64,

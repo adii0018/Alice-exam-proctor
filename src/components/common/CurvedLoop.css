@@ -1,0 +1,68 @@
+.curved-loop-jacket {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  background: transparent;
+}
+
+.curved-loop-svg {
+  user-select: none;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+  font-size: clamp(1.8rem, 3.5vw, 3.2rem);
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .curved-loop-jacket {
+    height: 60px;
+  }
+  
+  .curved-loop-svg {
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .curved-loop-jacket {
+    height: 50px;
+  }
+  
+  .curved-loop-svg {
+    font-size: clamp(1.1rem, 2.5vw, 1.8rem);
+  }
+}
+
+/* Alice branding colors and effects */
+.alice-marquee-text {
+  fill: #3fb950;
+  filter: drop-shadow(0 0 6px rgba(63, 185, 80, 0.2));
+  transition: all 0.3s ease;
+}
+
+.curved-loop-jacket:hover .alice-marquee-text {
+  fill: #2ea043;
+  filter: drop-shadow(0 0 10px rgba(63, 185, 80, 0.4));
+}
+
+/* Smooth cursor interaction */
+.curved-loop-jacket {
+  transition: transform 0.2s ease;
+}
+
+.curved-loop-jacket:active {
+  transform: scale(0.98);
+}

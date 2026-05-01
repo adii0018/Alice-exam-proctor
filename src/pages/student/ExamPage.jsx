@@ -225,11 +225,30 @@ const ExamPage = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+      
+      // Check if token exists
+      if (!token) {
+        setError('Session expired. Please login again.');
+        setTimeout(() => navigate('/'), 2000);
+        return;
+      }
+      
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
+        
+        // Handle authentication errors
+        if (response.status === 401) {
+          setError('Session expired. Please login again.');
+          setTimeout(() => navigate('/'), 2000);
+          return;
+        } else if (response.status === 403) {
+          setError(err.error || 'Access denied. Please check your permissions.');
+          return;
+        }
+        
         throw new Error(err.error || 'Failed to fetch exam');
       }
       const data = await response.json();
@@ -449,6 +468,24 @@ const ExamPage = () => {
     try {
       soundManager.playExamEnd();
       const token = localStorage.getItem('token');
+      
+      // Verify token exists
+      if (!token) {
+        setIsSubmitting(false);
+        showWarningToast('Session expired. Please login again.');
+        setTimeout(() => navigate('/'), 2000);
+        return;
+      }
+      
+      // Verify user is a student
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userRole = (user.role || '').toLowerCase();
+      if (userRole !== 'student') {
+        setIsSubmitting(false);
+        showWarningToast('Only students can submit exams. Please login with a student account.');
+        setTimeout(() => navigate('/'), 2000);
+        return;
+      }
 
       let correctCount = 0, wrongCount = 0;
       const transformedAnswers = {};
@@ -489,7 +526,19 @@ const ExamPage = () => {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || err.message || 'Failed to submit exam');
+        const errorMsg = err.error || err.message || 'Failed to submit exam';
+        
+        // Handle specific error cases
+        if (res.status === 401) {
+          showWarningToast('Session expired. Please login again.');
+          setTimeout(() => navigate('/'), 2000);
+          return;
+        } else if (res.status === 403) {
+          showWarningToast(errorMsg);
+          return;
+        }
+        
+        throw new Error(errorMsg);
       }
       const submitData = await res.json().catch(() => ({}));
 

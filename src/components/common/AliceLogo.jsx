@@ -1,0 +1,28 @@
+// ── Alice logo — leaf, GitHub dark theme ─────────────────────────────────────
+function AliceLogo({ size = 32 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      {/* Dark background */}
+      <rect width="100" height="100" rx="22" fill="#161b22"/>
+      <rect width="100" height="100" rx="22" fill="none" stroke="#30363d" strokeWidth="2"/>
+
+      {/* Right leaf lobe */}
+      <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z"
+            fill="#3fb950" opacity="0.95"/>
+
+      {/* Left leaf lobe (darker) */}
+      <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z"
+            fill="#2ea043" opacity="0.7"/>
+
+      {/* Center vein */}
+      <line x1="50" y1="22" x2="50" y2="78"
+            stroke="#0d1117" strokeWidth="1.8" strokeLinecap="round" opacity="0.35"/>
+
+      {/* Stem */}
+      <path d="M50 82 Q48 89 44 93"
+            fill="none" stroke="#2ea043" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+export default AliceLogo;

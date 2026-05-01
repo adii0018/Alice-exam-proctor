@@ -176,7 +176,7 @@ def toggle_quiz_active(request, quiz_id):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@require_role('student')
+@require_auth
 def submit_quiz(request, quiz_id):
     try:
         data = json.loads(request.body)
@@ -188,7 +188,12 @@ def submit_quiz(request, quiz_id):
         if not quiz:
             return JsonResponse({'error': 'Quiz not found'}, status=404)
 
-        if request.user.get('role') == 'student' and not quiz.get('is_active', False):
+        # Check if user is a student (case-insensitive)
+        user_role = (request.user.get('role') or '').strip().lower()
+        if user_role != 'student':
+            return JsonResponse({'error': 'Only students can submit quizzes'}, status=403)
+
+        if not quiz.get('is_active', False):
             return JsonResponse({'error': 'This quiz is not active. Please contact your teacher.'}, status=403)
 
         student_id = str(request.user['_id'])
