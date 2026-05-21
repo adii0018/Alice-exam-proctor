@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Plane } from 'lucide-react'
 
 // ── Star field (same as landing/auth) ────────────────────────────────────────
 function StarField() {
@@ -124,6 +125,9 @@ export default function FullPageLoader() {
         @keyframes spin-ring {
           to { transform: rotate(360deg); }
         }
+        @keyframes airplane-orbit {
+          to { transform: rotate(360deg); }
+        }
       `}</style>
 
       {/* Stars */}
@@ -151,6 +155,20 @@ export default function FullPageLoader() {
               style={{ transition: 'stroke-dasharray 0.3s ease' }}
             />
           </svg>
+          {/* Flying Airplane Orbit */}
+          <div style={{
+            position: 'absolute', inset: '4px',
+            animation: 'airplane-orbit 2s linear infinite',
+          }}>
+            <div style={{
+              position: 'absolute', top: -6, left: '50%',
+              transform: 'translateX(-50%) rotate(45deg)',
+              color: '#3fb950',
+              filter: 'drop-shadow(0 0 10px rgba(63,185,80,0.6))',
+            }}>
+              <Plane size={20} style={{ fill: 'rgba(63,185,80,0.3)' }} />
+            </div>
+          </div>
           {/* leaf logo centered */}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'leaf-pulse 2.5s ease-in-out infinite' }}>
             <LeafLogo size={56} />

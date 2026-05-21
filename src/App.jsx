@@ -1,5 +1,61 @@
+import { useState, useEffect, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { Plane, Leaf } from 'lucide-react'
+
+// ── Star field background (same as FullPageLoader) ──────────────────────────
+function StarField() {
+  const canvasRef = useRef(null)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    let animId
+    let W = window.innerWidth
+    let H = window.innerHeight
+
+    const COUNT = Math.floor((W * H) / 5000)
+    const stars = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.2 + 0.2,
+      base: Math.random() * 0.5 + 0.15,
+      speed: Math.random() * 0.008 + 0.003,
+      phase: Math.random() * Math.PI * 2,
+    }))
+    const BRIGHT = Math.floor(COUNT * 0.06)
+    for (let i = 0; i < BRIGHT; i++) {
+      stars[i].r = Math.random() * 1.6 + 1.0
+      stars[i].base = Math.random() * 0.4 + 0.4
+    }
+
+    let t = 0
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight
+      canvas.width = W; canvas.height = H
+    }
+    function draw() {
+      ctx.clearRect(0, 0, W, H)
+      t++
+      for (const s of stars) {
+        const alpha = Math.max(0, Math.min(1, s.base + Math.sin(t * s.speed + s.phase) * 0.18))
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(200,220,255,${alpha})`
+        ctx.fill()
+      }
+      animId = requestAnimationFrame(draw)
+    }
+    resize(); draw()
+    window.addEventListener('resize', resize, { passive: true })
+    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', resize) }
+  }, [])
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}
+    />
+  )
+}
 import PremiumLandingPage from './pages/GithubLandingPage'
 import AuthPage from './pages/AuthPage'
 import StudentDashboard from './pages/StudentDashboard'
@@ -23,11 +79,75 @@ import ViolationsManagement from './pages/admin/ViolationsManagement'
 import AuditLogs from './pages/admin/AuditLogs'
 import SystemSettings from './pages/admin/SystemSettings'
 import AvatarTest from './pages/AvatarTest'
+import NotFoundPage from './pages/NotFoundPage'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 
 function App() {
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial app loading for 1.5 seconds
+    const timer = setTimeout(() => {
+      setInitialLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (initialLoading) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-[#0d1117] flex flex-col items-center justify-center overflow-hidden font-sans">
+        {/* Starfield Background */}
+        <StarField />
+        <div className="relative z-10 flex flex-col items-center justify-center">
+          {/* Ambient Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#2ea043]/15 blur-[100px] rounded-full w-[250px] h-[250px] animate-pulse"></div>
+          
+          {/* Futuristic Spinner */}
+          <div className="relative w-28 h-28 mb-8 flex items-center justify-center">
+            {/* Outer Rings */}
+            <div className="absolute inset-0 rounded-full border-t-[3px] border-[#3fb950] border-r-[3px] border-r-transparent animate-spin" style={{ animationDuration: '3s' }}></div>
+            <div className="absolute inset-2 rounded-full border-b-[3px] border-[#2ea043] border-l-[3px] border-l-transparent animate-spin" style={{ animationDuration: '2.5s', animationDirection: 'reverse' }}></div>
+            <div className="absolute inset-5 rounded-full border-dashed border-[2px] border-[#8b949e]/30 animate-spin" style={{ animationDuration: '8s' }}></div>
+            
+            {/* Flying Airplane Orbit */}
+            <div className="absolute inset-2 animate-spin" style={{ animationDuration: '2s' }}>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[#3fb950] drop-shadow-[0_0_10px_rgba(63,185,80,0.6)] rotate-[45deg]">
+                <Plane size={24} className="fill-[#3fb950]/30" />
+              </div>
+            </div>
+
+            {/* Center Leaf */}
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <Leaf size={32} strokeWidth={2} className="text-[#3fb950] fill-[#3fb950]/20 animate-pulse drop-shadow-[0_0_15px_rgba(63,185,80,0.4)]" />
+            </div>
+          </div>
+          
+          {/* Brand Text */}
+          <h2 className="text-3xl font-bold text-[#e6edf3] tracking-tight mb-2">
+            Alice 🍃 <span className="text-[#3fb950]">Exam Proctor</span>
+          </h2>
+          
+          {/* Loading Bar */}
+          <div className="w-56 h-[3px] bg-[#21262d] rounded-full overflow-hidden mt-3 relative">
+            <div className="absolute top-0 left-0 h-full bg-[#3fb950] rounded-full shadow-[0_0_10px_#3fb950]" style={{ transformOrigin: 'left', animation: 'scaleX 1.5s ease-out forwards' }}>
+               <style>{`
+                 @keyframes scaleX {
+                   0% { transform: scaleX(0); }
+                   100% { transform: scaleX(1); }
+                 }
+               `}</style>
+            </div>
+          </div>
+          <p className="mt-4 text-[#8b949e] text-[11px] tracking-[0.2em] uppercase font-semibold animate-pulse">
+            System Initializing...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ThemeProvider>
       <AuthProvider>
@@ -200,7 +320,7 @@ function App() {
             } 
           />
           
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
       </AuthProvider>

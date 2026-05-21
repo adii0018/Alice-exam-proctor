@@ -59,17 +59,17 @@ const PremiumFooterEnhanced = () => {
 
   return (
     <>
-    <footer ref={footerRef} style={{
-      background: '#080c10',
-      borderTop: '1px solid rgba(255,255,255,0.06)',
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: "'Inter', 'SF Pro Display', -apple-system, sans-serif",
-      opacity: isVisible ? 1 : 0,
-      transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-      transition: 'opacity 0.8s ease, transform 0.8s ease',
-    }}>
-      <style>{`
+      <footer ref={footerRef} style={{
+        background: '#080c10',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        position: 'relative',
+        overflow: 'hidden',
+        fontFamily: "'Inter', 'SF Pro Display', -apple-system, sans-serif",
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+        transition: 'opacity 0.8s ease, transform 0.8s ease',
+      }}>
+        <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         @keyframes pulse-dot {
@@ -206,176 +206,176 @@ const PremiumFooterEnhanced = () => {
         }
       `}</style>
 
-      {/* Subtle top glow */}
-      <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 600, height: 1, background: 'linear-gradient(90deg, transparent, rgba(52,211,153,0.3), rgba(96,165,250,0.2), transparent)', pointerEvents: 'none' }} />
+        {/* Subtle top glow */}
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 600, height: 1, background: 'linear-gradient(90deg, transparent, rgba(52,211,153,0.3), rgba(96,165,250,0.2), transparent)', pointerEvents: 'none' }} />
 
-      {/* Stats row */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '36px 5%' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
-          {stats.map((s, i) => (
-            <div key={s.label} className="ft-stat" style={{ animation: isVisible ? `fade-up 0.5s ease ${i * 0.08}s both` : 'none' }}>
-              <s.icon style={{ width: 18, height: 18, color: 'rgba(52,211,153,0.5)', margin: '0 auto 10px', display: 'block' }} />
-              <div style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, letterSpacing: '-0.5px' }}>{s.value}</div>
-              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', marginTop: 4, letterSpacing: '0.05em' }}>{s.label}</div>
-            </div>
-          ))}
+        {/* Stats row */}
+        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '36px 5%' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+            {stats.map((s, i) => (
+              <div key={s.label} className="ft-stat" style={{ animation: isVisible ? `fade-up 0.5s ease ${i * 0.08}s both` : 'none' }}>
+                <s.icon style={{ width: 18, height: 18, color: 'rgba(52,211,153,0.5)', margin: '0 auto 10px', display: 'block' }} />
+                <div style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, letterSpacing: '-0.5px' }}>{s.value}</div>
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', marginTop: 4, letterSpacing: '0.05em' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Main grid */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 5% 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr', gap: 48 }}>
+        {/* Main grid */}
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 5% 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr', gap: 48 }}>
 
-          {/* Brand */}
-          <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.1s both' : 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-              <div style={{
-                width: 38, height: 38, borderRadius: 10,
-                background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(96,165,250,0.1))',
-                border: '1px solid rgba(52,211,153,0.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Eye style={{ width: 18, height: 18, color: '#34d399' }} />
-              </div>
-              <div>
-                <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', letterSpacing: '0.02em' }}>
-                  Alice<span style={{ color: '#34d399' }}>.</span>
+            {/* Brand */}
+            <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.1s both' : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <div style={{
+                  width: 38, height: 38, borderRadius: 10,
+                  background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(96,165,250,0.1))',
+                  border: '1px solid rgba(52,211,153,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Eye style={{ width: 18, height: 18, color: '#34d399' }} />
                 </div>
-                <div style={{ color: 'rgba(52,211,153,0.4)', fontSize: '0.6rem', letterSpacing: '0.2em', marginTop: 1 }}>EXAM PROCTOR</div>
+                <div>
+                  <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', letterSpacing: '0.02em' }}>
+                    Alice<span style={{ color: '#34d399' }}>.</span>
+                  </div>
+                  <div style={{ color: 'rgba(52,211,153,0.4)', fontSize: '0.6rem', letterSpacing: '0.2em', marginTop: 1 }}>EXAM PROCTOR</div>
+                </div>
               </div>
-            </div>
 
-            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', lineHeight: 1.8, marginBottom: 24, maxWidth: 280 }}>
-              Next-gen AI proctoring platform with real-time behavioral analysis and zero-compromise integrity.
-            </p>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', lineHeight: 1.8, marginBottom: 24, maxWidth: 280 }}>
+                Next-gen AI proctoring platform with real-time behavioral analysis and zero-compromise integrity.
+              </p>
 
-            <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
-              {['AI-Powered', 'Secure', 'Real-time'].map(tag => (
-                <span key={tag} style={{
-                  padding: '4px 12px', borderRadius: 20,
-                  background: 'rgba(52,211,153,0.06)',
-                  border: '1px solid rgba(52,211,153,0.12)',
-                  color: 'rgba(52,211,153,0.6)',
-                  fontSize: '0.7rem', fontWeight: 500,
-                }}>{tag}</span>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: 8 }}>
-              {socialLinks.map(s => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="ft-social">
-                  <s.icon style={{ width: 16, height: 16, color: 'rgba(255,255,255,0.45)' }} />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Navigate + Legal */}
-          <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.15s both' : 'none' }}>
-            <div className="ft-label">Navigate</div>
-            <nav>
-              {navLinks.map(l => (
-                <a key={l.label} href={l.href || '#'} onClick={l.modal ? (e) => { e.preventDefault(); setActiveModal(l.modal); } : undefined} className="ft-link">
-                  {l.label}
-                  <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
-                </a>
-              ))}
-            </nav>
-            <div className="ft-label" style={{ marginTop: 28 }}>Legal</div>
-            <nav>
-              {[
-                { label: 'Privacy Policy', modal: 'privacy' },
-                { label: 'Terms of Service', modal: 'terms' },
-                { label: 'Cookie Policy', modal: 'cookies' },
-                { label: 'GDPR', modal: 'gdpr' },
-              ].map(l => (
-                <a key={l.label} href="#" onClick={(e) => { e.preventDefault(); setActiveModal(l.modal); }} className="ft-link">
-                  {l.label}
-                  <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
-                </a>
-              ))}
-            </nav>
-          </div>
-
-          {/* Resources + Status */}
-          <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.2s both' : 'none' }}>
-            <div className="ft-label">Resources</div>
-            <nav>
-              {resources.map(r => (
-                <a key={r.label} href="#" onClick={(e) => { e.preventDefault(); setActiveModal(r.modal); }} className="ft-link">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <r.icon style={{ width: 13, height: 13, flexShrink: 0 }} />
-                    {r.label}
-                  </span>
-                  <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
-                </a>
-              ))}
-            </nav>
-
-            <div style={{
-              marginTop: 28, padding: '14px 16px',
-              borderRadius: 12,
-              background: 'rgba(52,211,153,0.04)',
-              border: '1px solid rgba(52,211,153,0.1)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34d399', display: 'inline-block', animation: 'pulse-dot 2s infinite', flexShrink: 0 }} />
-                <span style={{ color: '#34d399', fontSize: '0.72rem', fontWeight: 500, letterSpacing: '0.05em' }}>All systems operational</span>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
+                {['AI-Powered', 'Secure', 'Real-time'].map(tag => (
+                  <span key={tag} style={{
+                    padding: '4px 12px', borderRadius: 20,
+                    background: 'rgba(52,211,153,0.06)',
+                    border: '1px solid rgba(52,211,153,0.12)',
+                    color: 'rgba(52,211,153,0.6)',
+                    fontSize: '0.7rem', fontWeight: 500,
+                  }}>{tag}</span>
+                ))}
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', marginTop: 6, paddingLeft: 15 }}>Last checked: just now</div>
-            </div>
-          </div>
 
-          {/* Newsletter */}
-          <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.25s both' : 'none' }}>
-            <div className="ft-label">Stay Updated</div>
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.83rem', lineHeight: 1.7, marginBottom: 18 }}>
-              Get notified about new features, security updates, and releases.
-            </p>
-            <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="ft-input"
-                disabled={subscribed}
-              />
-              <button type="submit" disabled={subscribed} className="ft-btn">
-                {subscribed
-                  ? <><span>✓</span> Subscribed!</>
-                  : <><Send style={{ width: 13, height: 13 }} /> Subscribe</>}
-              </button>
-            </form>
-
-            <div style={{ marginTop: 24 }}>
-              <div style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>Built with</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {['React', 'Django', 'WebSocket', 'TensorFlow'].map(t => (
-                  <span key={t} className="ft-tech-tag">{t}</span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {socialLinks.map(s => (
+                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="ft-social">
+                    <s.icon style={{ width: 16, height: 16, color: 'rgba(255,255,255,0.45)' }} />
+                  </a>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Bottom bar */}
-      <div style={{ maxWidth: 1200, margin: '48px auto 0', padding: '0 5%' }}>
-        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07) 30%, rgba(255,255,255,0.07) 70%, transparent)' }} />
-        <div style={{ padding: '20px 0 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.78rem' }}>
-            © {new Date().getFullYear()} Alice Exam Proctor — All rights reserved
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.78rem' }}>Crafted by</span>
-            <span className="ft-shimmer" style={{ fontSize: '0.82rem', fontWeight: 600 }}>Aditya Singh Rajput</span>
-            <span style={{ color: 'rgba(255,100,100,0.6)', fontSize: '0.9rem' }}>♥</span>
+            {/* Navigate + Legal */}
+            <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.15s both' : 'none' }}>
+              <div className="ft-label">Navigate</div>
+              <nav>
+                {navLinks.map(l => (
+                  <a key={l.label} href={l.href || '#'} onClick={l.modal ? (e) => { e.preventDefault(); setActiveModal(l.modal); } : undefined} className="ft-link">
+                    {l.label}
+                    <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
+                  </a>
+                ))}
+              </nav>
+              <div className="ft-label" style={{ marginTop: 28 }}>Legal</div>
+              <nav>
+                {[
+                  { label: 'Privacy Policy', modal: 'privacy' },
+                  { label: 'Terms of Service', modal: 'terms' },
+                  { label: 'Cookie Policy', modal: 'cookies' },
+                  { label: 'GDPR', modal: 'gdpr' },
+                ].map(l => (
+                  <a key={l.label} href="#" onClick={(e) => { e.preventDefault(); setActiveModal(l.modal); }} className="ft-link">
+                    {l.label}
+                    <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
+                  </a>
+                ))}
+              </nav>
+            </div>
+
+            {/* Resources + Status */}
+            <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.2s both' : 'none' }}>
+              <div className="ft-label">Resources</div>
+              <nav>
+                {resources.map(r => (
+                  <a key={r.label} href="#" onClick={(e) => { e.preventDefault(); setActiveModal(r.modal); }} className="ft-link">
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <r.icon style={{ width: 13, height: 13, flexShrink: 0 }} />
+                      {r.label}
+                    </span>
+                    <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
+                  </a>
+                ))}
+              </nav>
+
+              <div style={{
+                marginTop: 28, padding: '14px 16px',
+                borderRadius: 12,
+                background: 'rgba(52,211,153,0.04)',
+                border: '1px solid rgba(52,211,153,0.1)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34d399', display: 'inline-block', animation: 'pulse-dot 2s infinite', flexShrink: 0 }} />
+                  <span style={{ color: '#34d399', fontSize: '0.72rem', fontWeight: 500, letterSpacing: '0.05em' }}>All systems operational</span>
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', marginTop: 6, paddingLeft: 15 }}>Last checked: just now</div>
+              </div>
+            </div>
+
+            {/* Newsletter */}
+            <div style={{ animation: isVisible ? 'fade-up 0.6s ease 0.25s both' : 'none' }}>
+              <div className="ft-label">Stay Updated</div>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.83rem', lineHeight: 1.7, marginBottom: 18 }}>
+                Get notified about new features, security updates, and releases.
+              </p>
+              <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="ft-input"
+                  disabled={subscribed}
+                />
+                <button type="submit" disabled={subscribed} className="ft-btn">
+                  {subscribed
+                    ? <><span>✓</span> Subscribed!</>
+                    : <><Send style={{ width: 13, height: 13 }} /> Subscribe</>}
+                </button>
+              </form>
+
+              <div style={{ marginTop: 24 }}>
+                <div style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>Built with</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {['React', 'Django', 'WebSocket', 'TensorFlow'].map(t => (
+                    <span key={t} className="ft-tech-tag">{t}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </footer>
-    {activeModal && <FooterContentModal contentKey={activeModal} onClose={() => setActiveModal(null)} />}
+
+        {/* Bottom bar */}
+        <div style={{ maxWidth: 1200, margin: '48px auto 0', padding: '0 5%' }}>
+          <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07) 30%, rgba(255,255,255,0.07) 70%, transparent)' }} />
+          <div style={{ padding: '20px 0 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.78rem' }}>
+              © {new Date().getFullYear()} Alice Exam Proctor — All rights reserved
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.78rem' }}>Crafted by</span>
+              <span className="ft-shimmer" style={{ fontSize: '0.82rem', fontWeight: 600 }}>Aditya Singh Rajput</span>
+              <span style={{ color: 'rgba(255,100,100,0.6)', fontSize: '0.9rem' }}>♥</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+      {activeModal && <FooterContentModal contentKey={activeModal} onClose={() => setActiveModal(null)} />}
     </>
   );
 };
