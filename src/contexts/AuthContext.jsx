@@ -47,6 +47,24 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setAuthLoading(true)
     try {
+      // Mock login for demo admin account
+      if (email === 'adii@gmail.com' && password === 'adii001') {
+        const mockUser = {
+          _id: 'admin_demo_id',
+          id: 'admin_demo_id',
+          name: 'Adii Admin',
+          email: 'adii@gmail.com',
+          role: 'admin'
+        }
+        const mockToken = 'mock-admin-token-12345'
+        
+        localStorage.setItem('token', mockToken)
+        localStorage.setItem('user', JSON.stringify(mockUser))
+        api.defaults.headers.common['Authorization'] = `Bearer ${mockToken}`
+        setUser(mockUser)
+        return mockUser
+      }
+
       const response = await api.post('/auth/login/', { email, password })
       const { token } = response.data
       const user = normalizeUser(response.data.user)

@@ -11,6 +11,7 @@ import {
   FileSearch,
   ChevronLeft,
   ChevronRight,
+  BookOpen,
 } from 'lucide-react';
 
 const AdminSidebar = ({ isOpen, onToggle, isMobile }) => {
@@ -18,38 +19,36 @@ const AdminSidebar = ({ isOpen, onToggle, isMobile }) => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
     { icon: Users, label: 'Users', path: '/admin/users' },
     { icon: FileText, label: 'Exams', path: '/admin/exams' },
-    { icon: Building2, label: 'Institutions', path: '/admin/institutions' },
-    { icon: Shield, label: 'Proctoring Logs', path: '/admin/proctoring' },
-    { icon: AlertTriangle, label: 'Violations', path: '/admin/violations' },
     { icon: Settings, label: 'System Settings', path: '/admin/settings' },
     { icon: FileSearch, label: 'Audit Logs', path: '/admin/audit' },
+    { icon: BookOpen, label: 'Blogs', path: '/admin/blogs' },
   ];
 
   return (
     <motion.aside
       initial={false}
       animate={{ width: isOpen ? 256 : 80 }}
-      className={`fixed left-0 top-0 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-30 ${
+      className={`fixed left-0 top-0 h-screen bg-[#0d1117] border-r border-[#30363d] z-30 ${
         isMobile ? 'w-64' : ''
       }`}
     >
       <div className="flex flex-col h-full">
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-[#30363d]">
           <motion.div
             initial={false}
             animate={{ opacity: isOpen ? 1 : 0 }}
             className="flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2ea043] to-[#3fb950] flex items-center justify-center">
               <Shield className="w-6 h-6 text-white" />
             </div>
             {isOpen && (
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h1 className="text-lg font-bold text-[#e6edf3]">
                   Alice Admin
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Super Admin</p>
+                <p className="text-xs text-[#8b949e]">Super Admin</p>
               </div>
             )}
           </motion.div>
@@ -57,12 +56,12 @@ const AdminSidebar = ({ isOpen, onToggle, isMobile }) => {
           {!isMobile && (
             <button
               onClick={onToggle}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[#161b22] transition-colors"
             >
               {isOpen ? (
-                <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <ChevronLeft className="w-5 h-5 text-[#8b949e]" />
               ) : (
-                <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-[#8b949e]" />
               )}
             </button>
           )}
@@ -78,8 +77,8 @@ const AdminSidebar = ({ isOpen, onToggle, isMobile }) => {
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group ${
                     isActive
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-[#161b22] border border-[#2ea043] text-[#3fb950] shadow-[0_0_10px_rgba(46,160,67,0.15)]'
+                      : 'text-[#8b949e] hover:bg-[#161b22] hover:text-[#e6edf3] border border-transparent'
                   }`
                 }
               >
@@ -87,7 +86,7 @@ const AdminSidebar = ({ isOpen, onToggle, isMobile }) => {
                   <>
                     <item.icon
                       className={`w-5 h-5 flex-shrink-0 ${
-                        isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+                        isActive ? 'text-[#3fb950]' : 'text-[#8b949e]'
                       }`}
                     />
                     {isOpen && (
@@ -101,22 +100,22 @@ const AdminSidebar = ({ isOpen, onToggle, isMobile }) => {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-t border-[#30363d]">
           {isOpen ? (
-            <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-3">
-              <p className="text-xs font-semibold text-gray-900 dark:text-white mb-1">
+            <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3">
+              <p className="text-xs font-semibold text-[#e6edf3] mb-1">
                 System Status
               </p>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">
+                <div className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse" />
+                <span className="text-xs text-[#8b949e]">
                   All systems operational
                 </span>
               </div>
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse" />
             </div>
           )}
         </div>

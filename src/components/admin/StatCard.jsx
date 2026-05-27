@@ -18,9 +18,9 @@ const StatCard = ({ title, value, change, trend, icon, color, subtitle, pulse })
   };
 
   const getTrendColor = () => {
-    if (trend === 'up') return 'text-green-600 dark:text-green-400';
-    if (trend === 'down') return 'text-red-600 dark:text-red-400';
-    return 'text-gray-600 dark:text-gray-400';
+    if (trend === 'up') return 'text-[#3fb950]';
+    if (trend === 'down') return 'text-[#f85149]';
+    return 'text-[#8b949e]';
   };
 
   return (
@@ -28,7 +28,7 @@ const StatCard = ({ title, value, change, trend, icon, color, subtitle, pulse })
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
-      className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all border border-gray-100 dark:border-gray-700 overflow-hidden group"
+      className="relative bg-[#161b22] rounded-2xl p-6 shadow-sm hover:shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-all border border-[#30363d] overflow-hidden group"
     >
       {/* Background Gradient */}
       <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${colorClasses[color]} opacity-5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500`} />
@@ -48,14 +48,14 @@ const StatCard = ({ title, value, change, trend, icon, color, subtitle, pulse })
 
       {/* Content */}
       <div className="relative">
-        <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+        <h3 className="text-sm font-medium text-[#8b949e] mb-1">
           {title}
         </h3>
-        <p className="text-3xl font-bold text-gray-900 dark:text-white">
-          {value.toLocaleString()}
+        <p className="text-3xl font-bold text-[#e6edf3]">
+          {(value || 0).toLocaleString()}
         </p>
         {subtitle && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-xs text-[#8b949e] mt-2">
             {subtitle}
           </p>
         )}

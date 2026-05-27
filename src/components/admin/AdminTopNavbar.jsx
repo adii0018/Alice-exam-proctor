@@ -27,15 +27,15 @@ const AdminTopNavbar = ({ onMenuClick }) => {
   ]);
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 z-20">
+    <header className="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-[#0d1117]/80 backdrop-blur-xl border-b border-[#30363d] z-20">
       <div className="h-full px-4 md:px-6 flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center space-x-4">
           <button
             onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-[#161b22] transition-colors"
           >
-            <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Menu className="w-5 h-5 text-[#8b949e]" />
           </button>
 
           {/* Global Search */}
@@ -46,7 +46,7 @@ const AdminTopNavbar = ({ onMenuClick }) => {
               placeholder="Search users, exams..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64 lg:w-96 pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border-0 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 dark:text-white placeholder-gray-500"
+              className="w-64 lg:w-96 pl-10 pr-4 py-2 bg-[#161b22] border-0 rounded-lg text-sm focus:ring-1 focus:ring-[#2ea043] text-[#e6edf3] placeholder-[#8b949e]"
             />
           </div>
         </div>
@@ -54,9 +54,9 @@ const AdminTopNavbar = ({ onMenuClick }) => {
         {/* Right Section */}
         <div className="flex items-center space-x-2 md:space-x-3">
           {/* System Status */}
-          <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <Activity className="w-4 h-4 text-green-600 dark:text-green-400" />
-            <span className="text-xs font-medium text-green-700 dark:text-green-300">
+          <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-[rgba(46,160,67,0.1)] rounded-lg">
+            <Activity className="w-4 h-4 text-[#3fb950]" />
+            <span className="text-xs font-medium text-[#3fb950]">
               Operational
             </span>
           </div>
@@ -65,9 +65,9 @@ const AdminTopNavbar = ({ onMenuClick }) => {
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="relative p-2 rounded-lg hover:bg-[#161b22] transition-colors"
             >
-              <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Bell className="w-5 h-5 text-[#8b949e]" />
               {notifications.length > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               )}
@@ -79,10 +79,10 @@ const AdminTopNavbar = ({ onMenuClick }) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                  className="absolute right-0 mt-2 w-80 bg-[#0d1117] rounded-xl shadow-xl border border-[#30363d] overflow-hidden"
                 >
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                  <div className="p-4 border-b border-[#30363d]">
+                    <h3 className="font-semibold text-[#e6edf3]">
                       Notifications
                     </h3>
                   </div>
@@ -90,12 +90,12 @@ const AdminTopNavbar = ({ onMenuClick }) => {
                     {notifications.map((notif) => (
                       <div
                         key={notif.id}
-                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0"
+                        className="p-4 hover:bg-[#161b22] transition-colors border-b border-[#30363d] last:border-0"
                       >
-                        <p className="text-sm text-gray-900 dark:text-white">
+                        <p className="text-sm text-[#e6edf3]">
                           {notif.message}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-[#8b949e] mt-1">
                           {notif.time}
                         </p>
                       </div>
@@ -109,12 +109,12 @@ const AdminTopNavbar = ({ onMenuClick }) => {
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-lg hover:bg-[#161b22] transition-colors"
           >
             {theme === 'dark' ? (
-              <Sun className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Sun className="w-5 h-5 text-[#8b949e]" />
             ) : (
-              <Moon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Moon className="w-5 h-5 text-[#8b949e]" />
             )}
           </button>
 
@@ -122,7 +122,7 @@ const AdminTopNavbar = ({ onMenuClick }) => {
           <div className="relative">
             <button
               onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-[#161b22] transition-colors"
             >
               <UserAvatar
                 user={{ username: 'admin', email: 'admin@alice.com' }}
@@ -130,7 +130,7 @@ const AdminTopNavbar = ({ onMenuClick }) => {
                 showBorder={false}
                 fallbackGradient="linear-gradient(135deg, #3b82f6, #9333ea)"
               />
-              <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="hidden md:block text-sm font-medium text-[#e6edf3]">
                 Admin
               </span>
             </button>
@@ -141,20 +141,20 @@ const AdminTopNavbar = ({ onMenuClick }) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                  className="absolute right-0 mt-2 w-56 bg-[#0d1117] rounded-xl shadow-xl border border-[#30363d] overflow-hidden"
                 >
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <p className="font-semibold text-gray-900 dark:text-white">
+                  <div className="p-4 border-b border-[#30363d]">
+                    <p className="font-semibold text-[#e6edf3]">
                       Super Admin
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-[#8b949e]">
                       admin@alice.com
                     </p>
                   </div>
                   <div className="p-2">
-                    <button className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left">
-                      <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                    <button className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#161b22] transition-colors text-left">
+                      <Settings className="w-4 h-4 text-[#8b949e]" />
+                      <span className="text-sm text-[#8b949e]">
                         Settings
                       </span>
                     </button>

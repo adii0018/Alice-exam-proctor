@@ -8,7 +8,7 @@ const AdminLayout = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-[#0d1117] text-[#e6edf3] transition-colors">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <AdminSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />

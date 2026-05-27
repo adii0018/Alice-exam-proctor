@@ -78,6 +78,7 @@ import ExamsManagement from './pages/admin/ExamsManagement'
 import ViolationsManagement from './pages/admin/ViolationsManagement'
 import AuditLogs from './pages/admin/AuditLogs'
 import SystemSettings from './pages/admin/SystemSettings'
+import BlogManagement from './pages/admin/BlogManagement'
 import AvatarTest from './pages/AvatarTest'
 import BlogPage from './pages/BlogPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -318,6 +319,14 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <SystemSettings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/blogs" 
+            element={
+              <ProtectedRoute role="admin">
+                <BlogManagement />
               </ProtectedRoute>
             } 
           />
