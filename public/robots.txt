@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://alice-exam-proctor.vercel.app/sitemap.xml
