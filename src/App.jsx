@@ -79,6 +79,7 @@ import ViolationsManagement from './pages/admin/ViolationsManagement'
 import AuditLogs from './pages/admin/AuditLogs'
 import SystemSettings from './pages/admin/SystemSettings'
 import AvatarTest from './pages/AvatarTest'
+import BlogPage from './pages/BlogPage'
 import NotFoundPage from './pages/NotFoundPage'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -155,6 +156,7 @@ function App() {
         <Toaster position="top-right" />
         <Routes>
           <Route path="/" element={<PremiumLandingPage />} />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/avatar-test" element={<AvatarTest />} />
           <Route 

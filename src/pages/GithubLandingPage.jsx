@@ -445,6 +445,7 @@ export default function GithubLandingPage() {
                 className="gh-nav-link"
               >{l}</a>
             ))}
+            <Link to="/blog" className="gh-nav-link">Blog</Link>
           </nav>
 
           {/* Actions */}
@@ -483,6 +484,7 @@ export default function GithubLandingPage() {
                 onClick={() => setMobileOpen(false)}
               >{l}</a>
             ))}
+            <Link to="/blog" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Blog</Link>
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <Link to="/auth" className="gh-btn-outline" style={{ flex: 1, justifyContent: 'center' }}>Sign in</Link>
               <Link to="/auth" className="gh-btn" style={{ flex: 1, justifyContent: 'center' }}>Get started</Link>
