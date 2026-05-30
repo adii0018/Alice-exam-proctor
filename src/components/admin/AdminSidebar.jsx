@@ -28,7 +28,8 @@ const AdminSidebar = ({ isOpen, onToggle, isMobile }) => {
     <motion.aside
       initial={false}
       animate={{ width: isOpen ? 256 : 80 }}
-      className={`fixed left-0 top-0 h-screen bg-[#0d1117] border-r border-[#30363d] z-30 ${
+      transition={{ duration: 0.25, ease: 'easeInOut' }}
+      className={`fixed left-0 top-0 h-screen bg-[#0d1117] border-r border-[#30363d] z-30 overflow-hidden ${
         isMobile ? 'w-64' : ''
       }`}
     >
