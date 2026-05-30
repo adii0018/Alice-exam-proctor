@@ -185,15 +185,6 @@ const STATS = [
   { val: '<50ms', label: 'Response Time' },
 ]
 
-const CODE_SNIPPET = `// Alice Proctor — violation event
-{
-  "event": "face_not_detected",
-  "student_id": "stu_8821",
-  "exam_id": "exam_cs301",
-  "timestamp": "2026-03-18T10:42:07Z",
-  "severity": "high",
-  "action": "flagged_for_review"
-}`
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function GithubLandingPage() {
@@ -406,7 +397,8 @@ export default function GithubLandingPage() {
         @media (max-width: 768px) {
           .gh-desktop-nav { display: none !important; }
           .gh-mobile-toggle { display: flex !important; }
-          .gh-hero-grid { grid-template-columns: 1fr !important; }
+          .gh-hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .gh-hero-image { margin-top: 20px; }
           .gh-hero-code { display: none !important; }
           .gh-feat-grid { grid-template-columns: 1fr !important; }
           .gh-steps-grid { grid-template-columns: 1fr !important; }
@@ -552,28 +544,30 @@ export default function GithubLandingPage() {
             </div>
           </div>
 
-          {/* Right — code block */}
-          <div className={`gh-hero-code gh-code reveal ${heroVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ transitionDelay: '0.15s' }}>
-            <div className="gh-code-header">
-              <div className="gh-code-dot" style={{ background: '#ff5f57' }} />
-              <div className="gh-code-dot" style={{ background: '#febc2e' }} />
-              <div className="gh-code-dot" style={{ background: '#28c840' }} />
-              <span style={{ color: '#8b949e', fontSize: '0.78rem', marginLeft: 8 }}>violation-event.json</span>
-            </div>
-            <pre style={{ padding: '20px 24px', overflowX: 'auto', color: '#e6edf3' }}>
-              <code>{CODE_SNIPPET.split('\n').map((line, i) => {
-                const keyMatch = line.match(/^(\s*)"([^"]+)"(\s*:\s*)(.*)$/)
-                if (keyMatch) return (
-                  <span key={i} style={{ display: 'block' }}>
-                    <span style={{ color: '#8b949e' }}>{keyMatch[1]}</span>
-                    <span style={{ color: '#79c0ff' }}>"{keyMatch[2]}"</span>
-                    <span style={{ color: '#8b949e' }}>{keyMatch[3]}</span>
-                    <span style={{ color: '#a5d6ff' }}>{keyMatch[4]}</span>
-                  </span>
-                )
-                return <span key={i} style={{ display: 'block', color: '#8b949e' }}>{line}</span>
-              })}</code>
-            </pre>
+          {/* Right — Hero Image */}
+          <div className={`gh-hero-image reveal ${heroVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ transitionDelay: '0.15s', position: 'relative' }}>
+            <div style={{
+              position: 'absolute',
+              inset: -2,
+              background: 'linear-gradient(45deg, rgba(63, 185, 80, 0.4), rgba(46, 160, 67, 0.1), rgba(121, 192, 255, 0.3))',
+              filter: 'blur(20px)',
+              borderRadius: '20px',
+              zIndex: 0,
+            }}></div>
+            <img 
+              src="/hero-image.png" 
+              alt="Digital Classroom Proctoring" 
+              style={{
+                width: '100%',
+                height: 'auto',
+                borderRadius: '16px',
+                border: '1px solid #30363d',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                position: 'relative',
+                zIndex: 1,
+                display: 'block'
+              }}
+            />
           </div>
         </div>
       </section>
