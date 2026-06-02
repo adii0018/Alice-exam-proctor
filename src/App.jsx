@@ -85,6 +85,7 @@ import NotFoundPage from './pages/NotFoundPage'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
+import PrivacyAlert from './components/common/PrivacyAlert'
 
 function App() {
   const [initialLoading, setInitialLoading] = useState(true);
@@ -153,7 +154,7 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Toaster position="top-right" />
         <Routes>
           <Route path="/" element={<PremiumLandingPage />} />
@@ -333,6 +334,7 @@ function App() {
           
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        <PrivacyAlert />
       </Router>
       </AuthProvider>
     </ThemeProvider>

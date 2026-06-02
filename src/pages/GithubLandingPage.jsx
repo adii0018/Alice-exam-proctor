@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { Plane } from 'lucide-react'
 import TestimonialsSection from '../components/common/TestimonialsSection'
 import PremiumFooter from '../components/common/PremiumFooter'
 
@@ -113,7 +114,7 @@ function useReveal(threshold = 0.12) {
 }
 
 // ── static data ───────────────────────────────────────────────────────────────
-const NAV_LINKS = ['Features', 'How it Works', 'GitHub', 'Contact']
+const NAV_LINKS = ['Features', 'How it Works', 'Contact']
 
 const FEATURES = [
   {
@@ -543,7 +544,7 @@ export default function GithubLandingPage() {
               letterSpacing: -1,
               marginBottom: 20,
             }}>
-              Alice 🍃<br />
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>Alice <Plane size={42} strokeWidth={2.5} color="#3fb950" /></span><br />
               <span style={{ color: '#3fb950' }}> Exam Proctor !!</span>
             </h1>
             <p style={{ color: '#8b949e', fontSize: '1.05rem', lineHeight: 1.75, maxWidth: 480, marginBottom: 36 }}>

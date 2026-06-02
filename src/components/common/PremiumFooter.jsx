@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-
+import { Plane } from 'lucide-react'
 // ── Typewriter cycling name ───────────────────────────────────────────────────
 function TypewriterName() {
   const titles = ['Aditya Singh Rajput ', 'A   S   R ', 'AI Enthusiast']
@@ -200,8 +200,11 @@ export default function PremiumFooter() {
           {/* Left — brand + capabilities */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <AliceLogo size={32} />
-              <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>Alice Exam Proctor</span>
+              <Plane size={30} strokeWidth={2.5} color="#3fb950" />
+              <span style={{ fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.01em' }}>
+                <span style={{ color: '#e6edf3' }}>Alice</span>{' '}
+                <span style={{ color: '#3fb950' }}>Exam Proctor</span>
+              </span>
             </div>
 
             <p style={{ color: '#8b949e', fontSize: '0.85rem', lineHeight: 1.8, maxWidth: 380, marginBottom: 20 }}>
