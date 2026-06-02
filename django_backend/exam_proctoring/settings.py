@@ -101,15 +101,19 @@ else:
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = os.getenv(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5174,http://127.0.0.1:5174,https://alice-exam-proctor01.vercel.app'
-).split(',')
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:5174,http://127.0.0.1:5174,https://alice-exam-proctor01.vercel.app'
+    ).split(',') if origin.strip()
+]
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    'CSRF_TRUSTED_ORIGINS',
-    'https://alice-exam-proctor01.vercel.app'
-).split(',')
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in os.getenv(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://alice-exam-proctor01.vercel.app'
+    ).split(',') if origin.strip()
+]
 
 # Security Settings for Production
 # Railway handles SSL termination via proxy, so don't redirect

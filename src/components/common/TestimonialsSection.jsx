@@ -235,10 +235,10 @@ export default function TestimonialsSection() {
         </div>
         <h2 style={{
           fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)',
-          fontWeight: 800, color: '#e6edf3',
+          fontWeight: 800, color: '#e2e8f0',
           letterSpacing: -0.5, marginBottom: 14,
         }}>
-          Trusted by educators and recruiters
+          Trusted by educators and <span style={{ color: '#2dd4bf' }}>recruiters</span>
         </h2>
         <p style={{ color: '#8b949e', fontSize: '1rem', maxWidth: 480, margin: '0 auto' }}>
           See what students, teachers, and hiring teams say about exam integrity with Alice.

@@ -734,8 +734,8 @@ export default function GithubLandingPage() {
       <section id="features" style={{ padding: '96px 24px', maxWidth: 1280, margin: '0 auto' }}>
         <div ref={featRef} className={`reveal ${featVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ textAlign: 'center', marginBottom: 56 }}>
           <div className="gh-label" style={{ justifyContent: 'center' }}>Features</div>
-          <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: -0.5, marginBottom: 14 }}>
-            Everything you need to proctor at scale
+          <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#e2e8f0', letterSpacing: -0.5, marginBottom: 14 }}>
+            Everything you need to <span style={{ color: '#2dd4bf' }}>proctor at scale</span>
           </h2>
           <p style={{ color: '#8b949e', fontSize: '1rem', maxWidth: 520, margin: '0 auto' }}>
             Built for educators who need reliable, AI-driven exam integrity without the complexity.
@@ -766,8 +766,8 @@ export default function GithubLandingPage() {
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div ref={stepsRef} className={`reveal ${stepsVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ textAlign: 'center', marginBottom: 56 }}>
             <div className="gh-label" style={{ justifyContent: 'center' }}>How it Works</div>
-            <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: -0.5 }}>
-              Up and running in three steps
+            <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#e2e8f0', letterSpacing: -0.5 }}>
+              Up and running in <span style={{ color: '#2dd4bf' }}>three steps</span>
             </h2>
           </div>
           <div className="gh-steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
@@ -843,8 +843,8 @@ export default function GithubLandingPage() {
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div ref={contactRef} className={`reveal ${contactVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ textAlign: 'center', marginBottom: 52 }}>
             <div className="gh-label" style={{ justifyContent: 'center' }}>Contact</div>
-            <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: -0.5, marginBottom: 12 }}>
-              Get in touch
+            <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#f9fafb', letterSpacing: -0.5, marginBottom: 12 }}>
+              Get in <span style={{ color: '#fbbf24' }}>touch</span>
             </h2>
             <p style={{ color: '#8b949e', fontSize: '0.9rem' }}>Have a question or want to get started? Send us a message.</p>
           </div>
