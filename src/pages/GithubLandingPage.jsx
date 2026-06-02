@@ -212,6 +212,16 @@ export default function GithubLandingPage() {
   const [stepsRef, stepsVisible] = useReveal()
   const [statsRef, statsVisible] = useReveal()
   const [contactRef, contactVisible] = useReveal()
+  const [scanConf, setScanConf] = useState(0)
+  useEffect(() => {
+    let v = 0
+    const t = setInterval(() => {
+      v += Math.random() * 3
+      if (v >= 99.7) { v = 99.7; clearInterval(t) }
+      setScanConf(parseFloat(v.toFixed(1)))
+    }, 40)
+    return () => clearInterval(t)
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -544,30 +554,136 @@ export default function GithubLandingPage() {
             </div>
           </div>
 
-          {/* Right — Hero Image */}
-          <div className={`gh-hero-image reveal ${heroVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ transitionDelay: '0.15s', position: 'relative' }}>
-            <div style={{
-              position: 'absolute',
-              inset: -2,
-              background: 'linear-gradient(45deg, rgba(63, 185, 80, 0.4), rgba(46, 160, 67, 0.1), rgba(121, 192, 255, 0.3))',
-              filter: 'blur(20px)',
-              borderRadius: '20px',
-              zIndex: 0,
-            }}></div>
-            <img 
-              src="/hero-image.png" 
-              alt="Digital Classroom Proctoring" 
-              style={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: '16px',
-                border: '1px solid #30363d',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-                position: 'relative',
-                zIndex: 1,
-                display: 'block'
-              }}
-            />
+          {/* Right — AI Biometric Face Scan Orb */}
+          <div className={`gh-hero-image reveal ${heroVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ transitionDelay: '0.15s', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+
+            {/* Ambient glow */}
+            <div style={{ position: 'absolute', width: 340, height: 340, borderRadius: '50%', background: 'radial-gradient(circle, rgba(63,185,80,0.18) 0%, transparent 70%)', filter: 'blur(30px)', zIndex: 0 }} />
+
+            <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 420 }}>
+
+              {/* Header chip */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#161b22', border: '1px solid #30363d', borderRadius: 8, padding: '6px 14px' }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3fb950', display: 'inline-block', animation: 'gh-pulse 2s infinite' }} />
+                  <span style={{ color: '#8b949e', fontSize: '0.7rem', fontFamily: 'monospace' }}>alice-ai / biometric-scan</span>
+                </div>
+                <div style={{ background: 'rgba(63,185,80,0.1)', border: '1px solid rgba(63,185,80,0.3)', color: '#3fb950', fontSize: '0.68rem', fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>LIVE</div>
+              </div>
+
+              {/* Main scan orb */}
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '1', maxWidth: 420, margin: '0 auto' }}>
+
+                {/* Rotating outer ring 1 */}
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1px dashed rgba(63,185,80,0.25)', animation: 'spin-slow 12s linear infinite' }} />
+                {/* Rotating outer ring 2 */}
+                <div style={{ position: 'absolute', inset: 12, borderRadius: '50%', border: '1px solid rgba(63,185,80,0.15)', animation: 'spin-slow 8s linear infinite reverse' }} />
+                {/* Solid ring */}
+                <div style={{ position: 'absolute', inset: 24, borderRadius: '50%', border: '2px solid #30363d' }} />
+
+                {/* Inner scan area */}
+                <div style={{ position: 'absolute', inset: 24, borderRadius: '50%', background: '#0d1117', overflow: 'hidden' }}>
+
+                  {/* Grid overlay */}
+                  <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.08 }} xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#3fb950" strokeWidth="0.5"/>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                  </svg>
+
+                  {/* Student Image */}
+                  <img
+                    src="/student.png"
+                    alt="Student"
+                    style={{
+                      position: 'absolute', inset: 0,
+                      width: '100%', height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center 20%',
+                      transform: 'scale(1.25)',
+                      transformOrigin: 'top center',
+                    }}
+                  />
+
+                  {/* AI Scan Overlay — dots + brackets on top of image */}
+                  <svg viewBox="0 0 200 200" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} xmlns="http://www.w3.org/2000/svg">
+
+                    {/* Scan brackets */}
+                    <path d="M18 18 L18 38 M18 18 L38 18" stroke="#3fb950" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                    <path d="M182 18 L182 38 M182 18 L162 18" stroke="#3fb950" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                    <path d="M18 182 L18 162 M18 182 L38 182" stroke="#3fb950" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                    <path d="M182 182 L182 162 M182 182 L162 182" stroke="#3fb950" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                    {/* Face outline dashed */}
+                    <ellipse cx="100" cy="85" rx="60" ry="62" fill="none" stroke="#3fb950" strokeWidth="1" strokeDasharray="4 5" opacity="0.35"/>
+                  </svg>
+
+
+
+                  {/* Animated scan line */}
+                  <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, #3fb950, transparent)', boxShadow: '0 0 12px 3px rgba(63,185,80,0.5)', animation: 'scan-sweep 2.4s ease-in-out infinite' }} />
+
+                  {/* Confidence badge (center bottom) */}
+                  <div style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#3fb950', fontFamily: 'monospace', lineHeight: 1, textShadow: '0 0 20px rgba(63,185,80,0.6)' }}>{scanConf}%</div>
+                    <div style={{ color: '#8b949e', fontSize: '0.6rem', marginTop: 3, letterSpacing: 2, textTransform: 'uppercase' }}>Confidence</div>
+                  </div>
+                </div>
+
+                {/* Floating metric badges */}
+                <div style={{ position: 'absolute', top: '18%', right: '-2%', background: '#161b22', border: '1px solid rgba(63,185,80,0.3)', borderRadius: 8, padding: '6px 10px', animation: 'float-badge 3s ease-in-out infinite' }}>
+                  <div style={{ color: '#3fb950', fontSize: '0.7rem', fontWeight: 700 }}>Face Match</div>
+                  <div style={{ color: '#e6edf3', fontSize: '0.62rem', marginTop: 2 }}>✓ Verified</div>
+                </div>
+                <div style={{ position: 'absolute', top: '42%', left: '-4%', background: '#161b22', border: '1px solid rgba(227,179,65,0.3)', borderRadius: 8, padding: '6px 10px', animation: 'float-badge 3.5s ease-in-out 0.5s infinite' }}>
+                  <div style={{ color: '#e3b341', fontSize: '0.7rem', fontWeight: 700 }}>Gaze Track</div>
+                  <div style={{ color: '#e6edf3', fontSize: '0.62rem', marginTop: 2 }}>→ On-screen</div>
+                </div>
+                <div style={{ position: 'absolute', bottom: '14%', right: '-2%', background: '#161b22', border: '1px solid rgba(121,192,255,0.3)', borderRadius: 8, padding: '6px 10px', animation: 'float-badge 4s ease-in-out 1s infinite' }}>
+                  <div style={{ color: '#79c0ff', fontSize: '0.7rem', fontWeight: 700 }}>Liveness</div>
+                  <div style={{ color: '#e6edf3', fontSize: '0.62rem', marginTop: 2 }}>● Real Human</div>
+                </div>
+              </div>
+
+              {/* Terminal readout */}
+              <div style={{ marginTop: 16, background: '#0d1117', border: '1px solid #21262d', borderRadius: 8, padding: '10px 14px', fontFamily: 'monospace' }}>
+                {[
+                  { prefix: '✓', text: 'Identity verified — Aditya Singh', color: '#3fb950' },
+                  { prefix: '◎', text: 'No foreign faces detected in frame', color: '#3fb950' },
+                  { prefix: '⚡', text: 'Gaze pattern nominal — exam ongoing', color: '#8b949e' },
+                ].map((row, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, fontSize: '0.65rem', padding: '3px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none', animation: `fade-in-row 0.4s ease ${i * 0.2 + 0.6}s both` }}>
+                    <span style={{ color: row.color, flexShrink: 0 }}>{row.prefix}</span>
+                    <span style={{ color: '#8b949e' }}>{row.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Keyframes */}
+              <style>{`
+                @keyframes spin-slow { to { transform: rotate(360deg); } }
+                @keyframes scan-sweep {
+                  0%,100% { top: 5%; opacity: 0; }
+                  10% { opacity: 1; }
+                  90% { opacity: 1; }
+                  100% { top: 95%; opacity: 0; }
+                }
+                @keyframes dot-pop {
+                  from { transform: scale(0); opacity: 0; }
+                  to   { transform: scale(1); opacity: 0.9; }
+                }
+                @keyframes float-badge {
+                  0%,100% { transform: translateY(0px); }
+                  50%     { transform: translateY(-6px); }
+                }
+                @keyframes fade-in-row {
+                  from { opacity: 0; transform: translateX(-8px); }
+                  to   { opacity: 1; transform: translateX(0); }
+                }
+              `}</style>
+            </div>
           </div>
         </div>
       </section>
