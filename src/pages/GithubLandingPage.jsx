@@ -496,7 +496,22 @@ export default function GithubLandingPage() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────────────────────── */}
-      <section style={{ padding: '80px 24px 100px', maxWidth: 1280, margin: '0 auto' }}>
+      <div style={{ position: 'relative' }}>
+        {/* Star background with blend mode */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'url(/star.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.2,
+          mixBlendMode: 'screen',
+          pointerEvents: 'none',
+          maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+          zIndex: 0
+        }} />
+        
+        <section style={{ position: 'relative', zIndex: 1, padding: '80px 24px 100px', maxWidth: 1280, margin: '0 auto' }}>
         <div
           ref={heroRef}
           className="gh-hero-grid reveal"
@@ -598,6 +613,8 @@ export default function GithubLandingPage() {
                   <img
                     src="/student.png"
                     alt="Student"
+                    draggable={false}
+                    onContextMenu={(e) => e.preventDefault()}
                     style={{
                       position: 'absolute', inset: 0,
                       width: '100%', height: '100%',
@@ -605,6 +622,8 @@ export default function GithubLandingPage() {
                       objectPosition: 'center 20%',
                       transform: 'scale(1.25)',
                       transformOrigin: 'top center',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
                     }}
                   />
 
@@ -686,7 +705,8 @@ export default function GithubLandingPage() {
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      </div>
 
       {/* ── STATS ──────────────────────────────────────────────────────────── */}
       <section style={{ borderTop: '1px solid #21262d', borderBottom: '1px solid #21262d', padding: '48px 24px' }}>
