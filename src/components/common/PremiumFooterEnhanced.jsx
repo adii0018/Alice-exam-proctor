@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Github, Linkedin, Instagram, Mail, Shield, Eye, BookOpen, FileText, HelpCircle, Users, Send, Zap, Lock, Globe, ArrowUpRight } from 'lucide-react';
 import FooterContentModal from './FooterContentModal';
 
@@ -284,15 +285,15 @@ const PremiumFooterEnhanced = () => {
               <div className="ft-label" style={{ marginTop: 28 }}>Legal</div>
               <nav>
                 {[
-                  { label: 'Privacy Policy', modal: 'privacy' },
-                  { label: 'Terms of Service', modal: 'terms' },
-                  { label: 'Cookie Policy', modal: 'cookies' },
-                  { label: 'GDPR', modal: 'gdpr' },
+                  { label: 'Privacy Policy', to: '/privacy' },
+                  { label: 'Terms of Service', to: '/terms' },
+                  { label: 'Cookie Policy', to: '/cookies' },
+                  { label: 'GDPR', to: '/gdpr' },
                 ].map(l => (
-                  <a key={l.label} href="#" onClick={(e) => { e.preventDefault(); setActiveModal(l.modal); }} className="ft-link">
+                  <Link key={l.label} to={l.to} className="ft-link">
                     {l.label}
                     <ArrowUpRight className="ft-icon" style={{ width: 13, height: 13, flexShrink: 0 }} />
-                  </a>
+                  </Link>
                 ))}
               </nav>
             </div>

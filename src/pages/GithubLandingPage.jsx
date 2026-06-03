@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Plane } from 'lucide-react'
 import TestimonialsSection from '../components/common/TestimonialsSection'
+import AliceAIShowcase from '../components/common/AliceAIShowcase'
 import PremiumFooter from '../components/common/PremiumFooter'
 
 // ── Alice logo — leaf, GitHub dark theme ─────────────────────────────────────
@@ -114,7 +115,7 @@ function useReveal(threshold = 0.12) {
 }
 
 // ── static data ───────────────────────────────────────────────────────────────
-const NAV_LINKS = ['Features', 'How it Works', 'Contact']
+const NAV_LINKS = ['Features', 'How it Works']
 
 const FEATURES = [
   {
@@ -191,9 +192,6 @@ const STATS = [
 export default function GithubLandingPage() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' })
-  const [submitting, setSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState(null)
 
   const [heroRef, heroVisible] = useReveal(0.05)
   const heroLabels = ['AI-Powered Proctoring', 'Real-time Monitoring', 'Zero Compromise Integrity', 'Behavioral Analysis']
@@ -212,7 +210,6 @@ export default function GithubLandingPage() {
   const [featRef, featVisible] = useReveal()
   const [stepsRef, stepsVisible] = useReveal()
   const [statsRef, statsVisible] = useReveal()
-  const [contactRef, contactVisible] = useReveal()
   const [scanConf, setScanConf] = useState(0)
   useEffect(() => {
     let v = 0
@@ -229,26 +226,6 @@ export default function GithubLandingPage() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
-
-  const handleContact = async (e) => {
-    e.preventDefault()
-    setSubmitting(true)
-    setSubmitStatus(null)
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/contact/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contactForm),
-      })
-      const data = await res.json()
-      setSubmitStatus(data.success ? { ok: true, msg: data.message } : { ok: false, msg: data.error || 'Failed to send.' })
-      if (data.success) setContactForm({ name: '', email: '', subject: '', message: '' })
-    } catch {
-      setSubmitStatus({ ok: false, msg: 'Network error. Please try again.' })
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   return (
     <div style={{ background: '#0d1117', minHeight: '100vh', color: '#e6edf3', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif', overflowX: 'hidden', position: 'relative' }}>
@@ -356,7 +333,7 @@ export default function GithubLandingPage() {
 
         /* code block */
         .gh-code {
-          background: #161b22;
+          background: #000000;
           border: 1px solid #30363d;
           border-radius: 10px;
           overflow: hidden;
@@ -424,7 +401,7 @@ export default function GithubLandingPage() {
 
       {/* ── NAVBAR ─────────────────────────────────────────────────────────── */}
       <header style={{
-        position: 'sticky', top: 0, zIndex: 100,
+        position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 100,
         background: scrolled ? 'rgba(13,17,23,0.95)' : '#0d1117',
         borderBottom: `1px solid ${scrolled ? '#21262d' : 'transparent'}`,
         backdropFilter: scrolled ? 'blur(12px)' : 'none',
@@ -449,6 +426,8 @@ export default function GithubLandingPage() {
               >{l}</a>
             ))}
             <Link to="/blog" className="gh-nav-link">Blog</Link>
+            <Link to="/contact" className="gh-nav-link">Contact</Link>
+            <Link to="/privacy" className="gh-nav-link">Privacy</Link>
           </nav>
 
           {/* Actions */}
@@ -488,6 +467,8 @@ export default function GithubLandingPage() {
               >{l}</a>
             ))}
             <Link to="/blog" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Blog</Link>
+            <Link to="/contact" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Contact</Link>
+            <Link to="/privacy" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Privacy</Link>
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <Link to="/auth" className="gh-btn-outline" style={{ flex: 1, justifyContent: 'center' }}>Sign in</Link>
               <Link to="/auth" className="gh-btn" style={{ flex: 1, justifyContent: 'center' }}>Get started</Link>
@@ -762,7 +743,7 @@ export default function GithubLandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ───────────────────────────────────────────────────── */}
-      <section id="how-it-works" style={{ background: '#161b22', borderTop: '1px solid #21262d', borderBottom: '1px solid #21262d', padding: '96px 24px' }}>
+      <section id="how-it-works" style={{ background: 'transparent', borderTop: '1px solid #21262d', borderBottom: '1px solid #21262d', padding: '96px 24px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div ref={stepsRef} className={`reveal ${stepsVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ textAlign: 'center', marginBottom: 56 }}>
             <div className="gh-label" style={{ justifyContent: 'center' }}>How it Works</div>
@@ -809,8 +790,15 @@ export default function GithubLandingPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b949e" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               <span style={{ color: '#8b949e', fontSize: '0.78rem' }}>README.md</span>
             </div>
-            <div style={{ padding: '20px 24px' }}>
-              <div style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', marginBottom: 12 }}>
+            <div style={{ 
+              padding: '20px 24px', 
+              position: 'relative',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M30 40a6 6 0 016-6h3a9 9 0 0117.4 3 6 6 0 011.2 10.8H30a6 6 0 010-12z' /%3E%3Cpath d='M110 120a4 4 0 014-4h2a6 6 0 0111.5 2 4 4 0 01.5 7.5h-18a4 4 0 010-8z' /%3E%3C/g%3E%3C/svg%3E")`, 
+              backgroundSize: '160px 160px',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'repeat'
+            }}>
+              <div style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', marginBottom: 12, position: 'relative', zIndex: 1 }}>
                 # Alice Exam Proctor
               </div>
               <div style={{ color: '#8b949e', fontSize: '0.82rem', lineHeight: 1.8, marginBottom: 16 }}>
@@ -838,75 +826,8 @@ export default function GithubLandingPage() {
         </div>
       </section>
 
-      {/* ── CONTACT ────────────────────────────────────────────────────────── */}
-      <section id="contact" style={{ background: '#161b22', borderTop: '1px solid #21262d', padding: '96px 24px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div ref={contactRef} className={`reveal ${contactVisible ? 'reveal-visible' : 'reveal-hidden'}`} style={{ textAlign: 'center', marginBottom: 52 }}>
-            <div className="gh-label" style={{ justifyContent: 'center' }}>Contact</div>
-            <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#f9fafb', letterSpacing: -0.5, marginBottom: 12 }}>
-              Get in <span style={{ color: '#fbbf24' }}>touch</span>
-            </h2>
-            <p style={{ color: '#8b949e', fontSize: '0.9rem' }}>Have a question or want to get started? Send us a message.</p>
-          </div>
-          <div
-            className="gh-contact-grid"
-            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, maxWidth: 900, margin: '0 auto' }}
-          >
-            {/* Info */}
-            <div>
-              <h3 style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', marginBottom: 20 }}>Contact information</h3>
-              {[
-                { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, label: 'Email', val: 'singhrajputaditya982@gmail.com' },
-                { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>, label: 'GitHub', val: 'github.com/adii0018' },
-              ].map(item => (
-                <div key={item.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
-                  <div style={{ width: 36, height: 36, background: 'rgba(46,160,67,0.1)', border: '1px solid rgba(46,160,67,0.2)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3fb950', flexShrink: 0 }}>
-                    {item.icon}
-                  </div>
-                  <div>
-                    <div style={{ color: '#8b949e', fontSize: '0.75rem', marginBottom: 2 }}>{item.label}</div>
-                    <div style={{ color: '#e6edf3', fontSize: '0.875rem' }}>{item.val}</div>
-                  </div>
-                </div>
-              ))}
-              <div style={{ marginTop: 32, padding: '20px', background: '#0d1117', border: '1px solid #30363d', borderRadius: 8 }}>
-                <div style={{ color: '#3fb950', fontSize: '0.78rem', fontWeight: 600, marginBottom: 6 }}>Response time</div>
-                <div style={{ color: '#e6edf3', fontSize: '0.875rem' }}>We typically respond within 24 hours on business days.</div>
-              </div>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleContact} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ display: 'block', color: '#8b949e', fontSize: '0.78rem', fontWeight: 600, marginBottom: 6 }}>Name</label>
-                  <input className="gh-input" name="name" value={contactForm.name} onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name" required />
-                </div>
-                <div>
-                  <label style={{ display: 'block', color: '#8b949e', fontSize: '0.78rem', fontWeight: 600, marginBottom: 6 }}>Email</label>
-                  <input className="gh-input" name="email" type="email" value={contactForm.email} onChange={e => setContactForm(f => ({ ...f, email: e.target.value }))} placeholder="you@example.com" required />
-                </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', color: '#8b949e', fontSize: '0.78rem', fontWeight: 600, marginBottom: 6 }}>Subject</label>
-                <input className="gh-input" name="subject" value={contactForm.subject} onChange={e => setContactForm(f => ({ ...f, subject: e.target.value }))} placeholder="How can we help?" required />
-              </div>
-              <div>
-                <label style={{ display: 'block', color: '#8b949e', fontSize: '0.78rem', fontWeight: 600, marginBottom: 6 }}>Message</label>
-                <textarea className="gh-input" name="message" value={contactForm.message} onChange={e => setContactForm(f => ({ ...f, message: e.target.value }))} placeholder="Tell us more..." rows={5} required style={{ resize: 'vertical', fontFamily: 'inherit' }} />
-              </div>
-              {submitStatus && (
-                <div style={{ padding: '10px 14px', borderRadius: 6, fontSize: '0.82rem', background: submitStatus.ok ? 'rgba(46,160,67,0.1)' : 'rgba(248,81,73,0.1)', border: `1px solid ${submitStatus.ok ? 'rgba(46,160,67,0.3)' : 'rgba(248,81,73,0.3)'}`, color: submitStatus.ok ? '#3fb950' : '#f85149' }}>
-                  {submitStatus.ok ? '✓ ' : '✗ '}{submitStatus.msg}
-                </div>
-              )}
-              <button type="submit" disabled={submitting} className="gh-btn" style={{ opacity: submitting ? 0.6 : 1, cursor: submitting ? 'not-allowed' : 'pointer', justifyContent: 'center' }}>
-                {submitting ? 'Sending...' : 'Send message'}
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
+      {/* ── ALICE AI SHOWCASE ─────────────────────────────────────────────── */}
+      <AliceAIShowcase />
 
       {/* ── TESTIMONIALS ───────────────────────────────────────────────────── */}
       <TestimonialsSection />

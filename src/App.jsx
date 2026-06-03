@@ -81,6 +81,11 @@ import SystemSettings from './pages/admin/SystemSettings'
 import BlogManagement from './pages/admin/BlogManagement'
 import AvatarTest from './pages/AvatarTest'
 import BlogPage from './pages/BlogPage'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
+import CookiePolicy from './pages/CookiePolicy'
+import GdprPage from './pages/GdprPage'
+import ContactPage from './pages/ContactPage'
 import NotFoundPage from './pages/NotFoundPage'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -159,6 +164,11 @@ function App() {
         <Routes>
           <Route path="/" element={<PremiumLandingPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/cookies" element={<CookiePolicy />} />
+          <Route path="/gdpr" element={<GdprPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/avatar-test" element={<AvatarTest />} />
           <Route 

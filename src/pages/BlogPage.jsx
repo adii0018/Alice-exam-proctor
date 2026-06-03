@@ -1,488 +1,364 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
-import PremiumFooter from '../components/common/PremiumFooter'
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, BookOpen, Search, Tag, Calendar, User, ArrowUpRight, Rss, TrendingUp, Shield, Cpu, GraduationCap } from 'lucide-react';
 
-// ── Alice logo — leaf, GitHub dark theme ─────────────────────────────────────
-function AliceLogo({ size = 32 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-      <rect width="100" height="100" rx="22" fill="#161b22"/>
-      <rect width="100" height="100" rx="22" fill="none" stroke="#30363d" strokeWidth="2"/>
-      <path d="M50 18 C50 18 78 32 78 56 C78 72 65 82 50 82 C50 82 50 52 50 18 Z" fill="#3fb950" opacity="0.95"/>
-      <path d="M50 18 C50 18 22 32 22 56 C22 72 35 82 50 82 C50 82 50 52 50 18 Z" fill="#2ea043" opacity="0.7"/>
-      <line x1="50" y1="22" x2="50" y2="78" stroke="#0d1117" strokeWidth="1.8" strokeLinecap="round" opacity="0.35"/>
-      <path d="M50 82 Q48 89 44 93" fill="none" stroke="#2ea043" strokeWidth="2.5" strokeLinecap="round"/>
-    </svg>
-  )
-}
+const CATEGORIES = [
+  { id: 'all', label: 'All Posts', icon: Rss, count: 7 },
+  { id: 'Product Updates', label: 'Product Updates', icon: TrendingUp, count: 1 },
+  { id: 'Engineering', label: 'Engineering', icon: Cpu, count: 2 },
+  { id: 'Security', label: 'Security', icon: Shield, count: 2 },
+  { id: 'Tutorials', label: 'Tutorials', icon: GraduationCap, count: 2 },
+];
 
-// ── Star field canvas ─────────────────────────────────────────────────────────
-function StarField() {
-  const canvasRef = useRef(null)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    let W = window.innerWidth
-    let H = document.documentElement.scrollHeight
-
-    const COUNT = Math.floor((W * H) / 6000)
-    const stars = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.2 + 0.2,
-      base: Math.random() * 0.5 + 0.15,
-    }))
-
-    const BRIGHT = Math.floor(COUNT * 0.06)
-    for (let i = 0; i < BRIGHT; i++) {
-      stars[i].r = Math.random() * 1.6 + 1.0
-      stars[i].base = Math.random() * 0.4 + 0.4
-    }
-
-    function resize() {
-      W = window.innerWidth
-      H = document.documentElement.scrollHeight
-      canvas.width = W
-      canvas.height = H
-      drawStars()
-    }
-
-    function drawStars() {
-      ctx.clearRect(0, 0, W, H)
-      for (const s of stars) {
-        ctx.beginPath()
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(200, 220, 255, ${s.base})`
-        ctx.fill()
-      }
-    }
-
-    resize()
-    const ro = new ResizeObserver(resize)
-    ro.observe(document.documentElement)
-
-    return () => ro.disconnect()
-  }, [])
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'fixed', top: 0, left: 0,
-        width: '100%', height: '100%',
-        zIndex: 0, pointerEvents: 'none',
-        opacity: 1,
-      }}
-    />
-  )
-}
-
-function useReveal(threshold = 0.12) {
-  const ref = useRef(null)
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold })
-    if (ref.current) obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [threshold])
-  return [ref, visible]
-}
-
-const CATEGORIES = ['All', 'Product Updates', 'Engineering', 'Security', 'Tutorials']
+const CATEGORY_COLORS = {
+  'Product Updates': '#34d399',
+  'Engineering': '#60a5fa',
+  'Security': '#f87171',
+  'Tutorials': '#a78bfa',
+};
 
 const FEATURED_POST = {
   id: 'featured',
   title: 'Introducing Alice 2.0: The Future of Remote Proctoring',
-  desc: 'We are thrilled to announce Alice 2.0, completely rebuilt from the ground up with a 99.9% detection accuracy rate, brand new gaze tracking, and unparalleled real-time reporting.',
+  desc: 'We are thrilled to announce Alice 2.0 — completely rebuilt from the ground up with a 99.9% detection accuracy rate, brand new gaze tracking, and unparalleled real-time reporting dashboards.',
   category: 'Product Updates',
   author: 'Aditya Singh',
   date: 'Oct 24, 2026',
-  image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'
-}
+  readTime: '5 min read',
+  image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+};
 
 const POSTS = [
-  {
-    id: 1,
-    title: 'How AI is Changing Online Exams',
-    desc: 'Explore how artificial intelligence and computer vision are ensuring integrity without invading privacy.',
-    category: 'Engineering',
-    author: 'Sarah Jenkins',
-    date: 'Oct 12, 2026',
-    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 2,
-    title: '5 Tips for a Smooth Proctoring Experience',
-    desc: 'Ensure your students have a stress-free exam experience with these best practices for online proctoring.',
-    category: 'Tutorials',
-    author: 'Michael Chang',
-    date: 'Sep 28, 2026',
-    image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 3,
-    title: 'Security First: End-to-End Encryption',
-    desc: 'A deep dive into how we secure video feeds and student data across the Alice ecosystem.',
-    category: 'Security',
-    author: 'Elena Rodriguez',
-    date: 'Sep 15, 2026',
-    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 4,
-    title: 'Scaling to 100K Concurrent Exams',
-    desc: 'The technical challenges and architectural decisions behind scaling our real-time video processing.',
-    category: 'Engineering',
-    author: 'Aditya Singh',
-    date: 'Aug 30, 2026',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 5,
-    title: 'Student Privacy and GDPR Compliance',
-    desc: 'Why data minimization and transparency are core to our mission of ethical exam proctoring.',
-    category: 'Security',
-    author: 'Laura Smith',
-    date: 'Aug 12, 2026',
-    image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 6,
-    title: 'Creating the Perfect Exam Rules',
-    desc: 'A teacher’s guide to configuring sensitivity, time limits, and allowed materials in Alice.',
-    category: 'Tutorials',
-    author: 'Michael Chang',
-    date: 'Jul 21, 2026',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80'
-  }
-]
+  { id: 1, title: 'How AI is Changing Online Exams', desc: 'Explore how artificial intelligence and computer vision are ensuring integrity without invading privacy.', category: 'Engineering', author: 'Sarah Jenkins', date: 'Oct 12, 2026', readTime: '7 min', image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80' },
+  { id: 2, title: '5 Tips for a Smooth Proctoring Experience', desc: 'Ensure your students have a stress-free exam experience with these best practices for online proctoring.', category: 'Tutorials', author: 'Michael Chang', date: 'Sep 28, 2026', readTime: '4 min', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80' },
+  { id: 3, title: 'Security First: End-to-End Encryption', desc: 'A deep dive into how we secure video feeds and student data across the Alice ecosystem.', category: 'Security', author: 'Elena Rodriguez', date: 'Sep 15, 2026', readTime: '6 min', image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=800&q=80' },
+  { id: 4, title: 'Scaling to 100K Concurrent Exams', desc: 'The technical challenges and architectural decisions behind scaling our real-time video processing.', category: 'Engineering', author: 'Aditya Singh', date: 'Aug 30, 2026', readTime: '9 min', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80' },
+  { id: 5, title: 'Student Privacy and GDPR Compliance', desc: 'Why data minimization and transparency are core to our mission of ethical exam proctoring.', category: 'Security', author: 'Laura Smith', date: 'Aug 12, 2026', readTime: '5 min', image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80' },
+  { id: 6, title: 'Creating the Perfect Exam Rules', desc: "A teacher's guide to configuring sensitivity, time limits, and allowed materials in Alice.", category: 'Tutorials', author: 'Michael Chang', date: 'Jul 21, 2026', readTime: '4 min', image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80' },
+];
 
 export default function BlogPage() {
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [activeCategory, setActiveCategory] = useState('All')
-
-  const [heroRef, heroVisible] = useReveal(0.05)
-  const [postsRef, postsVisible] = useReveal(0.05)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    window.scrollTo(0, 0);
+    document.title = 'Blog — Alice Exam Proctor';
+  }, []);
 
-  const filteredPosts = POSTS.filter(post => {
-    const matchesCategory = activeCategory === 'All' || post.category === activeCategory
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          post.desc.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  const filtered = POSTS.filter(p => {
+    const matchCat = activeCategory === 'all' || p.category === activeCategory;
+    const q = searchQuery.toLowerCase();
+    const matchQ = !q || p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.author.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  const showFeatured = activeCategory === 'all' && !searchQuery;
 
   return (
-    <div style={{ background: '#0d1117', minHeight: '100vh', color: '#e6edf3', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif', overflowX: 'hidden', position: 'relative' }}>
-      <StarField />
-      
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <style>{`
-          *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-          html { scroll-behavior: smooth; }
-          
-          /* scrollbar */
-          ::-webkit-scrollbar { width: 6px; }
-          ::-webkit-scrollbar-track { background: #0d1117; }
-          ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-          ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+    <div style={{ minHeight: '100vh', background: '#080c10', color: '#e2e8f0', fontFamily: "'Inter','SF Pro Display',-apple-system,sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-          /* nav link */
-          .gh-nav-link {
-            color: #8b949e;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            padding: 6px 12px;
-            border-radius: 6px;
-            transition: color 0.15s ease, background 0.15s ease;
-          }
-          .gh-nav-link:hover { color: #e6edf3; background: #161b22; }
+        .bl-navbar {
+          position: sticky; top: 0; z-index: 50;
+          backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+          background: rgba(8,12,16,0.85); border-bottom: 1px solid rgba(255,255,255,0.06);
+          padding: 16px 5%; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .bl-back-btn {
+          display: inline-flex; align-items: center; gap: 8px;
+          color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.85rem;
+          padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.03); transition: all 0.2s ease;
+        }
+        .bl-back-btn:hover { color: #34d399; border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.05); }
 
-          /* primary button */
-          .gh-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #2ea043;
-            color: #fff;
-            border: 1px solid rgba(240,246,252,0.1);
-            padding: 9px 20px;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-            white-space: nowrap;
-          }
-          .gh-btn:hover { background: #3fb950; box-shadow: 0 0 0 3px rgba(46,160,67,0.2); transform: translateY(-1px); }
-          
-          /* outline button */
-          .gh-btn-outline {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: transparent;
-            color: #e6edf3;
-            border: 1px solid #30363d;
-            padding: 9px 20px;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-            white-space: nowrap;
-          }
-          .gh-btn-outline:hover { background: #161b22; border-color: #8b949e; transform: translateY(-1px); }
+        .bl-layout {
+          max-width: 1200px; margin: 0 auto; padding: 48px 5% 100px;
+          display: grid; grid-template-columns: 260px 1fr; gap: 48px; align-items: start;
+        }
+        @media (max-width: 900px) { .bl-layout { grid-template-columns: 1fr; } .bl-sidebar { display: none; } }
 
-          /* search input */
-          .gh-search-input {
-            width: 100%;
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 24px;
-            color: #e6edf3;
-            font-size: 0.9rem;
-            padding: 12px 20px 12px 42px;
-            outline: none;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-          }
-          .gh-search-input:focus { border-color: #2ea043; box-shadow: 0 0 0 3px rgba(46,160,67,0.15); }
-          .gh-search-input::placeholder { color: #8b949e; }
+        .bl-sidebar { position: sticky; top: 80px; }
 
-          /* category chip */
-          .category-chip {
-            background: #161b22;
-            border: 1px solid #30363d;
-            color: #8b949e;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-          }
-          .category-chip:hover { border-color: #8b949e; color: #e6edf3; }
-          .category-chip.active { background: rgba(46,160,67,0.1); border-color: rgba(46,160,67,0.4); color: #3fb950; }
+        .bl-cat-item {
+          display: flex; align-items: center; gap: 10px;
+          padding: 10px 14px; border-radius: 10px;
+          color: rgba(255,255,255,0.4); font-size: 0.83rem;
+          cursor: pointer; transition: all 0.2s;
+          border: 1px solid transparent; margin-bottom: 4px;
+          background: none; width: 100%; text-align: left;
+        }
+        .bl-cat-item:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.03); }
+        .bl-cat-item.active { color: #34d399; background: rgba(52,211,153,0.06); border-color: rgba(52,211,153,0.18); }
+        .bl-cat-count {
+          margin-left: auto; font-size: 0.72rem; padding: 1px 8px;
+          border-radius: 10px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.25);
+        }
+        .bl-cat-item.active .bl-cat-count { background: rgba(52,211,153,0.1); color: rgba(52,211,153,0.7); }
 
-          /* cards */
-          .blog-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-          }
-          .blog-card:hover { border-color: #484f58; transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.5); }
-          .blog-card-img { width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid #30363d; transition: transform 0.3s ease; }
-          .blog-card:hover .blog-card-img { transform: scale(1.03); }
+        .bl-search {
+          width: 100%; padding: 11px 14px 11px 42px;
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px; color: #e2e8f0; font-size: 0.85rem;
+          font-family: 'Inter', sans-serif; outline: none;
+          transition: border-color 0.2s, background 0.2s; box-sizing: border-box;
+        }
+        .bl-search:focus { border-color: rgba(52,211,153,0.35); background: rgba(52,211,153,0.03); }
+        .bl-search::placeholder { color: rgba(255,255,255,0.2); }
 
-          .featured-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 16px;
-            overflow: hidden;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
-          }
-          .featured-card:hover { border-color: #484f58; box-shadow: 0 12px 32px rgba(0,0,0,0.5); }
-          .featured-card-img { width: 100%; height: 100%; object-fit: cover; min-height: 340px; transition: transform 0.3s ease; }
-          .featured-card:hover .featured-card-img { transform: scale(1.02); }
+        .bl-featured {
+          border-radius: 18px; overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.07);
+          background: rgba(255,255,255,0.02);
+          display: grid; grid-template-columns: 1fr 1fr;
+          margin-bottom: 48px; transition: border-color 0.3s, transform 0.3s;
+          cursor: pointer;
+        }
+        .bl-featured:hover { border-color: rgba(52,211,153,0.25); transform: translateY(-3px); }
+        .bl-featured-img { width: 100%; height: 100%; object-fit: cover; min-height: 320px; display: block; transition: transform 0.4s; }
+        .bl-featured:hover .bl-featured-img { transform: scale(1.03); }
+        @media (max-width: 700px) { .bl-featured { grid-template-columns: 1fr; } .bl-featured-img { min-height: 220px; } }
 
-          /* reveal animation */
-          .reveal { transition: opacity 0.6s ease, transform 0.6s ease; }
-          .reveal-hidden { opacity: 0; transform: translateY(24px); }
-          .reveal-visible { opacity: 1; transform: translateY(0); }
+        .bl-card {
+          border-radius: 14px; overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.07);
+          background: rgba(255,255,255,0.02);
+          display: flex; flex-direction: column;
+          transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; cursor: pointer;
+        }
+        .bl-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.5); }
+        .bl-card-img { width: 100%; height: 200px; object-fit: cover; display: block; transition: transform 0.4s; }
+        .bl-card:hover .bl-card-img { transform: scale(1.04); }
 
-          /* responsive */
-          @media (max-width: 900px) {
-            .featured-card { grid-template-columns: 1fr; }
-            .featured-card-img { height: 260px; min-height: auto; }
-          }
-          @media (max-width: 768px) {
-            .gh-desktop-nav { display: none !important; }
-            .gh-mobile-toggle { display: flex !important; }
-            .blog-grid { grid-template-columns: 1fr !important; }
-          }
-          @media (min-width: 769px) and (max-width: 1024px) {
-            .blog-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          }
-        `}</style>
+        .bl-badge {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
+        }
 
-        {/* ── NAVBAR ─────────────────────────────────────────────────────────── */}
-        <header style={{
-          position: 'sticky', top: 0, zIndex: 100,
-          background: scrolled ? 'rgba(13,17,23,0.95)' : '#0d1117',
-          borderBottom: `1px solid ${scrolled ? '#21262d' : 'transparent'}`,
-          backdropFilter: scrolled ? 'blur(12px)' : 'none',
-          transition: 'background 0.2s ease, border-color 0.2s ease',
-        }}>
-          <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-              <AliceLogo size={34} />
-              <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem', letterSpacing: -0.3 }}>Alice Exam Proctor</span>
-            </Link>
+        .bl-author-avatar {
+          width: 28px; height: 28px; border-radius: '50%'; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+          background: rgba(52,211,153,0.1); color: #34d399;
+          border: 1px solid rgba(52,211,153,0.2);
+        }
 
-            <nav className="gh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Link to="/" className="gh-nav-link">Home</Link>
-              <Link to="/blog" className="gh-nav-link" style={{ color: '#e6edf3', background: '#161b22' }}>Blog</Link>
-              <a href="https://github.com/adii0018" target="_blank" rel="noopener noreferrer" className="gh-nav-link">GitHub</a>
-            </nav>
+        .bl-read-more {
+          display: inline-flex; align-items: center; gap: 5px;
+          color: rgba(255,255,255,0.3); font-size: 0.78rem;
+          transition: color 0.2s;
+        }
+        .bl-card:hover .bl-read-more { color: #34d399; }
 
-            <div className="gh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Link to="/auth" className="gh-btn-outline" style={{ padding: '7px 16px' }}>Sign in</Link>
-              <Link to="/auth" className="gh-btn" style={{ padding: '7px 16px' }}>Get started</Link>
-            </div>
+        .bl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 
-            <button className="gh-mobile-toggle" style={{ display: 'none', background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', padding: 6 }} onClick={() => setMobileOpen(!mobileOpen)}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                {mobileOpen ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></> : <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>}
-              </svg>
-            </button>
+        .bl-empty {
+          text-align: center; padding: 72px 24px;
+          border-radius: 16px; border: 1px dashed rgba(255,255,255,0.07);
+          background: rgba(255,255,255,0.01);
+        }
+      `}</style>
+
+      {/* Navbar */}
+      <nav className="bl-navbar">
+        <Link to="/" className="bl-back-btn">
+          <ArrowLeft size={14} /> Back to Home
+        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BookOpen size={16} style={{ color: '#34d399' }} />
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem' }}>Alice Blog</span>
+        </div>
+        <div style={{ display: 'flex', gap: 14 }}>
+          <Link to="/privacy" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.78rem', textDecoration: 'none' }}>Privacy</Link>
+          <Link to="/auth" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.78rem', textDecoration: 'none' }}>Sign In</Link>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '56px 5% 44px', background: 'linear-gradient(180deg, rgba(52,211,153,0.03) 0%, transparent 100%)', textAlign: 'center' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px', borderRadius: 20, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', marginBottom: 20 }}>
+          <Rss size={13} style={{ color: '#34d399' }} />
+          <span style={{ color: '#34d399', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>The Alice Blog</span>
+        </div>
+        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 14px', background: 'linear-gradient(135deg, #e2e8f0, rgba(255,255,255,0.55))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+          Insights from Team Alice
+        </h1>
+        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto', lineHeight: 1.75 }}>
+          Product updates, engineering deep-dives, security research, and proctoring tutorials — all in one place.
+        </p>
+        <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 20 }}>
+          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.78rem' }}>{POSTS.length + 1} articles published</span>
+          <span style={{ color: 'rgba(255,255,255,0.1)' }}>•</span>
+          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.78rem' }}>Updated regularly</span>
+        </div>
+      </div>
+
+      {/* Layout */}
+      <div className="bl-layout">
+
+        {/* Sidebar */}
+        <aside className="bl-sidebar">
+          {/* Search */}
+          <div style={{ position: 'relative', marginBottom: 28 }}>
+            <Search size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="bl-search"
+            />
           </div>
-          {mobileOpen && (
-            <div style={{ background: '#161b22', borderTop: '1px solid #21262d', padding: '12px 24px 20px' }}>
-              <Link to="/" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Home</Link>
-              <Link to="/blog" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d', color: '#e6edf3' }}>Blog</Link>
-              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-                <Link to="/auth" className="gh-btn-outline" style={{ flex: 1, justifyContent: 'center' }}>Sign in</Link>
-                <Link to="/auth" className="gh-btn" style={{ flex: 1, justifyContent: 'center' }}>Get started</Link>
-              </div>
-            </div>
-          )}
-        </header>
 
-        {/* ── HERO & FEATURED POST ───────────────────────────────────────────── */}
-        <section style={{ padding: '60px 24px 40px', maxWidth: 1280, margin: '0 auto' }}>
-          <div ref={heroRef} className={`reveal ${heroVisible ? 'reveal-visible' : 'reveal-hidden'}`}>
-            <div style={{ textAlign: 'center', marginBottom: 56 }}>
-              <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.2rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: -1, marginBottom: 16 }}>
-                Alice <span style={{ color: '#3fb950' }}>Blog</span>
-              </h1>
-              <p style={{ color: '#8b949e', fontSize: '1.1rem', maxWidth: 540, margin: '0 auto' }}>
-                Insights, product updates, and tutorials from the team building the future of remote proctoring.
-              </p>
-            </div>
+          {/* Categories */}
+          <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12 }}>Categories</div>
+          {CATEGORIES.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setActiveCategory(c.id)}
+              className={`bl-cat-item ${activeCategory === c.id ? 'active' : ''}`}
+            >
+              <c.icon size={13} />
+              {c.label}
+              <span className="bl-cat-count">{c.count}</span>
+            </button>
+          ))}
 
-            {/* Featured Post */}
-            {!searchQuery && activeCategory === 'All' && (
-              <div style={{ marginBottom: 64 }}>
-                <div style={{ color: '#8b949e', fontSize: '0.85rem', fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 16 }}>Featured Post</div>
-                <div className="featured-card">
-                  <div style={{ overflow: 'hidden' }}>
-                    <img src={FEATURED_POST.image} alt={FEATURED_POST.title} className="featured-card-img" />
+          {/* Quick Links */}
+          <div style={{ marginTop: 32, padding: '18px', borderRadius: 12, background: 'rgba(52,211,153,0.03)', border: '1px solid rgba(52,211,153,0.1)' }}>
+            <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>Quick Links</div>
+            {[
+              { label: 'Privacy Policy', to: '/privacy' },
+              { label: 'Terms of Service', to: '/terms' },
+              { label: 'Get Started Free', to: '/auth' },
+            ].map(l => (
+              <Link key={l.label} to={l.to} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.35)', fontSize: '0.82rem', textDecoration: 'none', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'color 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#34d399'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
+              >
+                {l.label}
+                <ArrowUpRight size={12} style={{ opacity: 0.4 }} />
+              </Link>
+            ))}
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main>
+          {/* Mobile Search */}
+          <div style={{ display: 'none', marginBottom: 24 }} className="bl-mobile-search">
+            <div style={{ position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)' }} />
+              <input type="text" placeholder="Search articles..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="bl-search" />
+            </div>
+          </div>
+
+          {/* Featured Post */}
+          {showFeatured && (
+            <div>
+              <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>Featured</div>
+              <div className="bl-featured">
+                <div style={{ overflow: 'hidden' }}>
+                  <img src={FEATURED_POST.image} alt={FEATURED_POST.title} className="bl-featured-img" />
+                </div>
+                <div style={{ padding: '36px 32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14 }}>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <span className="bl-badge" style={{ background: `${CATEGORY_COLORS[FEATURED_POST.category]}15`, color: CATEGORY_COLORS[FEATURED_POST.category], border: `1px solid ${CATEGORY_COLORS[FEATURED_POST.category]}25` }}>
+                      <Tag size={10} /> {FEATURED_POST.category}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.75rem' }}>{FEATURED_POST.readTime}</span>
                   </div>
-                  <div style={{ padding: '40px 32px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
-                      <span style={{ background: 'rgba(46,160,67,0.15)', color: '#3fb950', padding: '4px 10px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600 }}>{FEATURED_POST.category}</span>
-                      <span style={{ color: '#8b949e', fontSize: '0.8rem' }}>{FEATURED_POST.date}</span>
-                    </div>
-                    <h2 style={{ color: '#e6edf3', fontSize: '1.8rem', fontWeight: 800, lineHeight: 1.3, marginBottom: 16, letterSpacing: -0.5 }}>{FEATURED_POST.title}</h2>
-                    <p style={{ color: '#8b949e', fontSize: '1rem', lineHeight: 1.6, marginBottom: 24 }}>{FEATURED_POST.desc}</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 'auto' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#30363d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e6edf3', fontWeight: 600, fontSize: '0.8rem' }}>
-                        {FEATURED_POST.author[0]}
+                  <h2 style={{ color: '#e2e8f0', fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3, letterSpacing: '-0.02em', margin: 0 }}>{FEATURED_POST.title}</h2>
+                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.87rem', lineHeight: 1.75, margin: 0 }}>{FEATURED_POST.desc}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="bl-author-avatar">{FEATURED_POST.author[0]}</div>
+                    <div>
+                      <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.82rem', fontWeight: 500 }}>{FEATURED_POST.author}</div>
+                      <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.73rem', display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
+                        <Calendar size={10} /> {FEATURED_POST.date}
                       </div>
-                      <span style={{ color: '#c9d1d9', fontSize: '0.85rem', fontWeight: 500 }}>{FEATURED_POST.author}</span>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        </section>
-
-        {/* ── SEARCH & CATEGORIES ────────────────────────────────────────────── */}
-        <section style={{ padding: '0 24px 32px', maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <div style={{ position: 'relative', maxWidth: 400 }}>
-              <svg style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#8b949e' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-              <input 
-                type="text" 
-                placeholder="Search articles..." 
-                className="gh-search-input" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
             </div>
-            
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', borderBottom: '1px solid #21262d', paddingBottom: 24 }}>
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`category-chip ${activeCategory === cat ? 'active' : ''}`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
+          )}
 
-        {/* ── LATEST POSTS ───────────────────────────────────────────────────── */}
-        <section style={{ padding: '0 24px 96px', maxWidth: 1280, margin: '0 auto' }}>
-          <div ref={postsRef} className={`reveal ${postsVisible ? 'reveal-visible' : 'reveal-hidden'}`}>
-            <h3 style={{ color: '#e6edf3', fontSize: '1.4rem', fontWeight: 700, marginBottom: 24 }}>Latest Articles</h3>
-            
-            {filteredPosts.length > 0 ? (
-              <div className="blog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
-                {filteredPosts.map((post, i) => (
-                  <div key={post.id} className="blog-card" style={{ transitionDelay: `${i * 0.05}s` }}>
-                    <div style={{ overflow: 'hidden' }}>
-                      <img src={post.image} alt={post.title} className="blog-card-img" />
+          {/* Section title */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              {searchQuery ? `Results for "${searchQuery}"` : activeCategory === 'all' ? 'Latest Articles' : activeCategory}
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.75rem' }}>{filtered.length} {filtered.length === 1 ? 'article' : 'articles'}</div>
+          </div>
+
+          {/* Cards Grid */}
+          {filtered.length > 0 ? (
+            <div className="bl-grid">
+              {filtered.map((post, i) => {
+                const color = CATEGORY_COLORS[post.category] || '#34d399';
+                return (
+                  <div key={post.id} className="bl-card" style={{ animationDelay: `${i * 0.05}s` }}>
+                    <div style={{ overflow: 'hidden', height: 200 }}>
+                      <img src={post.image} alt={post.title} className="bl-card-img" />
                     </div>
-                    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
-                        <span style={{ color: '#3fb950', fontSize: '0.75rem', fontWeight: 600 }}>{post.category}</span>
-                        <span style={{ color: '#484f58' }}>•</span>
-                        <span style={{ color: '#8b949e', fontSize: '0.75rem' }}>{post.date}</span>
+                    <div style={{ padding: '22px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+                        <span className="bl-badge" style={{ background: `${color}12`, color, border: `1px solid ${color}20` }}>
+                          <Tag size={9} />{post.category}
+                        </span>
+                        <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.72rem' }}>{post.readTime}</span>
                       </div>
-                      <h3 style={{ color: '#e6edf3', fontSize: '1.2rem', fontWeight: 700, lineHeight: 1.3, marginBottom: 12 }}>{post.title}</h3>
-                      <p style={{ color: '#8b949e', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: 20 }}>{post.desc}</p>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 'auto', paddingTop: 16, borderTop: '1px solid #21262d' }}>
-                        <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#30363d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e6edf3', fontWeight: 600, fontSize: '0.65rem' }}>
-                          {post.author[0]}
+                      <h3 style={{ color: '#e2e8f0', fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.4, marginBottom: 10, letterSpacing: '-0.01em' }}>{post.title}</h3>
+                      <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.83rem', lineHeight: 1.7, marginBottom: 18, flex: 1 }}>{post.desc}</p>
+                      <div style={{ paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div className="bl-author-avatar" style={{ width: 26, height: 26, fontSize: '0.7rem' }}>{post.author[0]}</div>
+                          <div>
+                            <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.78rem', fontWeight: 500 }}>{post.author}</div>
+                            <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <Calendar size={9} />{post.date}
+                            </div>
+                          </div>
                         </div>
-                        <span style={{ color: '#8b949e', fontSize: '0.8rem', fontWeight: 500 }}>{post.author}</span>
+                        <span className="bl-read-more">Read <ArrowUpRight size={12} /></span>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding: '64px 24px', textAlign: 'center', background: '#161b22', borderRadius: 12, border: '1px dashed #30363d' }}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#484f58" strokeWidth="1.5" style={{ margin: '0 auto 16px' }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <div style={{ color: '#e6edf3', fontSize: '1.1rem', fontWeight: 600, marginBottom: 8 }}>No articles found</div>
-                <div style={{ color: '#8b949e', fontSize: '0.9rem' }}>Try adjusting your search query or category filter.</div>
-                <button onClick={() => {setSearchQuery(''); setActiveCategory('All')}} className="gh-btn-outline" style={{ marginTop: 24 }}>Clear filters</button>
-              </div>
-            )}
-          </div>
-        </section>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bl-empty">
+              <Search size={40} style={{ color: 'rgba(255,255,255,0.1)', margin: '0 auto 16px', display: 'block' }} />
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', fontWeight: 600, marginBottom: 8 }}>No articles found</div>
+              <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.85rem', marginBottom: 20 }}>Try a different search term or category.</div>
+              <button onClick={() => { setSearchQuery(''); setActiveCategory('all'); }} style={{ padding: '9px 20px', borderRadius: 8, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34d399', fontSize: '0.83rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+                Clear filters
+              </button>
+            </div>
+          )}
 
-        {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
-        <PremiumFooter />
+          {/* Newsletter CTA */}
+          <div style={{ marginTop: 60, padding: '36px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(52,211,153,0.05), rgba(96,165,250,0.03))', border: '1px solid rgba(52,211,153,0.12)', textAlign: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '4px 12px', borderRadius: 20, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', marginBottom: 16 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
+              <span style={{ color: '#34d399', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Stay Updated</span>
+            </div>
+            <h3 style={{ color: '#e2e8f0', fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>Never miss an update</h3>
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.87rem', marginBottom: 24, maxWidth: 380, margin: '0 auto 24px' }}>
+              Follow the Alice blog for the latest features, security updates, and proctoring insights.
+            </p>
+            <Link to="/auth" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 28px', borderRadius: 10, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', color: '#34d399', fontWeight: 600, fontSize: '0.88rem', textDecoration: 'none', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.15)'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.4)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.1)'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.25)'; }}>
+              Get started free <ArrowUpRight size={15} />
+            </Link>
+          </div>
+        </main>
       </div>
     </div>
-  )
+  );
 }
