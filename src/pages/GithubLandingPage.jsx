@@ -670,9 +670,9 @@ export default function GithubLandingPage() {
               {/* Terminal readout */}
               <div style={{ marginTop: 16, background: '#0d1117', border: '1px solid #21262d', borderRadius: 8, padding: '10px 14px', fontFamily: 'monospace' }}>
                 {[
-                  { prefix: '✓', text: 'Identity verified — Aditya Singh', color: '#3fb950' },
+                  { prefix: '✓', text: 'Identity verified — Aditya Singh Rajput', color: '#3fb950' },
                   { prefix: '◎', text: 'No foreign faces detected in frame', color: '#3fb950' },
-                  { prefix: '⚡', text: 'Gaze pattern nominal — exam ongoing', color: '#8b949e' },
+                  { prefix: '👀', text: 'Gaze pattern nominal — exam ongoing', color: '#8b949e' },
                 ].map((row, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, fontSize: '0.65rem', padding: '3px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none', animation: `fade-in-row 0.4s ease ${i * 0.2 + 0.6}s both` }}>
                     <span style={{ color: row.color, flexShrink: 0 }}>{row.prefix}</span>

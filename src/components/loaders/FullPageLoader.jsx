@@ -163,10 +163,10 @@ export default function FullPageLoader() {
             <div style={{
               position: 'absolute', top: -6, left: '50%',
               transform: 'translateX(-50%) rotate(45deg)',
-              color: '#3fb950',
-              filter: 'drop-shadow(0 0 10px rgba(63,185,80,0.6))',
+              color: '#f0f0f0',
+              filter: 'drop-shadow(0 0 10px rgba(63, 140, 185, 0.6))',
             }}>
-              <Plane size={20} style={{ fill: 'rgba(63,185,80,0.3)' }} />
+              <Plane size={20} style={{ fill: 'rgba(104, 191, 235, 0.83)' }} />
             </div>
           </div>
           {/* leaf logo centered */}
@@ -178,10 +178,10 @@ export default function FullPageLoader() {
         {/* Brand */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ color: '#e6edf3', fontWeight: 800, fontSize: '1.3rem', letterSpacing: -0.3, marginBottom: 4 }}>
-            Alice Proctor
+            Alice Exam Proctor
           </div>
           <div style={{ color: '#8b949e', fontSize: '0.8rem' }}>
-            AI-Powered Exam Proctoring
+            AI-Powered Exam Proctoring 
           </div>
         </div>
 
@@ -225,8 +225,8 @@ export default function FullPageLoader() {
       </div>
 
       {/* Bottom credit */}
-      <div style={{ position: 'absolute', bottom: 24, color: '#484f58', fontSize: '0.72rem', fontFamily: 'monospace', letterSpacing: 1 }}>
-        A S R
+      <div style={{ position: 'absolute', bottom: 24, color: '#2ea043', fontSize: '0.72rem', fontFamily: 'monospace', letterSpacing: 1 }}>
+        A S R 🎀
       </div>
     </div>
   )

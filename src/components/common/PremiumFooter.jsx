@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Plane } from 'lucide-react'
 // ── Typewriter cycling name ───────────────────────────────────────────────────
 function TypewriterName() {
-  const titles = ['Aditya Singh Rajput ', 'A   S   R ', 'AI Enthusiast']
+  const titles = ['Aditya Singh Rajput ', 'A   S   R ', 'T e a m ~ A l i c e ❤️']
   const [titleIdx, setTitleIdx] = useState(0)
   const [displayed, setDisplayed] = useState('')
   const [deleting, setDeleting] = useState(false)
@@ -42,7 +42,7 @@ function TypewriterName() {
     >
       <span style={{
         fontSize: '0.78rem', fontWeight: 700,
-        background: 'linear-gradient(90deg, #3fb950, #58a6ff)',
+        background: 'linear-gradient(90deg, #3ffaaf, #58ecff)',
         WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
         letterSpacing: '0.01em', minWidth: 148, display: 'inline-block',
       }}>
@@ -294,7 +294,7 @@ export default function PremiumFooter() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3fb950', display: 'inline-block', boxShadow: '0 0 6px rgba(63,185,80,0.6)' }} />
-            <span style={{ color: '#484f58', fontSize: '0.75rem' }}>All systems operational</span>
+            <span style={{ color: '#484f58', fontSize: '0.75rem' }}>₳ll systems operational</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
