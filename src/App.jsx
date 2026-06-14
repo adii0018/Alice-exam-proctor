@@ -87,6 +87,10 @@ import CookiePolicy from './pages/CookiePolicy'
 import GdprPage from './pages/GdprPage'
 import ContactPage from './pages/ContactPage'
 import NotFoundPage from './pages/NotFoundPage'
+import SyllabusHome from './pages/syllabus/SyllabusHome'
+import SemesterSelect from './pages/syllabus/SemesterSelect'
+import SubjectsList from './pages/syllabus/SubjectsList'
+import SubjectDetail from './pages/syllabus/SubjectDetail'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
@@ -111,14 +115,14 @@ function App() {
         <div className="relative z-10 flex flex-col items-center justify-center">
           {/* Ambient Glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#2ea043]/15 blur-[100px] rounded-full w-[250px] h-[250px] animate-pulse"></div>
-          
+
           {/* Futuristic Spinner */}
           <div className="relative w-28 h-28 mb-8 flex items-center justify-center">
             {/* Outer Rings */}
             <div className="absolute inset-0 rounded-full border-t-[3px] border-[#3fb950] border-r-[3px] border-r-transparent animate-spin" style={{ animationDuration: '3s' }}></div>
             <div className="absolute inset-2 rounded-full border-b-[3px] border-[#2ea043] border-l-[3px] border-l-transparent animate-spin" style={{ animationDuration: '2.5s', animationDirection: 'reverse' }}></div>
             <div className="absolute inset-5 rounded-full border-dashed border-[2px] border-[#8b949e]/30 animate-spin" style={{ animationDuration: '8s' }}></div>
-            
+
             {/* Flying Airplane Orbit */}
             <div className="absolute inset-2 animate-spin" style={{ animationDuration: '2s' }}>
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[#3fb950] drop-shadow-[0_0_10px_rgba(63,185,80,0.6)] rotate-[45deg]">
@@ -131,16 +135,16 @@ function App() {
               <Leaf size={32} strokeWidth={2} className="text-[#3fb950] fill-[#3fb950]/20 animate-pulse drop-shadow-[0_0_15px_rgba(63,185,80,0.4)]" />
             </div>
           </div>
-          
+
           {/* Brand Text */}
           <h2 className="text-3xl font-bold text-[#e6edf3] tracking-tight mb-2">
             Alice 🍃 <span className="text-[#3fb950]">Exam Proctor</span>
           </h2>
-          
+
           {/* Loading Bar */}
           <div className="w-56 h-[3px] bg-[#21262d] rounded-full overflow-hidden mt-3 relative">
             <div className="absolute top-0 left-0 h-full bg-[#3fb950] rounded-full shadow-[0_0_10px_#3fb950]" style={{ transformOrigin: 'left', animation: 'scaleX 1.5s ease-out forwards' }}>
-               <style>{`
+              <style>{`
                  @keyframes scaleX {
                    0% { transform: scaleX(0); }
                    100% { transform: scaleX(1); }
@@ -160,192 +164,196 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/" element={<PremiumLandingPage />} />
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/" element={<PremiumLandingPage />} />
+          <Route path="/syllabus" element={<SyllabusHome />} />
+          <Route path="/syllabus/:year" element={<SemesterSelect />} />
+          <Route path="/syllabus/:year/:semester" element={<SubjectsList />} />
+          <Route path="/syllabus/:year/:semester/:subjectId" element={<SubjectDetail />} />
           <Route path="/blog" element={<BlogPage />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/cookies" element={<CookiePolicy />} />
-          <Route path="/gdpr" element={<GdprPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/avatar-test" element={<AvatarTest />} />
-          <Route 
-            path="/student" 
-            element={
-              <ProtectedRoute role="student">
-                <StudentDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/exams" 
-            element={
-              <ProtectedRoute role="student">
-                <MyExams />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/join" 
-            element={
-              <ProtectedRoute role="student">
-                <JoinExam />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/violations" 
-            element={
-              <ProtectedRoute role="student">
-                <Violations />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/profile" 
-            element={
-              <ProtectedRoute role="student">
-                <Profile />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/settings" 
-            element={
-              <ProtectedRoute role="student">
-                <Settings />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/exam/:examId" 
-            element={
-              <ProtectedRoute role="student">
-                <ExamPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/exam/:examId/result" 
-            element={
-              <ProtectedRoute role="student">
-                <ExamResultPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/teacher" 
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherDashboardNew />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/teacher/exams" 
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherExams />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/teacher/results" 
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherResults />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/teacher/violations" 
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherViolations />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/teacher/settings" 
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherSettings />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/teacher/profile" 
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherProfile />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Super Admin Routes */}
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute role="admin">
-                <SuperAdminDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/users" 
-            element={
-              <ProtectedRoute role="admin">
-                <UsersManagement />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/exams" 
-            element={
-              <ProtectedRoute role="admin">
-                <ExamsManagement />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/violations" 
-            element={
-              <ProtectedRoute role="admin">
-                <ViolationsManagement />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/audit" 
-            element={
-              <ProtectedRoute role="admin">
-                <AuditLogs />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/settings" 
-            element={
-              <ProtectedRoute role="admin">
-                <SystemSettings />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/blogs" 
-            element={
-              <ProtectedRoute role="admin">
-                <BlogManagement />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-        <PrivacyAlert />
-      </Router>
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/cookies" element={<CookiePolicy />} />
+            <Route path="/gdpr" element={<GdprPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/avatar-test" element={<AvatarTest />} />
+            <Route
+              path="/student"
+              element={
+                <ProtectedRoute role="student">
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/exams"
+              element={
+                <ProtectedRoute role="student">
+                  <MyExams />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/join"
+              element={
+                <ProtectedRoute role="student">
+                  <JoinExam />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/violations"
+              element={
+                <ProtectedRoute role="student">
+                  <Violations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/profile"
+              element={
+                <ProtectedRoute role="student">
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/settings"
+              element={
+                <ProtectedRoute role="student">
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/exam/:examId"
+              element={
+                <ProtectedRoute role="student">
+                  <ExamPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/exam/:examId/result"
+              element={
+                <ProtectedRoute role="student">
+                  <ExamResultPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher"
+              element={
+                <ProtectedRoute role="teacher">
+                  <TeacherDashboardNew />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/exams"
+              element={
+                <ProtectedRoute role="teacher">
+                  <TeacherExams />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/results"
+              element={
+                <ProtectedRoute role="teacher">
+                  <TeacherResults />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/violations"
+              element={
+                <ProtectedRoute role="teacher">
+                  <TeacherViolations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/settings"
+              element={
+                <ProtectedRoute role="teacher">
+                  <TeacherSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/profile"
+              element={
+                <ProtectedRoute role="teacher">
+                  <TeacherProfile />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Super Admin Routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute role="admin">
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute role="admin">
+                  <UsersManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/exams"
+              element={
+                <ProtectedRoute role="admin">
+                  <ExamsManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/violations"
+              element={
+                <ProtectedRoute role="admin">
+                  <ViolationsManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/audit"
+              element={
+                <ProtectedRoute role="admin">
+                  <AuditLogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute role="admin">
+                  <SystemSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/blogs"
+              element={
+                <ProtectedRoute role="admin">
+                  <BlogManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          <PrivacyAlert />
+        </Router>
       </AuthProvider>
     </ThemeProvider>
   )
