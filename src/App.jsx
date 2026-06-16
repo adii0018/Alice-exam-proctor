@@ -91,6 +91,9 @@ import SyllabusHome from './pages/syllabus/SyllabusHome'
 import SemesterSelect from './pages/syllabus/SemesterSelect'
 import SubjectsList from './pages/syllabus/SubjectsList'
 import SubjectDetail from './pages/syllabus/SubjectDetail'
+import PYQHome from './pages/pyq/PYQHome'
+import PYQSemester from './pages/pyq/PYQSemester'
+import PYQPapers from './pages/pyq/PYQPapers'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
@@ -171,6 +174,9 @@ function App() {
           <Route path="/syllabus/:year" element={<SemesterSelect />} />
           <Route path="/syllabus/:year/:semester" element={<SubjectsList />} />
           <Route path="/syllabus/:year/:semester/:subjectId" element={<SubjectDetail />} />
+          <Route path="/pyq" element={<PYQHome />} />
+          <Route path="/pyq/:year" element={<PYQSemester />} />
+          <Route path="/pyq/:year/:semester" element={<PYQPapers />} />
           <Route path="/blog" element={<BlogPage />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />

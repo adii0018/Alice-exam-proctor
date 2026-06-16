@@ -52,7 +52,7 @@ export default function SubjectsList() {
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <span style={{ fontSize: '1.4rem' }}>🍃</span>
-            <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem' }}>Alice Exam Proctor</span>
+            <span className="alice-brand-text" style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem' }}>Alice Exam Proctor</span>
           </Link>
           <Link to="/auth" style={{ color: '#8b949e', textDecoration: 'none', fontSize: '0.875rem' }}>Sign in</Link>
         </div>
@@ -89,6 +89,7 @@ export default function SubjectsList() {
               <Link
                 key={subject.id}
                 to={`/syllabus/${year}/${semester}/${subject.id}`}
+                className="subject-link-card"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -135,6 +136,18 @@ export default function SubjectsList() {
           })}
         </div>
       </div>
+
+      {/* Responsive Styles */}
+      <style>{`
+        @media (max-width: 600px) {
+          .alice-brand-text { display: none !important; }
+          .subject-link-card { padding: 14px 16px !important; }
+          .subject-icon-box { padding: 8px !important; }
+        }
+        @media (max-width: 380px) {
+          .subject-link-card { padding: 12px !important; }
+        }
+      `}</style>
     </div>
   )
 }

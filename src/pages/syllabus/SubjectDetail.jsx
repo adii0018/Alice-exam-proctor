@@ -53,7 +53,7 @@ export default function SubjectDetail() {
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <span style={{ fontSize: '1.4rem' }}>🍃</span>
-            <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem' }}>Alice Exam Proctor</span>
+            <span className="alice-brand-text" style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem' }}>Alice Exam Proctor</span>
           </Link>
           <Link to="/auth" style={{ color: '#8b949e', textDecoration: 'none', fontSize: '0.875rem' }}>Sign in</Link>
         </div>
@@ -75,7 +75,7 @@ export default function SubjectDetail() {
         </div>
 
         {/* Subject Heading Card */}
-        <div style={{ background: 'rgba(63,185,80,0.07)', border: '1px solid rgba(63,185,80,0.3)', borderRadius: 12, padding: '28px 32px', marginBottom: 40 }}>
+        <div style={{ background: 'rgba(63,185,80,0.07)', border: '1px solid rgba(63,185,80,0.3)', borderRadius: 12, padding: 'clamp(18px, 4vw, 28px) clamp(16px, 4vw, 32px)', marginBottom: 40 }}>
           <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, color: '#3fb950', marginBottom: 8 }}>
             {YEAR_LABELS[year]} · {semData.label}
           </div>
@@ -102,17 +102,17 @@ export default function SubjectDetail() {
               <div
                 key={unit.unit}
                 style={{
-                  padding: '24px 28px',
+                  padding: 'clamp(16px, 3vw, 24px) clamp(16px, 3vw, 28px)',
                   background: col.bg,
                   border: `1px solid ${col.border}`,
                   borderLeft: `5px solid ${col.accent}`,
                   borderRadius: 10,
                 }}
               >
-                <div style={{ fontWeight: 700, color: col.accent, fontSize: '0.9rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
+                <div style={{ fontWeight: 700, color: col.accent, fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
                   UNIT {unit.unit}: {unit.title}
                 </div>
-                <p style={{ color: '#c9d1d9', fontSize: '0.9rem', lineHeight: 1.75, margin: 0 }}>
+                <p style={{ color: '#c9d1d9', fontSize: 'clamp(0.85rem, 2vw, 0.9rem)', lineHeight: 1.75, margin: 0 }}>
                   {unit.content}
                 </p>
               </div>
@@ -138,6 +138,13 @@ export default function SubjectDetail() {
           </Link>
         </div>
       </div>
+
+      {/* Responsive Styles */}
+      <style>{`
+        @media (max-width: 600px) {
+          .alice-brand-text { display: none !important; }
+        }
+      `}</style>
     </div>
   )
 }

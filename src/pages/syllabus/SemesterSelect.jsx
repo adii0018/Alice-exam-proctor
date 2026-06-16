@@ -58,7 +58,7 @@ export default function SemesterSelect() {
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <span style={{ fontSize: '1.4rem' }}>🍃</span>
-            <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem' }}>Alice Exam Proctor</span>
+            <span className="alice-brand-text" style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem' }}>Alice Exam Proctor</span>
           </Link>
           <Link to="/auth" style={{ color: '#8b949e', textDecoration: 'none', fontSize: '0.875rem' }}>Sign in</Link>
         </div>
@@ -84,13 +84,14 @@ export default function SemesterSelect() {
         </p>
 
         {/* Semester Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+        <div className="semester-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
           {semesters.map(([semNum, semData], idx) => {
             const col = SEM_COLORS[idx % SEM_COLORS.length]
             return (
               <Link
                 key={semNum}
                 to={`/syllabus/${year}/${semNum}`}
+                className="semester-card"
                 style={{
                   display: 'block',
                   padding: '32px 28px',
@@ -127,6 +128,22 @@ export default function SemesterSelect() {
           })}
         </div>
       </div>
+
+      {/* Responsive Styles */}
+      <style>{`
+        @media (max-width: 600px) {
+          .alice-brand-text { display: none !important; }
+          .semester-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+          .semester-card { padding: 22px 18px !important; }
+        }
+        @media (max-width: 480px) {
+          .semester-grid { grid-template-columns: 1fr 1fr !important; }
+          .semester-card { padding: 18px 14px !important; }
+        }
+        @media (max-width: 360px) {
+          .semester-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   )
 }
