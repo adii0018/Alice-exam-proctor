@@ -1,5 +1,7 @@
+import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Flag } from 'lucide-react';
+import QuestionNavigatorGrid from './QuestionNavigatorGrid';
 
 const QuestionPanel = ({
   question,
@@ -19,13 +21,6 @@ const QuestionPanel = ({
   onQuestionSelect,
   currentQuestion
 }) => {
-  const getQuestionStatus = (index) => {
-    const q = allQuestions[index];
-    if (answers[q.id]) return 'answered';
-    if (markedForReview.has(q.id)) return 'marked';
-    return 'unanswered';
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-4 lg:p-8">
       {/* Question Header */}
@@ -47,7 +42,6 @@ const QuestionPanel = ({
           </button>
         </div>
 
-        {/* Question Text */}
         <h2 className="text-xl lg:text-2xl font-medium text-gray-900 leading-relaxed">
           {question.text}
         </h2>
@@ -72,25 +66,16 @@ const QuestionPanel = ({
               }`}
             >
               <div className="flex items-start gap-4">
-                {/* Option Letter */}
                 <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-sm ${
-                  isSelected
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600'
+                  isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
                 }`}>
                   {optionLabel}
                 </div>
-
-                {/* Option Text */}
                 <div className="flex-1 pt-0.5">
-                  <p className={`text-base lg:text-lg ${
-                    isSelected ? 'text-gray-900 font-medium' : 'text-gray-700'
-                  }`}>
+                  <p className={`text-base lg:text-lg ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-700'}`}>
                     {option.text}
                   </p>
                 </div>
-
-                {/* Selected Indicator */}
                 {isSelected && (
                   <div className="flex-shrink-0">
                     <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -104,7 +89,6 @@ const QuestionPanel = ({
         })}
       </div>
 
-      {/* Keyboard Hint */}
       <div className="mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
         <p className="text-xs text-gray-600 text-center">
           Keyboard shortcuts: Press <kbd className="px-2 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">1-4</kbd> to select options, 
@@ -124,8 +108,7 @@ const QuestionPanel = ({
               : 'bg-gray-50 text-gray-400 cursor-not-allowed'
           }`}
         >
-          <ChevronLeft className="w-5 h-5" />
-          Previous
+          <ChevronLeft className="w-5 h-5" /> Previous
         </button>
 
         <button
@@ -137,57 +120,38 @@ const QuestionPanel = ({
               : 'bg-gray-50 text-gray-400 cursor-not-allowed'
           }`}
         >
-          Next
-          <ChevronRight className="w-5 h-5" />
+          Next <ChevronRight className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Question Navigator Grid */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Question Navigator</h3>
-        <div className="grid grid-cols-8 sm:grid-cols-10 lg:grid-cols-12 gap-2">
-          {allQuestions.map((q, index) => {
-            const status = getQuestionStatus(index);
-            const isCurrent = index === currentQuestion;
-
-            return (
-              <button
-                key={q.id}
-                onClick={() => onQuestionSelect(index)}
-                className={`aspect-square rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  isCurrent
-                    ? 'bg-blue-600 text-white ring-2 ring-blue-600 ring-offset-2'
-                    : status === 'answered'
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                    : status === 'marked'
-                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {index + 1}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Legend */}
-        <div className="flex flex-wrap items-center gap-4 mt-4 text-xs text-gray-600">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-green-100 border border-green-200"></div>
-            <span>Answered</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-yellow-100 border border-yellow-200"></div>
-            <span>Marked</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-gray-100 border border-gray-200"></div>
-            <span>Not Answered</span>
-          </div>
-        </div>
-      </div>
+      <QuestionNavigatorGrid 
+        allQuestions={allQuestions}
+        currentQuestion={currentQuestion}
+        answers={answers}
+        markedForReview={markedForReview}
+        onQuestionSelect={onQuestionSelect}
+      />
     </div>
   );
+};
+
+QuestionPanel.propTypes = {
+  question: PropTypes.object.isRequired,
+  questionNumber: PropTypes.number.isRequired,
+  totalQuestions: PropTypes.number.isRequired,
+  selectedAnswer: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isMarkedForReview: PropTypes.bool.isRequired,
+  onAnswerSelect: PropTypes.func.isRequired,
+  onMarkForReview: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired,
+  onPrevious: PropTypes.func.isRequired,
+  canGoNext: PropTypes.bool.isRequired,
+  canGoPrevious: PropTypes.bool.isRequired,
+  allQuestions: PropTypes.array.isRequired,
+  answers: PropTypes.object.isRequired,
+  markedForReview: PropTypes.object.isRequired,
+  onQuestionSelect: PropTypes.func.isRequired,
+  currentQuestion: PropTypes.number.isRequired,
 };
 
 export default QuestionPanel;

@@ -122,7 +122,7 @@ export class SmartAudioDetection {
       this.isCalibrated     = true;
       this.calibrationVersion++;
 
-      console.log(
+      /* log removed */(
         `[SmartAudio] Calibration v${this.calibrationVersion} — ` +
         `baseline: ${this.baseline.toFixed(1)}, threshold: ${this.dynamicThreshold.toFixed(1)}`
       );
@@ -190,7 +190,7 @@ export class SmartAudioDetection {
       const peakHighBin = Math.min(this.analyser.frequencyBinCount - 1,
                                    Math.ceil(3800 / binSize));
 
-    console.log(
+    /* log removed */(
       `[SmartAudio] Detection band: ${(lowBin  * binSize).toFixed(0)}–` +
       `${(highBin * binSize).toFixed(0)} Hz  ` +
       `(bins ${lowBin}–${highBin} of ${this.analyser.frequencyBinCount})`
@@ -254,7 +254,7 @@ export class SmartAudioDetection {
 
         // Debug every 30 frames (~0.5 s) so you can see it working
         if (this.voiceFrameCount % 30 === 1) {
-          console.log(
+          /* log removed */(
             `[SmartAudio] Voice detected — avg:${avg.toFixed(1)} ` +
             `thr:${adaptiveThreshold.toFixed(1)} ` +
             `voicePct:${voicePct.toFixed(1)}% ` +
@@ -311,7 +311,7 @@ export class SmartAudioDetection {
       if (this.recentLowTimestamps.length >= 3) {
         severity = 'medium';
         this.recentLowTimestamps = []; // reset after upgrade
-        console.log('[SmartAudio] 3× LOW within 10s → upgraded to MEDIUM');
+        /* log removed */
       }
     }
 
@@ -352,7 +352,7 @@ export class SmartAudioDetection {
     this.voiceFrameCount   = 0;
     this.silenceFrameCount = 0;
 
-    console.log('[SmartAudio] Violation:', violation);
+    /* log removed */
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -414,7 +414,7 @@ export class SmartAudioDetection {
         this._hiddenAt = null;
 
         if (hiddenMs > 5000) {
-          console.log(`[SmartAudio] Tab resumed after ${(hiddenMs / 1000).toFixed(1)}s — recalibrating`);
+          /* log removed */
           this._scheduleQuickRecalibration('tab_resume');
         }
       }
@@ -441,7 +441,7 @@ export class SmartAudioDetection {
       this.animationId = null;
     }
 
-    console.log(`[SmartAudio] Quick recalibration starting (reason: ${reason})`);
+    /* log removed */
 
     await this.calibrateAmbientNoise({ durationMs: 2000, silent: true });
 
@@ -453,7 +453,7 @@ export class SmartAudioDetection {
       calibrationVersion: this.calibrationVersion,
       timestamp:          new Date().toISOString(),
     };
-    console.log('[SmartAudio] Recalibration event:', systemEvent);
+    /* log removed */
     // Forward as a non-violation system event if caller wants it
     this.onViolation?.({ ...systemEvent, _isSystemEvent: true });
 
@@ -582,11 +582,11 @@ export async function startVoiceMonitoring(onViolationCallback) {
   const detector = new SmartAudioDetection({
     onViolation:  onViolationCallback,
     onRiskUpdate: ({ riskScore, decayedRiskScore }) => {
-      console.log(`[SmartAudio] Risk — raw: ${riskScore}, decayed: ${decayedRiskScore}`);
+      /* log removed */
     },
     onCalibration: (status, progress) => {
       if (status === 'calibrating') {
-        console.log(`[SmartAudio] Calibrating... ${progress.toFixed(0)}%`);
+        /* log removed */
       }
     },
   });
@@ -598,7 +598,7 @@ export async function startVoiceMonitoring(onViolationCallback) {
 export async function calibrateAmbientNoise() {
   const detector = new SmartAudioDetection({
     onCalibration: (status, progress) =>
-      console.log(`[SmartAudio] ${status}: ${progress.toFixed(0)}%`),
+      /* log removed */(`[SmartAudio] ${status}: ${progress.toFixed(0)}%`),
   });
   return detector.calibrateAmbientNoise();
 }

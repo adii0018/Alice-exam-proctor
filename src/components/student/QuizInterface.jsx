@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { FaClock } from 'react-icons/fa'
 import ProctorSidebar from '../exam/ProctorSidebar'
 import QuizResult from './QuizResult'
-import useProctoring, { Decision } from '../../hooks/useProctoring'
+import useProctoring, { Decision } from '../../hooks/useProctor'
 
 const QuizInterface = ({ quiz, onExit }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0)

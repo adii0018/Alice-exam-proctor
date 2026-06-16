@@ -22,7 +22,7 @@ const UserAvatar = ({
   const initials = getUserInitials(user);
 
   // Debug logging
-  console.log('UserAvatar Debug:', {
+  /* log removed */('UserAvatar Debug:', {
     user,
     avatarUrl,
     initials,
@@ -32,7 +32,7 @@ const UserAvatar = ({
   });
 
   const handleImageLoad = () => {
-    console.log('✅ Avatar loaded successfully:', avatarUrl);
+    /* log removed */
     setImageLoaded(true);
     setImageError(false);
   };

@@ -5,8 +5,11 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from bson import ObjectId
+from urllib.parse import parse_qs
 from .models import Violation, User, Quiz
+from .authentication import decode_token, redis_client
 
+WS_CLOSE_UNAUTHORIZED = 4001
 
 class ProctoringConsumer(AsyncWebsocketConsumer):
     """
@@ -18,6 +21,38 @@ class ProctoringConsumer(AsyncWebsocketConsumer):
         """Handle WebSocket connection"""
         self.quiz_id = self.scope['url_route']['kwargs']['quiz_id']
         self.room_group_name = f'proctor_{self.quiz_id}'
+        
+        # Token authentication
+        try:
+            qs = parse_qs(self.scope.get('query_string', b'').decode())
+            token = (qs.get('token') or [None])[0]
+            if not token:
+                await self.close(code=WS_CLOSE_UNAUTHORIZED)
+                return
+                
+            # Check blacklist
+            try:
+                if redis_client.get(f"blacklist:{token}"):
+                    await self.close(code=WS_CLOSE_UNAUTHORIZED)
+                    return
+            except:
+                pass
+                
+            payload = decode_token(token)
+            if not payload or payload.get('type') != 'access':
+                await self.close(code=WS_CLOSE_UNAUTHORIZED)
+                return
+                
+            self.user_id = str(payload.get('user_id', ''))
+            student = await self.get_student(self.user_id)
+            if not student or student.get('role') != 'student':
+                await self.close(code=WS_CLOSE_UNAUTHORIZED)
+                return
+            self.user = student
+            
+        except Exception:
+            await self.close(code=WS_CLOSE_UNAUTHORIZED)
+            return
         
         # Join room group
         await self.channel_layer.group_add(
@@ -45,21 +80,20 @@ class ProctoringConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         """
         Receive message from WebSocket
-        Expected format:
-        {
-            "type": "violation_alert",
-            "student_id": "...",
-            "violation_type": "MULTIPLE_FACES",
-            "face_count": 2,
-            "severity": "medium",
-            "metadata": {}
-        }
         """
         try:
             data = json.loads(text_data)
             message_type = data.get('type')
             
             if message_type == 'violation_alert':
+                # Enforce that student can only send violations for themselves
+                student_id = data.get('student_id')
+                if str(student_id) != str(self.user['_id']):
+                    await self.send(text_data=json.dumps({
+                        'type': 'error',
+                        'message': 'Unauthorized'
+                    }))
+                    return
                 await self.handle_violation_alert(data)
             elif message_type == 'ping':
                 await self.send(text_data=json.dumps({'type': 'pong'}))
@@ -89,15 +123,6 @@ class ProctoringConsumer(AsyncWebsocketConsumer):
             severity = data.get('severity', 'medium')
             metadata = data.get('metadata', {})
             
-            # Get student info
-            student = await self.get_student(student_id)
-            if not student:
-                await self.send(text_data=json.dumps({
-                    'type': 'error',
-                    'message': 'Student not found'
-                }))
-                return
-            
             # Create violation record
             violation = await self.create_violation(
                 quiz_id=self.quiz_id,
@@ -117,7 +142,7 @@ class ProctoringConsumer(AsyncWebsocketConsumer):
                         'id': str(violation['_id']),
                         'quiz_id': self.quiz_id,
                         'student_id': student_id,
-                        'student_name': student.get('name', 'Unknown'),
+                        'student_name': self.user.get('name', 'Unknown'),
                         'violation_type': violation_type,
                         'face_count': face_count,
                         'severity': severity,
@@ -178,24 +203,33 @@ class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
 
         # ── Token authentication via query param ──────────────────────────────
         try:
-            from urllib.parse import parse_qs
-            from .authentication import decode_token  # reuse existing helper
             qs = parse_qs(self.scope.get('query_string', b'').decode())
             token = (qs.get('token') or [None])[0]
             if not token:
                 await self.close(code=4001)
                 return
-            # decode_token returns JWT payload: {'user_id': str, 'role': str, 'exp': ...}
+                
+            # Check blacklist
+            try:
+                if redis_client.get(f"blacklist:{token}"):
+                    await self.close(code=4001)
+                    return
+            except:
+                pass
+                
             payload = decode_token(token)
-            if not payload:
+            if not payload or payload.get('type') != 'access':
                 await self.close(code=4001)
                 return
+                
             # Verify the teacher_id in URL matches token's user_id
             token_user_id = str(payload.get('user_id', ''))
             token_role = str(payload.get('role', '')).strip().lower()
             if token_user_id != str(self.teacher_id) or token_role != 'teacher':
                 await self.close(code=4001)
                 return
+                
+            self.user_id = token_user_id
         except Exception:
             await self.close(code=4001)
             return
@@ -229,6 +263,15 @@ class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
             
             if message_type == 'subscribe_quiz':
                 quiz_id = data.get('quiz_id')
+                # Verify that teacher owns this quiz before subscribing
+                quiz = await self.get_quiz(quiz_id)
+                if not quiz or str(quiz.get('teacher_id')) != str(self.user_id):
+                    await self.send(text_data=json.dumps({
+                        'type': 'error',
+                        'message': 'Unauthorized to monitor this quiz'
+                    }))
+                    return
+                    
                 await self.subscribe_to_quiz(quiz_id)
             elif message_type == 'ping':
                 await self.send(text_data=json.dumps({'type': 'pong'}))
@@ -266,3 +309,8 @@ class TeacherMonitoringConsumer(AsyncWebsocketConsumer):
             'type': 'QUIZ_SUBMISSION',
             'submission': event['submission'],
         }))
+
+    @database_sync_to_async
+    def get_quiz(self, quiz_id):
+        """Get quiz to verify ownership"""
+        return Quiz.find_by_id(quiz_id)

@@ -37,11 +37,11 @@ export const useViolationWebSocket = ({ enabled = true, onViolation = null } = {
       const wsUrl = apiUrl.replace('http://', 'ws://').replace('https://', 'wss://').replace('/api', '');
       const url = `${wsUrl}/ws/teacher/monitor/${teacherId}/?token=${token}`;
 
-      console.log('[WebSocket] Connecting to:', url);
+      /* log removed */
       const ws = new WebSocket(url);
 
       ws.onopen = () => {
-        console.log('[WebSocket] Connected successfully');
+        /* log removed */
         setIsConnected(true);
         reconnectAttemptsRef.current = 0;
         
@@ -58,7 +58,7 @@ export const useViolationWebSocket = ({ enabled = true, onViolation = null } = {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('[WebSocket] Received:', data);
+          /* log removed */
 
           if (data.type === 'VIOLATION_ALERT') {
             const violation = data.violation;
@@ -80,7 +80,7 @@ export const useViolationWebSocket = ({ enabled = true, onViolation = null } = {
               onViolation(violation);
             }
           } else if (data.type === 'connection_established') {
-            console.log('[WebSocket] Connection confirmed:', data.message);
+            /* log removed */
           } else if (data.type === 'pong') {
             // Ping response received
           }
@@ -94,7 +94,7 @@ export const useViolationWebSocket = ({ enabled = true, onViolation = null } = {
       };
 
       ws.onclose = (event) => {
-        console.log('[WebSocket] Disconnected:', event.code, event.reason);
+        /* log removed */
         setIsConnected(false);
 
         // Clear ping interval
@@ -105,7 +105,7 @@ export const useViolationWebSocket = ({ enabled = true, onViolation = null } = {
         // Attempt to reconnect with exponential backoff
         if (enabled && reconnectAttemptsRef.current < 5) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-          console.log(`[WebSocket] Reconnecting in ${delay}ms...`);
+          /* log removed */
           
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current += 1;

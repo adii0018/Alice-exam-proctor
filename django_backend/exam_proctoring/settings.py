@@ -6,11 +6,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
+# THESE MUST BE SET FOR PRODUCTION
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['alice-exam-proctor01.vercel.app', 'localhost', '127.0.0.1']
 
 # Render auto-provides RENDER_EXTERNAL_HOSTNAME
 render_domain = os.getenv('RENDER_EXTERNAL_HOSTNAME')
@@ -41,6 +41,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'api.utils.exceptions.ExceptionHandlingMiddleware',
 ]
 
 ROOT_URLCONF = 'exam_proctoring.urls'
@@ -91,8 +92,6 @@ if _use_redis:
     }
 else:
     # InMemoryChannelLayer: works on local dev and Render free tier (no Redis)
-    # NOTE: WebSocket broadcasts only work within a SINGLE worker process.
-    # For multi-worker production, set REDIS_URL to a real Redis instance.
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels.layers.InMemoryChannelLayer',
@@ -100,30 +99,37 @@ else:
     }
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-    origin.strip() for origin in os.getenv(
-        'CORS_ALLOWED_ORIGINS',
-        'http://localhost:5174,http://127.0.0.1:5174,https://alice-exam-proctor01.vercel.app'
-    ).split(',') if origin.strip()
+    "https://alice-exam-proctor01.vercel.app",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
 ]
 
+CORS_ALLOW_CREDENTIALS = True  # Required for cookies
+
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip() for origin in os.getenv(
-        'CSRF_TRUSTED_ORIGINS',
-        'https://alice-exam-proctor01.vercel.app'
-    ).split(',') if origin.strip()
+    "https://alice-exam-proctor01.vercel.app",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
 ]
 
 # Security Settings for Production
-# Railway handles SSL termination via proxy, so don't redirect
-SECURE_SSL_REDIRECT = False
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+SECURE_HSTS_SECONDS = 31536000
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB max payload
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -133,6 +139,9 @@ REST_FRAMEWORK = {
 
 # Gemini AI
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+
+# Google OAuth
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'

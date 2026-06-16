@@ -56,7 +56,7 @@ export class FullscreenGuard {
     window.addEventListener('resize', this._onResize);
     window.addEventListener('keydown', this._onKeyDown);
 
-    console.log('[FullscreenGuard] Started — monitoring for on-screen cheating');
+    /* log removed */
   }
 
   /**
@@ -77,7 +77,7 @@ export class FullscreenGuard {
       this._resizeTimeoutId = null;
     }
 
-    console.log('[FullscreenGuard] Stopped');
+    /* log removed */
   }
 
   /**
@@ -194,7 +194,7 @@ export class FullscreenGuard {
 
     // Cooldown gate — prevent rapid duplicate strikes
     if (now < this._cooldownUntil) {
-      console.log(`[FullscreenGuard] Violation (${type}) in cooldown — skipping`);
+      /* log removed */
       return;
     }
     this._cooldownUntil = now + this._cooldownMs;
@@ -218,7 +218,7 @@ export class FullscreenGuard {
     if (type === 'FULLSCREEN_EXIT') {
       setTimeout(() => {
         if (!this.isFullscreen && this.isActive) {
-          console.log('[FullscreenGuard] Auto re-requesting fullscreen...');
+          /* log removed */
           this.requestFullscreen().then(ok => {
             if (!ok) {
               console.warn('[FullscreenGuard] Could not re-enter fullscreen automatically');

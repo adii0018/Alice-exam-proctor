@@ -85,13 +85,13 @@ export default function Results() {
         wsRef.current = ws;
 
         ws.onopen = () => {
-          console.log('[Results WS] Connected to teacher monitoring channel');
+          /* log removed */
         };
 
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            console.log('[Results WS] Message received:', data);
+            /* log removed */
             if (data.type === 'QUIZ_SUBMISSION' && data.submission) {
               const s = data.submission;
               fetchAll({ silent: true });
@@ -110,7 +110,7 @@ export default function Results() {
         };
 
         ws.onclose = (evt) => {
-          console.log('[Results WS] Disconnected, code:', evt.code, '— reconnecting...');
+          /* log removed */
           wsRef.current = null;
           if (!stopped) {
             reconnectTimer = window.setTimeout(connect, 3500);

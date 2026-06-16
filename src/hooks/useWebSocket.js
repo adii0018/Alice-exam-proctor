@@ -18,7 +18,7 @@ const useWebSocket = ({ url, onMessage, onError, enabled = true }) => {
       const ws = new WebSocket(url);
 
       ws.onopen = () => {
-        console.log('WebSocket connected:', url);
+        /* log removed */
         setIsConnected(true);
         setError(null);
         reconnectAttemptsRef.current = 0;
@@ -45,7 +45,7 @@ const useWebSocket = ({ url, onMessage, onError, enabled = true }) => {
       };
 
       ws.onclose = () => {
-        console.log('WebSocket disconnected');
+        /* log removed */
         setIsConnected(false);
         wsRef.current = null;
 
@@ -53,7 +53,7 @@ const useWebSocket = ({ url, onMessage, onError, enabled = true }) => {
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-          console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);
+          /* log removed */
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();

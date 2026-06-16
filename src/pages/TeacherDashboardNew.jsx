@@ -128,13 +128,8 @@ export default function TeacherDashboardNew() {
       catch { toast.error('Failed to end exam'); }
     } else if (action === 'toggle_active') {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${exam.id}/toggle-active/`, {
-          method: 'POST', headers: { 'Authorization': `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        toast.success(data.message);
+        const res = await quizAPI.toggleActive(exam.id);
+        toast.success(res.data.message);
         fetchData();
       } catch { toast.error('Failed to toggle quiz status'); }
     }

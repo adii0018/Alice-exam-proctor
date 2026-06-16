@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import QuizResult from '../../components/student/QuizResult';
 import FullPageLoader from '../../components/loaders/FullPageLoader';
+import { quizAPI, violationAPI } from '../../utils/api';
 
 const ExamResultPage = () => {
   const { examId } = useParams();
@@ -45,22 +46,14 @@ const ExamResultPage = () => {
       // ── Step 2: Fetch quiz details from API (for enrichment / fresh load) ─
       let quizData = null;
       try {
-        const quizRes = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`,
-          { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
-        );
-        // Accept 200 and also silently ignore 403 (inactive quiz — student already submitted)
-        if (quizRes.ok) {
-          quizData = await quizRes.json();
-          // Update quiz title if available
-          setQuiz(prev => ({ ...prev, ...quizData, title: quizData.title || prev?.title }));
-        } else if (quizRes.status !== 403) {
-          // Only throw for non-403 errors (403 means quiz is inactive — result still valid)
-          throw new Error(`Quiz fetch failed: ${quizRes.status}`);
-        }
+        const quizRes = await quizAPI.getById(examId);
+        quizData = quizRes.data;
+        setQuiz(prev => ({ ...prev, ...quizData, title: quizData.title || prev?.title }));
       } catch (fetchErr) {
-        // Quiz API failed — localStorage result still shown if available
-        if (!hasLocalResult) throw fetchErr;
+        if (fetchErr.response?.status !== 403) {
+          // Only throw for non-403 errors (403 means quiz is inactive — result still valid)
+          if (!hasLocalResult) throw fetchErr;
+        }
       }
 
       // If quiz API failed AND no localStorage result, show error
@@ -127,18 +120,13 @@ const ExamResultPage = () => {
       // ── Step 4: No API submission — fetch backend violations ─────────────
       let backendViolations = [];
       try {
-        const violationsRes = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/violations/?quiz_id=${examId}&student_id=${studentId}`,
-          { headers: { 'Authorization': `Bearer ${token}` } }
-        );
-        if (violationsRes.ok) {
-          const violationsData = await violationsRes.json();
-          backendViolations = (violationsData.violations || []).map(v => ({
-            type: v.violation_type,
-            timestamp: new Date(v.timestamp).toLocaleTimeString(),
-            severity: v.severity,
-          }));
-        }
+        const violationsRes = await violationAPI.getAll({ quiz_id: examId, student_id: studentId });
+        const violationsData = violationsRes.data;
+        backendViolations = (violationsData.violations || []).map(v => ({
+          type: v.violation_type,
+          timestamp: new Date(v.timestamp).toLocaleTimeString(),
+          severity: v.severity,
+        }));
       } catch { /* violations fetch failed */ }
 
       // ── CRITICAL FIX: If localStorage has real scores, DO NOT overwrite! ─

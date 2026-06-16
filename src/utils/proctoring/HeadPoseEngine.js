@@ -131,7 +131,7 @@ export class HeadPoseEngine {
       });
 
       this._faceMesh.onResults(r => this._onResults(r));
-      console.log('[HeadPoseEngine] MediaPipe FaceMesh ready (iris tracking enabled)');
+      /* log removed */
       return true;
     } catch (e) {
       console.error('[HeadPoseEngine] init failed', e);
@@ -192,7 +192,7 @@ export class HeadPoseEngine {
    * @returns {Promise<boolean>}   true on success, false if not enough frames
    */
   async calibrate(getLandmarksCallback, durationMs = 3000) {
-    console.log('[HeadPoseEngine] Calibration started …');
+    /* log removed */
 
     const samples = [];
     const interval = 100; // sample every 100 ms
@@ -238,7 +238,7 @@ export class HeadPoseEngine {
       headPitch: avg.headPitch / n,
     };
 
-    console.log('[HeadPoseEngine] Calibration complete', this.baseline);
+    /* log removed */
     return true;
   }
 

@@ -86,14 +86,8 @@ export default function Exams() {
       }
     } else if (action === 'toggle_active') {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${exam.id}/toggle-active/`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        toast.success(data.message);
+        const res = await quizAPI.toggleActive(exam.id);
+        toast.success(res.data.message);
         fetchQuizzes();
       } catch (error) {
         toast.error('Failed to toggle quiz status');
@@ -113,6 +107,8 @@ export default function Exams() {
     fetchQuizzes();
   };
 
+  const { darkMode } = useTheme();
+
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
@@ -120,8 +116,6 @@ export default function Exams() {
       </div>
     );
   }
-
-  const { darkMode } = useTheme();
 
   return (
     <TeacherLayout title="Exams">

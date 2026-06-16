@@ -29,7 +29,7 @@ const AvatarTest = () => {
           src={testUrl} 
           alt="Test Avatar" 
           style={{ width: 100, height: 100, border: '2px solid #30363d', borderRadius: '50%' }}
-          onLoad={() => console.log('✅ Direct img loaded')}
+          onLoad={() => undefined}
           onError={(e) => console.error('❌ Direct img failed', e)}
         />
       </div>

@@ -35,9 +35,9 @@ const QuizCodeEntry = ({ onQuizStart, onBack }) => {
     setLoading(true)
 
     try {
-      console.log('Submitting quiz code:', code);
+      /* log removed */
       const response = await quizAPI.getByCode(code)
-      console.log('Quiz found:', response.data);
+      /* log removed */
       
       // Validate response
       if (!response.data || !response.data.id) {
@@ -48,7 +48,7 @@ const QuizCodeEntry = ({ onQuizStart, onBack }) => {
       
       // Navigate to exam page with quiz ID
       setTimeout(() => {
-        console.log('Navigating to exam:', response.data.id);
+        /* log removed */
         navigate(`/student/exam/${response.data.id}`)
       }, 500)
       

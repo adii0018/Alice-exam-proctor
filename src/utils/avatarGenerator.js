@@ -47,7 +47,7 @@ export const generateAvatarUrl = (
   // Using DiceBear API v9 (latest stable)
   const url = `https://api.dicebear.com/9.x/${style}/svg?${params.toString()}`;
   
-  console.log('🎨 Generated Avatar URL:', url);
+  /* log removed */
   
   return url;
 };

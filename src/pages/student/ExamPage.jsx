@@ -12,10 +12,10 @@ import GazeWarning from '../../components/exam/GazeWarning';
 import AudioWarning from '../../components/exam/AudioWarning';
 import AudioCalibrationModal from '../../components/exam/AudioCalibrationModal';
 import AudioRiskIndicator from '../../components/exam/AudioRiskIndicator';
-import useProctoring, { Decision } from '../../hooks/useProctoring';
-import { useSmartAudioDetection } from '../../hooks/useSmartAudioDetection';
+import useProctoring, { Decision } from '../../hooks/useProctor';
+import { useSmartAudioDetection } from '../../hooks/useAudioMonitor';
 import soundManager from '../../utils/soundEffects';
-import { flagAPI } from '../../utils/api';
+import { flagAPI, quizAPI } from '../../utils/api';
 import { FullscreenGuard } from '../../utils/proctoring/FullscreenGuard';
 
 const ExamPage = () => {
@@ -202,7 +202,6 @@ const ExamPage = () => {
   // ── Load exam ──────────────────────────────────────────────────────────
   useEffect(() => {
     fetchExamData();
-    requestFullscreen();
     return () => cleanup();
   }, [examId]);
 
@@ -224,15 +223,8 @@ const ExamPage = () => {
   const fetchExamData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to fetch exam');
-      }
-      const data = await response.json();
+      const response = await quizAPI.getById(examId);
+      const data = response.data;
       if (!data.questions?.length) throw new Error('No questions found in this exam');
 
       const transformedQuestions = data.questions.map((q, i) => ({
@@ -482,16 +474,8 @@ const ExamPage = () => {
       const proctoringReport = getReport();
 
       // Submit to backend
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/quizzes/${examId}/submit/`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers: transformedAnswers, proctoringReport, timeSpent: timeSpentSeconds })
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || err.message || 'Failed to submit exam');
-      }
-      const submitData = await res.json().catch(() => ({}));
+      const res = await quizAPI.submit(examId, { answers: transformedAnswers, proctoringReport, timeSpent: timeSpentSeconds });
+      const submitData = res.data;
 
       // Parse backend response — try multiple possible field names
       const backendCorrect = submitData.correct ?? submitData.correct_answers ?? submitData.correctAnswers ?? submitData.right_answers;
@@ -668,6 +652,7 @@ const ExamPage = () => {
             // Mic unavailable — close modal and proceed without audio
             setAudioCalibrationDone(true);
             setShowCalibrationModal(false);
+            requestFullscreen();
           }
         }}
         onClose={() => {
@@ -675,11 +660,13 @@ const ExamPage = () => {
           setAudioCalibrationDone(true);
           setShowCalibrationModal(false);
           startAudioMonitoring();
+          requestFullscreen();
         }}
         onContinue={() => {
           setAudioCalibrationDone(true);
           setShowCalibrationModal(false);
           resetRiskScore();
+          requestFullscreen();
         }}
       />
     </div>

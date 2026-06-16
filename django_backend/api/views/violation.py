@@ -2,247 +2,60 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from bson import ObjectId
-from datetime import datetime
-from ..models import Violation, User, Quiz
 from ..authentication import require_auth, require_role
-
-
-def serialize_violation(violation):
-    """Convert MongoDB violation to JSON-serializable format"""
-    return {
-        '_id': str(violation['_id']),
-        'quiz_id': str(violation['quiz_id']),
-        'student_id': str(violation['student_id']),
-        'violation_type': violation['violation_type'],
-        'face_count': violation.get('face_count'),
-        'severity': violation['severity'],
-        'timestamp': violation['timestamp'].isoformat() if isinstance(violation['timestamp'], datetime) else violation['timestamp'],
-        'metadata': violation.get('metadata', {}),
-        'status': violation.get('status', 'active')
-    }
-
+from ..services.violation_service import ViolationService
 
 @csrf_exempt
 @require_http_methods(["POST"])
 @require_auth
 def create_violation(request):
-    """
-    Create a new violation record
-    POST /api/violations/
-    Body: {
-        "quiz_id": "...",
-        "violation_type": "MULTIPLE_FACES",
-        "face_count": 2,
-        "severity": "medium",
-        "metadata": {}
-    }
-    """
     try:
         data = json.loads(request.body)
-        quiz_id = data.get('quiz_id')
-        violation_type = data.get('violation_type')
-        face_count = data.get('face_count')
-        severity = data.get('severity', 'medium')
-        metadata = data.get('metadata', {})
-        
-        if not all([quiz_id, violation_type]):
-            return JsonResponse({
-                'error': 'Missing required fields: quiz_id, violation_type'
-            }, status=400)
-        
-        # Validate violation type
-        valid_types = [
-            'MULTIPLE_FACES', 
-            'NO_FACE', 
-            'TAB_SWITCH', 
-            'FULLSCREEN_EXIT', 
-            'SUSPICIOUS_BEHAVIOR',
-            'LOOKING_AWAY'
-        ]
-        if violation_type not in valid_types:
-            return JsonResponse({
-                'error': f'Invalid violation_type. Must be one of: {", ".join(valid_types)}'
-            }, status=400)
-        
-        # Create violation
-        violation = Violation.create(
-            quiz_id=quiz_id,
-            student_id=request.user['_id'],
-            violation_type=violation_type,
-            face_count=face_count,
-            severity=severity,
-            metadata=metadata
-        )
-        
+        violation = ViolationService.create_violation(request.user, data)
         return JsonResponse({
             'success': True,
-            'violation': serialize_violation(violation)
+            'violation': violation
         }, status=201)
-        
+    except ValueError as e:
+        return JsonResponse({'error': str(e)}, status=400)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
 @csrf_exempt
 @require_http_methods(["GET"])
 @require_auth
 def list_violations(request):
-    """
-    List violations with optional filters
-    GET /api/violations/?quiz_id=...&student_id=...
-    """
     try:
         quiz_id = request.GET.get('quiz_id')
         student_id = request.GET.get('student_id')
         
-        role = request.user.get('role')
-
-        if role == 'student':
-            # Students can only see their own violations, even if they pass quiz_id/student_id.
-            effective_student_id = request.user['_id']
-            if quiz_id:
-                violations = Violation.find_by_student(effective_student_id, quiz_id)
-            else:
-                violations = Violation.find_by_student(effective_student_id)
-
-        elif role == 'teacher':
-            from ..models import quizzes_collection, violations_collection
-
-            teacher_id = request.user['_id']
-            teacher_quiz_ids = [
-                q['_id'] for q in quizzes_collection.find({'teacher_id': teacher_id}, {'_id': 1})
-            ]
-
-            if quiz_id:
-                # Ensure the quiz is owned by this teacher.
-                quiz = Quiz.find_by_id(quiz_id)
-                if not quiz or str(quiz.get('teacher_id')) != str(teacher_id):
-                    return JsonResponse({'error': 'Forbidden'}, status=403)
-                violations = Violation.find_by_quiz(quiz_id)
-
-            elif student_id:
-                violations = list(
-                    violations_collection.find(
-                        {
-                            'student_id': ObjectId(student_id),
-                            'quiz_id': {'$in': teacher_quiz_ids},
-                        }
-                    ).sort('timestamp', -1)
-                )
-
-            else:
-                violations = list(
-                    violations_collection.find({'quiz_id': {'$in': teacher_quiz_ids}})
-                    .sort('timestamp', -1)
-                    .limit(100)
-                )
-
-        else:
-            # Default-safe: only return authenticated user violations.
-            violations = Violation.find_by_student(request.user['_id'])
-        
-        return JsonResponse({
-            'violations': [serialize_violation(v) for v in violations]
-        }, safe=False)
-        
+        violations = ViolationService.list_violations(request.user, quiz_id, student_id)
+        return JsonResponse({'violations': violations}, safe=False)
+    except PermissionError as e:
+        return JsonResponse({'error': str(e)}, status=403)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @csrf_exempt
 @require_http_methods(["GET"])
 @require_role('teacher')
 def get_quiz_violations_by_student(request, quiz_id):
-    """
-    Get all violations for a quiz grouped by student with names
-    GET /api/violations/quiz/<quiz_id>/students/
-    """
     try:
-        from ..models import users_collection, violations_collection
-        quiz = Quiz.find_by_id(quiz_id)
-        if not quiz or str(quiz.get('teacher_id')) != str(request.user['_id']):
-            return JsonResponse({'error': 'Forbidden'}, status=403)
-
-        violations = Violation.find_by_quiz(quiz_id)
-
-        # Group by student
-        student_map = {}
-        for v in violations:
-            sid = str(v['student_id'])
-            if sid not in student_map:
-                student_map[sid] = {
-                    'student_id': sid,
-                    'student_name': 'Unknown',
-                    'violations': []
-                }
-            student_map[sid]['violations'].append({
-                'type': v['violation_type'],
-                'severity': v['severity'],
-                'face_count': v.get('face_count'),
-                'metadata': v.get('metadata', {}),
-                'timestamp': v['timestamp'].isoformat() if isinstance(v['timestamp'], datetime) else v['timestamp'],
-            })
-
-        # Fetch student names + emails in bulk
-        if student_map:
-            student_ids = [ObjectId(sid) for sid in student_map.keys()]
-            students = list(users_collection.find({'_id': {'$in': student_ids}}, {'name': 1, 'email': 1}))
-            for s in students:
-                sid = str(s['_id'])
-                if sid in student_map:
-                    student_map[sid]['student_name'] = s.get('name', 'Unknown')
-                    student_map[sid]['student_email'] = s.get('email', '')
-
-        result = sorted(student_map.values(), key=lambda x: len(x['violations']), reverse=True)
+        result = ViolationService.get_quiz_violations_by_student(request.user, quiz_id)
         return JsonResponse({'students': result}, safe=False)
-
+    except PermissionError as e:
+        return JsonResponse({'error': str(e)}, status=403)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @csrf_exempt
 @require_http_methods(["GET"])
 @require_auth
 def get_violation_stats(request, quiz_id):
-    """
-    Get violation statistics for a quiz
-    GET /api/violations/stats/<quiz_id>/
-    """
     try:
-        violations = Violation.find_by_quiz(quiz_id)
-        
-        # Aggregate statistics
-        stats = {
-            'total': len(violations),
-            'by_type': {},
-            'by_severity': {},
-            'by_student': {}
-        }
-        
-        for violation in violations:
-            # By type
-            v_type = violation['violation_type']
-            stats['by_type'][v_type] = stats['by_type'].get(v_type, 0) + 1
-            
-            # By severity
-            severity = violation['severity']
-            stats['by_severity'][severity] = stats['by_severity'].get(severity, 0) + 1
-            
-            # By student
-            student_id = str(violation['student_id'])
-            if student_id not in stats['by_student']:
-                stats['by_student'][student_id] = {
-                    'count': 0,
-                    'types': {}
-                }
-            stats['by_student'][student_id]['count'] += 1
-            stats['by_student'][student_id]['types'][v_type] = \
-                stats['by_student'][student_id]['types'].get(v_type, 0) + 1
-        
+        stats = ViolationService.get_violation_stats(quiz_id)
         return JsonResponse(stats)
-        
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

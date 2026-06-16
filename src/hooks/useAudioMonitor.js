@@ -138,7 +138,7 @@ export const useSmartAudioDetection = ({
       const cleanup = await detectorRef.current.startVoiceMonitoring();
       cleanupRef.current = cleanup;
       setIsMonitoring(true);
-      console.log('[useSmartAudio] Monitoring started');
+      /* log removed */
       return true;
     } catch (error) {
       console.error('[useSmartAudio] Failed to start monitoring:', error);
@@ -154,7 +154,7 @@ export const useSmartAudioDetection = ({
       cleanupRef.current = null;
     }
     setIsMonitoring(false);
-    console.log('[useSmartAudio] Monitoring stopped');
+    /* log removed */
   }, []);
 
   // ── Reset risk score ───────────────────────────────────────────────────────

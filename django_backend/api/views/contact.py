@@ -4,6 +4,9 @@ from django.views.decorators.http import require_http_methods
 from django.core.mail import send_mail
 from django.conf import settings
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -56,7 +59,7 @@ This email was sent from the Alice Proctor contact form.
             })
             
         except Exception as email_error:
-            print(f"Email sending error: {str(email_error)}")
+            logger.error(f"Email sending error: {str(email_error)}")
             return JsonResponse({
                 'success': False,
                 'error': 'Failed to send email. Please try again later.'
@@ -69,7 +72,7 @@ This email was sent from the Alice Proctor contact form.
         }, status=400)
         
     except Exception as e:
-        print(f"Contact form error: {str(e)}")
+        logger.error(f"Contact form error: {str(e)}")
         return JsonResponse({
             'success': False,
             'error': 'An error occurred. Please try again later.'

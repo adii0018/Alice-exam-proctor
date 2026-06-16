@@ -1,7 +1,4 @@
-/**
- * GazeWarning Component
- * Shows warning when student looks away OR when a repetitive eye pattern is detected.
- */
+import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, AlertCircle, AlertTriangle } from 'lucide-react';
 import { PatternType } from '../../utils/proctoring/GazePatternAnalyzer';
@@ -40,14 +37,10 @@ const GazeWarning = ({ isVisible, direction, duration, gazePattern }) => {
   // Pattern warning takes priority over simple gaze-away warning
   const patternCfg = gazePattern ? PATTERN_MESSAGES[gazePattern.patternType] : null;
 
-  const colorKey = patternCfg
-    ? patternCfg.color
-    : 'blue';
+  const colorKey = patternCfg ? patternCfg.color : 'blue';
   const c = COLOR_CLASSES[colorKey];
 
-  const title = patternCfg
-    ? patternCfg.title
-    : 'Please focus on the screen';
+  const title = patternCfg ? patternCfg.title : 'Please focus on the screen';
 
   const bodyText = patternCfg
     ? patternCfg.body(gazePattern.direction, gazePattern.count)
@@ -70,20 +63,13 @@ const GazeWarning = ({ isVisible, direction, duration, gazePattern }) => {
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
                 <div className={`w-10 h-10 ${c.icon} rounded-full flex items-center justify-center`}>
-                  {patternCfg
-                    ? <AlertTriangle className={`w-5 h-5 ${c.iconColor}`} />
-                    : <Eye className={`w-5 h-5 ${c.iconColor}`} />
-                  }
+                  {patternCfg ? <AlertTriangle className={`w-5 h-5 ${c.iconColor}`} /> : <Eye className={`w-5 h-5 ${c.iconColor}`} />}
                 </div>
               </div>
 
               <div className="flex-1">
-                <h3 className={`text-sm font-semibold ${c.title} mb-1`}>
-                  {title}
-                </h3>
-                <p className={`text-xs ${c.body}`}>
-                  {bodyText}
-                </p>
+                <h3 className={`text-sm font-semibold ${c.title} mb-1`}>{title}</h3>
+                <p className={`text-xs ${c.body}`}>{bodyText}</p>
                 {!patternCfg && duration > 0 && (
                   <p className={`text-xs ${c.body} mt-1 font-medium`}>
                     Duration: {duration}s
@@ -103,6 +89,17 @@ const GazeWarning = ({ isVisible, direction, duration, gazePattern }) => {
       )}
     </AnimatePresence>
   );
+};
+
+GazeWarning.propTypes = {
+  isVisible: PropTypes.bool.isRequired,
+  direction: PropTypes.string,
+  duration: PropTypes.number,
+  gazePattern: PropTypes.shape({
+    patternType: PropTypes.string,
+    direction: PropTypes.string,
+    count: PropTypes.number,
+  }),
 };
 
 export default GazeWarning;

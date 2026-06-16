@@ -4,7 +4,7 @@
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Eye, AlertTriangle, Shield, MonitorOff, Users } from 'lucide-react';
-import { Decision } from '../../hooks/useProctoring.js';
+import { Decision } from '../../hooks/useProctor.js';
 
 const DECISION_CONFIG = {
   [Decision.CLEAN]:    { color: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-200',  label: 'Clean' },

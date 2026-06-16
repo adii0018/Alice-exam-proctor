@@ -122,7 +122,7 @@ export class ProctoringOrchestrator {
     this._faceEngine.start(videoEl);
     this._gazeEngine.start(videoEl);
     this._tabEngine.start();
-    console.log('[Orchestrator] Proctoring started');
+    /* log removed */
     return true;
   }
 

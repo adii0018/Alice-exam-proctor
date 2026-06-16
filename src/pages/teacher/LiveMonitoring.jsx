@@ -24,7 +24,7 @@ export default function LiveMonitoring() {
     url: `${wsBaseUrl}/teacher/monitor/${teacherId}/`,
     enabled: !!teacherId,
     onMessage: (data) => {
-      console.log('WebSocket message received:', data);
+      /* log removed */
       
       if (data.type === 'VIOLATION_ALERT') {
         // Add new violation to alerts

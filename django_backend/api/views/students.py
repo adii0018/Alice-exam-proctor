@@ -9,7 +9,11 @@ from ..authentication import require_auth, require_role
 
 def serialize_user(user):
     """Convert MongoDB user to JSON-serializable format"""
-    user['_id'] = str(user['_id'])
+    if '_id' in user:
+        user['id'] = str(user.pop('_id'))
+    user.pop('password', None)
+    user.pop('reset_token', None)
+    user.pop('internal_flags', None)
     return user
 
 

@@ -102,7 +102,7 @@ export class FaceDetectionEngine {
         minSuppressionThreshold: 0.3, // Allow closely-spaced faces to both be reported
       });
       this._engine = 'mediapipe';
-      console.log('[FaceDetectionEngine] Using MediaPipe BlazeFace FULL-RANGE (GPU)');
+      /* log removed */
       return true;
     } catch { return false; }
   }
@@ -118,7 +118,7 @@ export class FaceDetectionEngine {
         inputSize: 416,           // was 224 — higher res catches far/small faces
         scoreThreshold: MIN_CONFIDENCE,
       });
-      console.log('[FaceDetectionEngine] Using face-api.js TinyFaceDetector 416px (fallback)');
+      /* log removed */
       return true;
     } catch { return false; }
   }

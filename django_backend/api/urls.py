@@ -8,6 +8,8 @@ urlpatterns = [
     path('auth/google/', auth.google_auth, name='google_auth'),
     path('auth/me/', auth.get_current_user, name='current_user'),
     path('auth/profile/', auth.update_profile, name='update_profile'),
+    path('auth/refresh/', auth.refresh_token_view, name='refresh_token'),
+    path('auth/logout/', auth.logout, name='logout'),
     
     # Quizzes
     path('quizzes/', quiz.quizzes_handler, name='quizzes'),

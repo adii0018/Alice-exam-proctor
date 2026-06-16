@@ -10,8 +10,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 // Existing hooks and components
-import useProctoring from '../hooks/useProctoring';
-import useSmartAudioDetection from '../hooks/useSmartAudioDetection';
+import useProctoring from '../hooks/useProctor';
+import useSmartAudioDetection from '../hooks/useAudioMonitor';
 import AudioCalibrationModal from '../components/exam/AudioCalibrationModal';
 import AudioRiskIndicator from '../components/exam/AudioRiskIndicator';
 
@@ -71,7 +71,7 @@ const ExamPageWithSmartAudio = () => {
 
   // Handle proctoring violations (existing)
   function handleProctoringViolation(violation) {
-    console.log('[Exam] Proctoring violation:', violation);
+    /* log removed */
     
     // Send to backend via your existing API
     // violationAPI.create({ examId, studentId, ...violation });
@@ -86,7 +86,7 @@ const ExamPageWithSmartAudio = () => {
 
   // NEW: Handle audio violations
   function handleAudioViolation(violation) {
-    console.log('[Exam] Audio violation:', violation);
+    /* log removed */
     
     // Send to backend with enhanced data
     const audioViolationData = {
@@ -217,7 +217,7 @@ const ExamPageWithSmartAudio = () => {
       };
       
       // await examAPI.submit(examSubmission);
-      console.log('Exam submitted with enhanced proctoring data:', examSubmission);
+      /* log removed */
       
       toast.success('Exam submitted successfully!');
       navigate('/student/dashboard');

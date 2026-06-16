@@ -4,17 +4,28 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true // Important: required to send and receive HttpOnly cookies
 })
 
-// Add token to requests automatically
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+// Interceptor for handling 401s and refreshing tokens
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/login/' && originalRequest.url !== '/auth/refresh/') {
+      originalRequest._retry = true;
+      try {
+        await api.post('/auth/refresh/');
+        return api(originalRequest);
+      } catch (refreshError) {
+        // If refresh fails, log out or redirect to login
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(error);
   }
-  return config
-})
+)
 
 // Quiz APIs
 export const quizAPI = {
@@ -24,7 +35,8 @@ export const quizAPI = {
   create: (data) => api.post('/quizzes/', data),
   update: (id, data) => api.put(`/quizzes/${id}/update/`, data),
   delete: (id) => api.delete(`/quizzes/${id}/delete/`),
-  submit: (id, data) => api.post(`/quizzes/${id}/submit/`, data)
+  submit: (id, data) => api.post(`/quizzes/${id}/submit/`, data),
+  toggleActive: (id) => api.post(`/quizzes/${id}/toggle-active/`)
 }
 
 // Flag APIs

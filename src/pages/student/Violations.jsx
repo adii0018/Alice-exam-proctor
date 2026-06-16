@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { FiAlertTriangle, FiEye, FiUser, FiMonitor, FiFilter } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../../components/student/DashboardLayout'
+import { violationAPI } from '../../utils/api'
 
 const iconMap = {
   NO_FACE: FiUser,
@@ -21,12 +22,8 @@ const Violations = () => {
   useEffect(() => {
     const fetchViolations = async () => {
       try {
-        const token = localStorage.getItem('token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/violations/`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        if (!res.ok) throw new Error('Failed to fetch violations')
-        const data = await res.json()
+        const res = await violationAPI.getAll()
+        const data = res.data
         setViolations(data.violations || [])
       } catch (err) {
         setError(err.message)

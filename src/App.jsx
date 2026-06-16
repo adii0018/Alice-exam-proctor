@@ -98,6 +98,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import PrivacyAlert from './components/common/PrivacyAlert'
+import { ExamErrorBoundary } from './components/error/ExamErrorBoundary'
 
 function App() {
   const [initialLoading, setInitialLoading] = useState(true);
@@ -237,7 +238,9 @@ function App() {
               path="/student/exam/:examId"
               element={
                 <ProtectedRoute role="student">
-                  <ExamPage />
+                  <ExamErrorBoundary>
+                    <ExamPage />
+                  </ExamErrorBoundary>
                 </ProtectedRoute>
               }
             />
