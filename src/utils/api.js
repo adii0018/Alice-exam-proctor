@@ -71,5 +71,8 @@ export const teacherAPI = {
   allResults: () => api.get('/teacher/all-results/'),
 }
 
+
 export default api
+
+
 
