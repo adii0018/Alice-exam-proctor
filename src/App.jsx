@@ -94,6 +94,12 @@ import SubjectDetail from './pages/syllabus/SubjectDetail'
 import PYQHome from './pages/pyq/PYQHome'
 import PYQSemester from './pages/pyq/PYQSemester'
 import PYQPapers from './pages/pyq/PYQPapers'
+import CBSEHome from './pages/cbse/CBSEHome'
+import CBSEClassHome from './pages/cbse/CBSEClassHome'
+import CBSESubjects from './pages/cbse/CBSESubjects'
+import CBSESubjectDetail from './pages/cbse/CBSESubjectDetail'
+import CBSEPYQSubjects from './pages/cbse/CBSEPYQSubjects'
+import CBSEPYQDetail from './pages/cbse/CBSEPYQDetail'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
@@ -177,6 +183,12 @@ function App() {
           <Route path="/pyq" element={<PYQHome />} />
           <Route path="/pyq/:year" element={<PYQSemester />} />
           <Route path="/pyq/:year/:semester" element={<PYQPapers />} />
+          <Route path="/cbse" element={<CBSEHome />} />
+          <Route path="/cbse/:classKey" element={<CBSEClassHome />} />
+          <Route path="/cbse/:classKey/syllabus" element={<CBSESubjects />} />
+          <Route path="/cbse/:classKey/syllabus/:subjectKey" element={<CBSESubjectDetail />} />
+          <Route path="/cbse/:classKey/pyq" element={<CBSEPYQSubjects />} />
+          <Route path="/cbse/:classKey/pyq/:subjectKey" element={<CBSEPYQDetail />} />
           <Route path="/blog" element={<BlogPage />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />

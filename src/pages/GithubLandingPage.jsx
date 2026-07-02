@@ -426,6 +426,7 @@ export default function GithubLandingPage() {
                 >{l}</a>
               ))}
               <Link to="/syllabus" className="gh-nav-link">Syllabus</Link>
+              <Link to="/cbse" className="gh-nav-link">CBSE</Link>
               <Link to="/blog" className="gh-nav-link">Blog</Link>
               <Link to="/contact" className="gh-nav-link">Contact</Link>
               <Link to="/privacy" className="gh-nav-link">Privacy</Link>
@@ -468,6 +469,7 @@ export default function GithubLandingPage() {
                 >{l}</a>
               ))}
               <Link to="/syllabus" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Syllabus</Link>
+              <Link to="/cbse" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>CBSE</Link>
               <Link to="/blog" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Blog</Link>
               <Link to="/contact" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Contact</Link>
               <Link to="/privacy" className="gh-nav-link" style={{ display: 'block', padding: '10px 0', borderBottom: '1px solid #21262d' }}>Privacy</Link>

@@ -1,6 +1,8 @@
 import { useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, ChevronRight, FileText } from 'lucide-react'
+import AliceLogo from '../../components/common/AliceLogo'
+import PremiumFooter from '../../components/common/PremiumFooter'
 
 function StarField() {
   const canvasRef = useRef(null)
@@ -44,11 +46,10 @@ export default function SyllabusHome() {
       <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(13,17,23,0.95)', borderBottom: '1px solid #21262d', backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <span style={{ fontSize: '1.4rem' }}>🍃</span>
+            <AliceLogo size={32} />
             <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '1rem' }}>Alice Exam Proctor</span>
           </Link>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <Link to="/syllabus" style={{ color: '#3fb950', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 600 }}>Syllabus</Link>
             <Link to="/pyq" style={{ color: '#79c0ff', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 600 }}>PYQ Papers</Link>
             <Link to="/auth" style={{ color: '#8b949e', textDecoration: 'none', fontSize: '0.8rem' }}>Sign in</Link>
           </div>
@@ -179,6 +180,8 @@ export default function SyllabusHome() {
         </Link>
 
       </div>
+
+      <PremiumFooter />
 
       {/* Responsive Styles */}
       <style>{`
