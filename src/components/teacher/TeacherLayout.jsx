@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import UserAvatar from '../common/UserAvatar';
 import LightweightBackground from '../common/LightweightBackground';
+import AliceAIChat from '../ai/AliceAIChat';
 
 // Alice logo — same as student dashboard
 const AliceLogo = ({ size = 36, dark }) => (
@@ -105,6 +106,7 @@ const StarField = ({ active }) => {
 
 export default function TeacherLayout({ children, title }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showAliceChat, setShowAliceChat] = useState(false);
   const { darkMode } = useTheme();
   const { user } = useAuth();
   const location = useLocation();
@@ -211,6 +213,54 @@ export default function TeacherLayout({ children, title }) {
         {/* Mobile Bottom Navigation */}
         <MobileBottomNav />
       </div>
+
+      {/* Alice AI Chat — available on all teacher pages */}
+      {showAliceChat && <AliceAIChat onClose={() => setShowAliceChat(false)} />}
+      <button
+        onClick={() => setShowAliceChat(prev => !prev)}
+        style={{
+          position: 'fixed',
+          bottom: '80px',
+          right: '24px',
+          width: 56,
+          height: 56,
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #2ea043, #1a7f37)',
+          boxShadow: '0 0 0 3px rgba(46,160,67,0.25), 0 8px 24px rgba(0,0,0,0.4)',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 40,
+          transition: 'transform 0.2s, box-shadow 0.2s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(46,160,67,0.35), 0 12px 32px rgba(0,0,0,0.5)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(46,160,67,0.25), 0 8px 24px rgba(0,0,0,0.4)'; }}
+        title="Chat with Alice AI"
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* antenna */}
+          <line x1="12" y1="2" x2="12" y2="5" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+          <circle cx="12" cy="1.5" r="1.2" fill="white"/>
+          {/* head */}
+          <rect x="4" y="5" width="16" height="11" rx="3" fill="white" fillOpacity="0.95"/>
+          {/* eyes */}
+          <circle cx="9" cy="10" r="1.8" fill="#2ea043"/>
+          <circle cx="15" cy="10" r="1.8" fill="#2ea043"/>
+          <circle cx="9.6" cy="9.4" r="0.6" fill="white"/>
+          <circle cx="15.6" cy="9.4" r="0.6" fill="white"/>
+          {/* mouth */}
+          <rect x="8.5" y="13" width="7" height="1.5" rx="0.75" fill="#2ea043" fillOpacity="0.7"/>
+          {/* body */}
+          <rect x="7" y="17" width="10" height="5" rx="2" fill="white" fillOpacity="0.85"/>
+          {/* arms */}
+          <rect x="2" y="17.5" width="4" height="2.5" rx="1.25" fill="white" fillOpacity="0.7"/>
+          <rect x="18" y="17.5" width="4" height="2.5" rx="1.25" fill="white" fillOpacity="0.7"/>
+          {/* chest dot */}
+          <circle cx="12" cy="19.5" r="1" fill="#2ea043" fillOpacity="0.6"/>
+        </svg>
+      </button>
     </div>
   );
 }

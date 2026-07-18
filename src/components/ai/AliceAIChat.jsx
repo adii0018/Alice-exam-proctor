@@ -58,10 +58,15 @@ const AliceAIChat = ({ onClose }) => {
         history: messages
       })
       setMessages(prev => [...prev, { role: 'assistant', content: response.data.response }])
-    } catch {
+    } catch (err) {
+      // Show actual error from backend if available
+      const backendMsg = err?.response?.data?.response || err?.response?.data?.error
+      const networkMsg = err?.message || 'Unknown error'
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'AI service is currently unavailable.\nAdd GEMINI_API_KEY to django_backend/.env to enable full responses.'
+        content: backendMsg
+          ? `❌ ${backendMsg}`
+          : `⚠️ Network Error: ${networkMsg}\n\nMake sure Django server is running on port 8000.`
       }])
     } finally {
       setLoading(false)
