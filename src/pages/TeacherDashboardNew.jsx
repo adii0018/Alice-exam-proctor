@@ -10,13 +10,13 @@ import LiveMonitorCard from '../components/teacher/LiveMonitorCard';
 import ViolationsTable from '../components/teacher/ViolationsTable';
 import PerformanceChart from '../components/teacher/PerformanceChart';
 import { useTheme } from '../contexts/ThemeContext';
-import AliceAIChat from '../components/ai/AliceAIChat';
+
 import TeacherWelcomeCard from '../components/teacher/TeacherWelcomeCard';
 
 export default function TeacherDashboardNew() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAliceChat, setShowAliceChat] = useState(false);
+
   const { darkMode } = useTheme();
 
   const [quizzes, setQuizzes] = useState([]);
@@ -247,36 +247,7 @@ export default function TeacherDashboardNew() {
         </div>
       </motion.div>
 
-      {/* Alice AI Chat */}
-      {showAliceChat && <AliceAIChat onClose={() => setShowAliceChat(false)} />}
-      <button
-        onClick={() => setShowAliceChat(prev => !prev)}
-        className="fixed bottom-20 md:bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-40"
-        style={{ background: 'linear-gradient(135deg, #2ea043, #1a7f37)', boxShadow: '0 0 0 3px rgba(46,160,67,0.25), 0 8px 24px rgba(0,0,0,0.4)' }}
-        title="Chat with Alice AI"
-      >
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* antenna */}
-          <line x1="12" y1="2" x2="12" y2="5" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-          <circle cx="12" cy="1.5" r="1.2" fill="white"/>
-          {/* head */}
-          <rect x="4" y="5" width="16" height="11" rx="3" fill="white" fillOpacity="0.95"/>
-          {/* eyes */}
-          <circle cx="9" cy="10" r="1.8" fill="#2ea043"/>
-          <circle cx="15" cy="10" r="1.8" fill="#2ea043"/>
-          <circle cx="9.6" cy="9.4" r="0.6" fill="white"/>
-          <circle cx="15.6" cy="9.4" r="0.6" fill="white"/>
-          {/* mouth */}
-          <rect x="8.5" y="13" width="7" height="1.5" rx="0.75" fill="#2ea043" fillOpacity="0.7"/>
-          {/* body */}
-          <rect x="7" y="17" width="10" height="5" rx="2" fill="white" fillOpacity="0.85"/>
-          {/* arms */}
-          <rect x="2" y="17.5" width="4" height="2.5" rx="1.25" fill="white" fillOpacity="0.7"/>
-          <rect x="18" y="17.5" width="4" height="2.5" rx="1.25" fill="white" fillOpacity="0.7"/>
-          {/* chest dot */}
-          <circle cx="12" cy="19.5" r="1" fill="#2ea043" fillOpacity="0.6"/>
-        </svg>
-      </button>
+
     </TeacherLayout>
   );
 }
